@@ -21,4 +21,4 @@ dependencies = [
 where = ["src"]
 
 [tool.setuptools.package-data]
-"dopamine_framework.ext" = ["*.ttf"]
+"dopamineframework.ext" = ["*.ttf"]
