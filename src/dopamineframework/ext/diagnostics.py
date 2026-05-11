@@ -9,6 +9,7 @@ import io
 from PIL import Image, ImageDraw, ImageFont
 from collections import deque
 from .path import framework_version, BOLDFONT_PATH
+from ...dopamineframework import dopamine_commands
 import geocoder
 
 
@@ -347,7 +348,7 @@ class Diagnostics(commands.Cog):
         message = await interaction.original_response()
         await message.edit(content=None, embed=embed)
 
-    latency = app_commands.Group(name="latency", description="Shows latency information about the bot")
+    latency = dopamine_commands.Group(name="latency", description="Shows latency information about the bot")
     @latency.command(name="graph", description="Shows a graph of the average latency in the last 24 hours")
     async def graph(self, interaction: discord.Interaction):
         """Return a generated latency trend graph when enough samples exist.
