@@ -1,7 +1,7 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from .errors import MissingDopaminePermissions, RateLimited, PreconditionFailed
+from .errors import MissingDopaminePermissions, RateLimited, PreconditionFailed, NotBotOwner
 
 def global_cooldown():
     """Create a global slash-command cooldown check bound to the bot mapping.
@@ -78,7 +78,7 @@ def permissions_preset(preset_name: str):
                 interaction.user.id == bot.owner_id
             )
             if not is_owner:
-                raise PreconditionFailed("This command is restricted to the bot owner.")
+                raise NotBotOwner()
             return True
 
         perms_to_check = PRESETS.get(preset_name.lower())

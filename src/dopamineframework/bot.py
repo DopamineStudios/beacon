@@ -5,7 +5,7 @@ import asyncio
 import logging
 import discord
 import datetime
-from discord import app_commands
+from discord import app_commands, Status, Activity
 from discord.ext import commands
 from .utils.log import LoggingManager
 from .core.commands_registry import CommandRegistry

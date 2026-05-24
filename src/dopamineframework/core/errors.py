@@ -35,3 +35,9 @@ class RateLimited(PreconditionFailed):
         self.retry_after = retry_after
         self.message = f"You are using commands too quickly! Please try again in **{retry_after:.0f}s**."
         super().__init__(self.message)
+
+class NotBotOwner(PreconditionFailed):
+    """Raised when a command restricted to the bot owner is used by someone else."""
+    def __init__(self):
+        self.message = "This command is restricted to the bot owner."
+        super().__init__(self.message)
