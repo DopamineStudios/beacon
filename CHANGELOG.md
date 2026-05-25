@@ -1,3 +1,12 @@
+## [v3.0.0](https://github.com/DopamineStudios/beacon/compare/vv2.3.0...vv3.0.0) (2026-05-25)
+### ⚠ BREAKING CHANGES
+
+* Initial release of Beacon under the new package name, at v3.0.0.
+
+### Features & Minor Updates and Changes
+
+* Initial release of Beacon under the new package name, at v3.0.0. ([c44686e](https://github.com/DopamineStudios/beacon/commit/c44686eb8a868391c33a9abd6087390fee6efa1c))
+
 ## [v2.3.0](https://github.com/DopamineStudios/dopamine-framework/compare/vv2.2.2...vv2.3.0) (2026-05-25)
 ### ⚠ BREAKING CHANGES
 
