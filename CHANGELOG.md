@@ -1,3 +1,17 @@
+## [v2.3.0](https://github.com/DopamineStudios/dopamine-framework/compare/vv2.2.2...vv2.3.0) (2026-05-25)
+### ⚠ BREAKING CHANGES
+
+* Re-named Dopamine Framework to Beacon.
+
+### Features & Minor Updates and Changes
+
+* New "Upload Module" button in Owner Dashboard that allows uploading modules/cogs directly through Discord. Extremely useful for people hosting their bot through platforms like Render that don't allow modifying files without completely re-deploying and restarting the process, which would make hot-reloading useless. ([0e39211](https://github.com/DopamineStudios/dopamine-framework/commit/0e392118fc635d1a772701c1c6ca096cff3a3af4))
+* Re-named Dopamine Framework to Beacon. ([a14242d](https://github.com/DopamineStudios/dopamine-framework/commit/a14242db1337ff8cf5e644847912902114e7f745))
+
+### Documentation Changes
+
+* Updated docs ([3b957ec](https://github.com/DopamineStudios/dopamine-framework/commit/3b957ecb174eaef39547f31fd7565948d726c624))
+
 ## [v2.2.2](https://github.com/smite-codes/beacon/compare/vv2.2.1...vv2.2.2) (2026-05-11)
 ### Bug Fixes
 
