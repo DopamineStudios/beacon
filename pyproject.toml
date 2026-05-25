@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "beacon"
+name = "discord-beacon"
 version = "2.2.2"
-authors = [{name = "smite-codes"}]
+authors = [{name = "ismite"}]
 description = "Initialize a production-ready Discord.py bot in just 4 lines of code. Smart and automated command syncing, preconditions (and its presets), easy-to-use in-Discord dashboard, and more. A Dopamine Studios project."
 readme = "README.md"
 requires-python = ">=3.12"

@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/beacon
+      url: https://pypi.org/p/discord-beacon
     permissions:
       id-token: write
 

@@ -5,7 +5,7 @@
 </div>
 
 <p align="center">
-  <a href="https://pypi.org/project/beacon/">
+  <a href="https://pypi.org/project/discord-beacon/">
     <img src="https://img.shields.io/pypi/v/beacon?style=for-the-badge&logo=pypi&color=blue" />
   </a>
   <a href="https://www.python.org/">
@@ -35,11 +35,11 @@ A **Dopamine Studios** product.
 
 ```Linux/MacOS
 # Linux/MacOS
-python3 -m pip install -U beacon
+python3 -m pip install -U discord-beacon
 ```
 ```Windows
 # Windows
-py -3 -m pip install -U beacon
+py -3 -m pip install -U discord-beacon
 ```
 ## Features
 
@@ -48,16 +48,16 @@ py -3 -m pip install -U beacon
 The framework includes a Command Registry that compares local command states with remote Discord API states. This ensures that global and guild-specific slash commands are only synced when changes are detected, preventing unnecessary API overhead and rate-limit triggers.
 
 ### 2. Beacon Commands decorator with Preconditions
-The `@beacon.command` decorator replaces the standard discord.py version, allowing you to define permissions and cooldowns in a single line.
+The `@beacon_commands.command` decorator replaces the standard discord.py version, allowing you to define permissions and cooldowns in a single line.
 
 * **Simplified Syntax:** Define name, description, permissions, and cooldowns within one decorator.
 * **Implicit Global Cooldown:** Every command is protected by the bot's global rate limit by default.
-* **Group Support:** Use `beacon.Group` to apply permissions or cooldowns to an entire category of subcommands at once.
+* **Group Support:** Use `beacon_commands.Group` to apply permissions or cooldowns to an entire category of subcommands at once.
 
 ```python
-from beacon import beacon
+from beacon import beacon_commands
 
-@beacon.command(
+@beacon_commands.command(
     name="ban",
     permissions_preset="moderator",
     global_cooldown=True
@@ -91,7 +91,7 @@ If you prefer using standard `app_commands`, you can use the standalone `@precon
 
 No need for terminal access/SSH. This simple to use and feature-rich dashboard for bot owners allows you to unload/reload cogs on the fly, restart the bot, or check logs, accessed using `/od`. This allows bot owner(s) to manage, diagnose the bot right within Discord itself. This dashboard allows the bot to run idefinitely without restarts:
 
-* **Cog Management:** Dynamic loading, unloading, and reloading of cogs.
+* **Cog Management:** Dynamic loading, unloading, and uploading/replacing of cogs.
 * **Power State:** Remote shutdown and process-level restarts.
 * **Logs:** Real-time retrieval of log files via the Discord UI.
 * **Manual Command Syncs:** Sync commands manually globally or within only the current guild.
@@ -128,7 +128,6 @@ The built-in `Diagnostics` "cog" (module) provides real-time monitoring of the b
 | **Built-in Resource Monitoring**                       |            **✅**            |            **❌**            |              **❌**              |
 | **Is it JS, tho?**                                     |            **❌**            |            **✅**            |              **❌**              |
 | **Wins Imaginary Benchmarks**                          |            **❌**            |            **✅**            |              **❌**              |
-| **Lights the way with Beacon?**                      |      **✅ <br/>(Built-in)**       |            **❌**            |              **❌**              |
 
 <sup>*Scalability refers to ability to run without problems when the bot is in tens of thousands of servers or more. While it's a common myth that "Python is bloated", that's not true in the context of Discord bots. The real bottleneck in popular Discord bots always comes down to network, not code execution time or memory usage.</sup>
 
