@@ -7,7 +7,7 @@ class PreconditionFailed(AppCommandError):
     """
     pass
 
-class MissingDopaminePermissions(PreconditionFailed):
+class MissingBeaconPermissions(PreconditionFailed):
     """Raised when a user is missing one or more required permissions.
 
     """

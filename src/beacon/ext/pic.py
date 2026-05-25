@@ -2,7 +2,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from ..core.dashboard import OwnerDashboard
-from ..core import dopamine_commands
+from ..core import beacon_commands
 
 class Pic(commands.Cog):
     """Owner-only utility cog that exposes dashboard-related commands.
@@ -16,7 +16,7 @@ class Pic(commands.Cog):
         """
         self.bot = bot
 
-    @dopamine_commands.command(name="od", description=".", permissions_preset="bot_owner")
+    @beacon.command(name="od", description=".", permissions_preset="bot_owner")
     @app_commands.describe(ephemeral="Set to True so that only you can see the dashboard message.")
     async def zc(self, interaction: discord.Interaction, ephemeral: bool = False):
         """Open the owner dashboard UI when invoked by the bot owner.

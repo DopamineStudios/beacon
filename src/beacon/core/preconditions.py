@@ -1,7 +1,7 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from .errors import MissingDopaminePermissions, RateLimited, PreconditionFailed, NotBotOwner
+from .errors import MissingBeaconPermissions, RateLimited, PreconditionFailed, NotBotOwner
 
 def global_cooldown():
     """Create a global slash-command cooldown check bound to the bot mapping.
@@ -83,7 +83,7 @@ def permissions_preset(preset_name: str):
 
         perms_to_check = PRESETS.get(preset_name.lower())
         if perms_to_check is None:
-            raise ValueError(f"Dopamine Framework: Permission preset '{preset_name}' not found.")
+            raise ValueError(f"Beacon: Permission preset '{preset_name}' not found.")
 
         if not interaction.guild:
             raise PreconditionFailed("This command can only be used in a server.")
@@ -96,7 +96,7 @@ def permissions_preset(preset_name: str):
         ]
 
         if missing:
-            raise MissingDopaminePermissions(missing)
+            raise MissingBeaconPermissions(missing)
 
         return True
 
@@ -128,7 +128,7 @@ def has_permissions(**perms):
         missing = [perm for perm, value in perms.items() if getattr(permissions, perm) != value]
 
         if missing:
-            raise MissingDopaminePermissions(missing)
+            raise MissingBeaconPermissions(missing)
 
         return True
 
@@ -165,7 +165,7 @@ def has_permissions_any(**perms):
         )
 
         if not has_at_least_one:
-            raise MissingDopaminePermissions(list(perms.keys()))
+            raise MissingBeaconPermissions(list(perms.keys()))
 
         return True
 

@@ -30,13 +30,13 @@
     [
       "@semantic-release/exec",
       {
-        "prepareCmd": "sed -i 's/version = \".*\"/version = \"${nextRelease.version}\"/' pyproject.toml && sed -i 's/framework_version = \".*\"/framework_version = \"${nextRelease.version}\"/' src/dopamineframework/ext/path.py"
+        "prepareCmd": "sed -i 's/version = \".*\"/version = \"${nextRelease.version}\"/' pyproject.toml && sed -i 's/framework_version = \".*\"/framework_version = \"${nextRelease.version}\"/' src/beacon/ext/path.py"
       }
     ],
     [
       "@semantic-release/git",
       {
-        "assets": ["pyproject.toml", "src/dopamineframework/ext/path.py", "CHANGELOG.md"],
+        "assets": ["pyproject.toml", "src/beacon/ext/path.py", "CHANGELOG.md"],
         "message": "chore(release): ${nextRelease.version} [skip ci]"
       }
     ],

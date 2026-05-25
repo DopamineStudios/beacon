@@ -141,17 +141,17 @@ class CommandRegistry:
         stored_hash = self._get_stored_hash(scope_id)
 
         if current_hash != stored_hash:
-            logger.info(f"Dopamine Framework: Detected  changes. Syncing {scope_name} commands...")
+            logger.info(f"Beacon: Detected  changes. Syncing {scope_name} commands...")
             try:
                 await self.bot.tree.sync(guild=guild)
                 self._save_hash(scope_id, current_hash)
-                return f"Dopamine Framework: Detected changes, and completed command sync for {scope_name} successfully."
+                return f"Beacon: Detected changes, and completed command sync for {scope_name} successfully."
             except Exception as e:
-                logger.error(f"Dopamine Framework: Sync failed: {e}")
-                return f"Dopamine Framework: Error syncing {scope_name}."
+                logger.error(f"Beacon: Sync failed: {e}")
+                return f"Beacon: Error syncing {scope_name}."
 
-        logger.info(f"Dopamine Framework: Compared stored local hash to current local hash. {scope_name} commands are up to date. Skipping sync API call.")
-        return f"Dopamine Framework: Compared stored local hash to current local hash. {scope_name} commands are up to date. Skipping sync API call."
+        logger.info(f"Beacon: Compared stored local hash to current local hash. {scope_name} commands are up to date. Skipping sync API call.")
+        return f"Beacon: Compared stored local hash to current local hash. {scope_name} commands are up to date. Skipping sync API call."
 
     async def force_sync(self, guild: discord.Guild = None):
         """Force a command sync call regardless of hash comparison.
@@ -165,6 +165,6 @@ class CommandRegistry:
         scope = f"Guild: {guild.name} ({guild.id})" if guild else "Global"
         try:
             await self.bot.tree.sync(guild=guild)
-            return f"Dopamine Framework: Synced slash commands to: {scope}."
+            return f"Beacon: Synced slash commands to: {scope}."
         except discord.HTTPException as e:
-            return f"Dopamine Framework: Rate limit or API error: {e}"
+            return f"Beacon: Rate limit or API error: {e}"

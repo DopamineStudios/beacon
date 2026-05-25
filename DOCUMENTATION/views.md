@@ -11,7 +11,7 @@ Use `PrivateView` for classes that inherit from `discord.ui.View` (Traditional e
 **Usage:**
 
 ```python
-from dopamineframework import PrivateView
+from beacon import PrivateView
 import discord
 
 class MyPersistentView(PrivateView):
@@ -38,7 +38,7 @@ Use `PrivateLayoutView` when working with classes that inherit from `discord.ui.
 
 ```python
 import discord.ui
-from dopamineframework import PrivateLayoutView
+from beacon import PrivateLayoutView
 
 
 class MyLayout(PrivateLayoutView):

@@ -71,7 +71,7 @@ class OwnerDashboard(PrivateLayoutView):
         """
         self.clear_items()
         container = discord.ui.Container()
-        container.add_item((discord.ui.TextDisplay("## Dopamine Framework Owner Dashboard")))
+        container.add_item((discord.ui.TextDisplay("## Beacon Owner Dashboard")))
         container.add_item(discord.ui.Separator())
 
         cogs_dir = os.path.join(os.getcwd(), "cogs")
@@ -235,7 +235,7 @@ class OwnerDashboard(PrivateLayoutView):
         await interaction.response.defer(ephemeral=True)
         extensions = list(self.bot.extensions.keys())
         reloaded, failed = [], []
-        internal_extensions = ("dopamineframework.ext.diagnostics", "dopamineframework.ext.pic")
+        internal_extensions = ("beacon.ext.diagnostics", "beacon.ext.pic")
         for ext in extensions:
             if ext not in internal_extensions:
                 try:
@@ -243,7 +243,7 @@ class OwnerDashboard(PrivateLayoutView):
                     reloaded.append(ext)
                 except Exception as e:
                     failed.append(f"{ext} ({e})")
-        status = f"Dopamine Framework: Reloaded {len(reloaded)} cogs."
+        status = f"Beacon: Reloaded {len(reloaded)} cogs."
         if failed: status += f"\n**Failed:** {', '.join(failed)}"
         await interaction.followup.send(status, ephemeral=True)
 
@@ -283,7 +283,7 @@ class OwnerDashboard(PrivateLayoutView):
         Returns:
             Any: Result produced by this function.
         """
-        await interaction.response.send_message("Dopamine Framework: Shutting down...", ephemeral=True)
+        await interaction.response.send_message("Beacon: Shutting down...", ephemeral=True)
         await self.bot.signal_handler()
 
     async def restart_callback(self, interaction: discord.Interaction):
@@ -295,7 +295,7 @@ class OwnerDashboard(PrivateLayoutView):
         Returns:
             Any: Result produced by this function.
         """
-        await interaction.response.send_message("Dopamine Framework: Restarting process...", ephemeral=True)
+        await interaction.response.send_message("Beacon: Restarting process...", ephemeral=True)
         await self.bot.restart_bot()
 
     async def show_log_callback(self, interaction: discord.Interaction):
@@ -314,7 +314,7 @@ class OwnerDashboard(PrivateLayoutView):
 
         if not os.path.exists(log_path):
             return await interaction.response.send_message(
-                "Dopamine Framework: ERROR: Log file not found.",
+                "Beacon: ERROR: Log file not found.",
                 ephemeral=True
             )
 
@@ -335,7 +335,7 @@ class OwnerDashboard(PrivateLayoutView):
                         filename="tail_discord.log"
                     )
                     await interaction.followup.send(
-                        "Dopamine Framework: Last 70 lines exceed 1900 chars, sending snippet file:",
+                        "Beacon: Last 70 lines exceed 1900 chars, sending snippet file:",
                         file=log_file,
                         ephemeral=True
                     )
@@ -344,7 +344,7 @@ class OwnerDashboard(PrivateLayoutView):
 
         except Exception as e:
             await interaction.followup.send(
-                f"Dopamine Framework: ERROR: Failed to read log: {e}",
+                f"Beacon: ERROR: Failed to read log: {e}",
                 ephemeral=True
             )
 

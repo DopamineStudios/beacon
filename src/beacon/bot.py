@@ -86,28 +86,28 @@ class Bot(commands.Bot):
             try:
                 self.logger = LoggingManager(self.log_path)
             except Exception as e:
-                logger.error(f"Dopamine Framework: Failed to initialize logging manager: {e}")
+                logger.error(f"Beacon: Failed to initialize logging manager: {e}")
 
         count = 0
 
         if os.path.exists(self.cogs_path):
             base_module = self.cogs_path.replace(os.path.sep, ".").strip(".")
-
+            print()
             for filename in os.listdir(self.cogs_path):
                 if filename.endswith(".py") and not filename.startswith("__"):
                     extension = f"{base_module}.{filename[:-3]}"
                     try:
                         await self.load_extension(extension)
-                        print(f"> Dopamine Framework: Loaded {extension} Successfully")
+                        print(f"> Beacon: Loaded {extension} Successfully")
                         count += 1
                     except Exception as e:
-                        print(f"Dopamine Framework: ERROR: Failed to load {extension}: {e}")
+                        print(f"Beacon: ERROR: Failed to load {extension}: {e}")
             self.count = count
         else:
-            print(f"Dopamine Framework: WARNING: '{self.cogs_path}' directory not found.")
+            print(f"Beacon: WARNING: '{self.cogs_path}' directory not found.")
         if self.default_diagnostics:
-            await self.load_extension("dopamineframework.ext.diagnostics")
-        await self.load_extension("dopamineframework.ext.pic")
+            await self.load_extension("beacon.ext.diagnostics")
+        await self.load_extension("beacon.ext.pic")
         status = await self.registry.smart_sync()
         print(status)
 
@@ -158,19 +158,20 @@ class Bot(commands.Bot):
         Returns:
             Any: Result produced by this function.
         """
-        print("\nDopamine Framework: Bot shutdown requested...")
+        print("\nBeacon: Bot shutdown requested...")
         extensions = list(self.extensions.keys())
         if self.default_diagnostics:
-            await self.unload_extension("dopamineframework.ext.diagnostics")
-        await self.unload_extension("dopamineframework.ext.pic")
-        internal_extensions = ("dopamineframework.ext.diagnostics", "dopamineframework.ext.pic")
+            await self.unload_extension("beacon.ext.diagnostics")
+        await self.unload_extension("beacon.ext.pic")
+        internal_extensions = ("beacon.ext.diagnostics", "beacon.ext.pic")
+        print()
         for extension in extensions:
             if extension not in internal_extensions:
                 try:
                     await self.unload_extension(extension)
-                    print(f"> Dopamine Framework: Unloaded {extension} successfully")
+                    print(f"> Beacon: Unloaded {extension} successfully")
                 except Exception as e:
-                    print(f"Dopamine Framework: Error unloading {extension}: {e}")
+                    print(f"Beacon: Error unloading {extension}: {e}")
 
         print("👋 Goodbye!")
         await self.close()
@@ -182,7 +183,7 @@ class Bot(commands.Bot):
             Any: Result produced by this function.
         """
         print()
-        print("Dopamine Framework: Restarting bot...")
+        print("Beacon: Restarting bot...")
         await self.signal_handler()
         os.execv(sys.executable, [sys.executable] + sys.argv)
 
@@ -208,24 +209,24 @@ class Bot(commands.Bot):
             try:
                 await self.change_presence(activity=self._activity, status=self._status)
             except Exception as e:
-                logger.critical(f"Dopamine Framework: ERROR: Failed to set activity or status: {e}")
+                logger.critical(f"Beacon: ERROR: Failed to set activity or status: {e}")
         elif self._activity:
             try:
                 await self.change_presence(activity=self._activity)
             except Exception as e:
-                logger.critical(f"Dopamine Framework: ERROR: Failed to set activity: {e}")
+                logger.critical(f"Beacon: ERROR: Failed to set activity: {e}")
         elif self._status:
             try:
                 await self.change_presence(status=self._status)
             except Exception as e:
-                logger.critical(f"Dopamine Framework: ERROR: Failed to set status: {e}")
+                logger.critical(f"Beacon: ERROR: Failed to set status: {e}")
 
         total_ready = time.time() - start
 
 
         banner = ("\n"
                   f"---------------------------------------------------\n"
-                  f"Powered by Dopamine Framework v{framework_version}\n"
+                  f"Powered by Beacon v{framework_version}\n"
                   "\n"
                   f"Internal Initialization Time (setup hook + init of Bot class): {self.total_setup_time:.2f}s\n"
                   f"Time taken by on_ready: {total_ready:.2f}s\n"

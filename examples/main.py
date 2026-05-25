@@ -1,5 +1,5 @@
 import discord
-from dopamineframework import Bot
+from beacon import Bot
 
 intents = discord.Intents.default()
 bot = Bot(command_prefix="?", intents=intents)

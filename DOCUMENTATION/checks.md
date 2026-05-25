@@ -14,7 +14,7 @@ Designed for use with `discord.ext.commands` (prefix commands).
 * **Usage**:
 
 ```python
-from dopamineframework import prefix_mod_check
+from beacon import prefix_mod_check
 
 @bot.command()
 @prefix_mod_check()
@@ -38,7 +38,7 @@ Designed for use with `discord.app_commands` (slash commands).
 * **Usage**:
 
 ```python
-from dopamineframework import mod_check
+from beacon import mod_check
 
 @app_commands.command(name="ban", description="Ban a member")
 @app_commands.check(mod_check)

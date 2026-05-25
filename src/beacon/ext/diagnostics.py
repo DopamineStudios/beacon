@@ -9,7 +9,7 @@ import io
 from PIL import Image, ImageDraw, ImageFont
 from collections import deque
 from .path import framework_version, BOLDFONT_PATH
-from ..core import dopamine_commands
+from ..core import beacon_commands
 import geocoder
 
 
@@ -64,7 +64,7 @@ class Diagnostics(commands.Cog):
             except asyncio.TimeoutError:
                 total_latency = None
             except Exception as e:
-                print(f"Dopamine Framework: Error: {e}")
+                print(f"Beacon: Error: {e}")
                 total_latency = None
 
             if isinstance(total_latency, (int, float)):
@@ -76,7 +76,7 @@ class Diagnostics(commands.Cog):
                 self.temp_samples.clear()
 
         except Exception as e:
-            print(f"Dopamine Framework: CRITICAL ERROR in cache task: {e}")
+            print(f"Beacon: CRITICAL ERROR in cache task: {e}")
 
     @cache_task.before_loop
     async def before_cache_task(self):
@@ -143,12 +143,12 @@ class Diagnostics(commands.Cog):
             title_font = ImageFont.truetype(BOLDFONT_PATH, 18 * scale_factor)
         except Exception as e:
             # Fallback to a default system font if Bold.ttf is missing
-            print(f"Dopamine Framework: Custom font not found at {BOLDFONT_PATH}. Using default.\n{e}")
+            print(f"Beacon: Custom font not found at {BOLDFONT_PATH}. Using default.\n{e}")
             title_font = ImageFont.load_default()
 
         draw.text(
             (50, 50),
-            "Average API Latency - Powered by Dopamine Framework",
+            "Average API Latency - Powered by Beacon",
             fill=(255, 255, 255, 255),
             font=title_font
         )
@@ -333,7 +333,7 @@ class Diagnostics(commands.Cog):
         embed = discord.Embed(
             title="Pong!",
             description=(
-                f"> Powered by Dopamine Framework `v{framework_version}`\n\n"
+                f"> Powered by Beacon `v{framework_version}`\n\n"
                 f"> Connected to Discord Gateway: `{gateway_node}`\n"
                 f"> Bot Host Location: `{location}`\n\n"
                 f"> API Latency: `{connection_latency}ms`\n"
@@ -351,7 +351,7 @@ class Diagnostics(commands.Cog):
         message = await interaction.original_response()
         await message.edit(content=None, embed=embed)
 
-    latency = dopamine_commands.Group(name="latency", description="Shows latency information about the bot")
+    latency = beacon.Group(name="latency", description="Shows latency information about the bot")
     @latency.command(name="graph", description="Shows a graph of the average latency in the last 24 hours")
     async def graph(self, interaction: discord.Interaction):
         """Return a generated latency trend graph when enough samples exist.

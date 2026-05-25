@@ -1,6 +1,6 @@
 ## Preconditions Feature Documentation
 
-<sub>(This documentation is about the decorators meant to be used with slash commands when you use the discord.py `@app_commands.command` decorator instead of Dopamine Framework's equivalent. To use preconditions through the `@dopamine_commands.command()` decorator, read `dopamine_commands.md`.)
+<sub>(This documentation is about the decorators meant to be used with slash commands when you use the discord.py `@app_commands.command` decorator instead of Beacon's equivalent. To use preconditions through the `@beacon.command()` decorator, read `beacon.md`.)
 
 The **Preconditions** feature provides set of decorators for `discord.py` slash commands to enforce specific rules. They cover common use cases such as permission checks and rate limiting (cooldowns).
 
@@ -60,7 +60,7 @@ Applies the bot-wide cooldown where all commands with this cooldown share a sing
 
 The framework automatically handles failed preconditions within `bot.py`. Users will receive an ephemeral message explaining why the command failed.
 
-* **`MissingDopaminePermissions`**: Returns a formatted list of the specific permissions the user is missing (e.g., "Manage Messages").
+* **`MissingBeaconPermissions`**: Returns a formatted list of the specific permissions the user is missing (e.g., "Manage Messages").
 * **`RateLimited`**: Tells the user exactly how many seconds they must wait before trying again.
 * **`PreconditionFailed`**: Returns a custom string, such as "This command can only be used in a server."
 
@@ -70,7 +70,7 @@ The framework automatically handles failed preconditions within `bot.py`. Users 
 
 ```python
 from discord import app_commands
-from dopamineframework import preconditions
+from beacon import preconditions
 
 @app_commands.command(name="ban", description="Ban a member")
 @preconditions.permissions_preset("moderator")

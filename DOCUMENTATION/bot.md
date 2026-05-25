@@ -1,14 +1,14 @@
 ## `bot.py` Documentation
 
 
-This is the entry point for the framework. Follow the initialization example below to load your Discord bot with Dopamine Framework (Note: For simplicity and security's sake, the framework does NOT run/start the bot automatically. You have to do it yourself, as shown in the code snippet below).
+This is the entry point for the framework. Follow the initialization example below to load your Discord bot with Beacon (Note: For simplicity and security's sake, the framework does NOT run/start the bot automatically. You have to do it yourself, as shown in the code snippet below).
 
 ---
 
 ### Initialization (in your main.py)
 
 ```python
-from dopamineframework import Bot
+from beacon import Bot
 import discord
 
 bot = Bot(

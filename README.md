@@ -1,18 +1,18 @@
 <div align="center">
 
-# Dopamine Framework
+# Beacon
 
 </div>
 
 <p align="center">
-  <a href="https://pypi.org/project/dopamine-framework/">
-    <img src="https://img.shields.io/pypi/v/dopamine-framework?style=for-the-badge&logo=pypi&color=blue" />
+  <a href="https://pypi.org/project/beacon/">
+    <img src="https://img.shields.io/pypi/v/beacon?style=for-the-badge&logo=pypi&color=blue" />
   </a>
   <a href="https://www.python.org/">
   <img src="https://img.shields.io/badge/python-3.12+-yellow?style=for-the-badge&logo=python&logoColor=white" />
 </a>
-  <a href="https://github.com/smite-codes/dopamine-framework/blob/main/LICENSE">
-    <img src="https://img.shields.io/github/license/dopaminestudios/dopamine-framework?style=for-the-badge&color=orange" />
+  <a href="https://github.com/smite-codes/beacon/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/smite-codes/beacon?style=for-the-badge&color=orange" />
   </a>
 </p>
 
@@ -21,10 +21,10 @@
   <a href="#features"><b>Features</b></a> •
   <a href="#comparison-with-sapphire-framework-and-bare-bones-discordpy"><b>Comparison</b></a> •
   <a href="#implementation-example"><b>Quick Start</b></a> •
-  <a href="https://github.com/smite-codes/dopamine-framework/issues"><b>Report Bug</b></a>
+  <a href="https://github.com/smite-codes/beacon/issues"><b>Report Bug</b></a>
 </p>
 
-Dopamine Framework is a framework for discord.py which allows you to initialize a production-ready Discord bot in just 4 lines of code. In technical terms, this is can be described as a **"Flexible" Boilerplate Framework** (not to be confused with **opinionated** boilerplate framework). It is designed to streamline the development of scalable Discord applications by automating the process of registering commands and simplify the process of creating them, diagnosing the bot, and various other utilities such as a paginator helper and "Private View" helpers which let only the user who initiated the interaction to interact with the components like buttons.
+Beacon is an **Unopinionated Framework** for discord.py which allows you to initialize a production-ready Discord bot in just 4 lines of code. It is designed to streamline the development of scalable Discord applications by automating the process of registering commands and simplify the process of creating them, diagnosing the bot, and various other utilities such as a paginator helper and "Private View" helpers which let only the user who initiated the interaction to interact with the components like buttons.
 
 A **Dopamine Studios** product.
 
@@ -35,11 +35,11 @@ A **Dopamine Studios** product.
 
 ```Linux/MacOS
 # Linux/MacOS
-python3 -m pip install -U dopamine-framework
+python3 -m pip install -U beacon
 ```
 ```Windows
 # Windows
-py -3 -m pip install -U dopamine-framework
+py -3 -m pip install -U beacon
 ```
 ## Features
 
@@ -47,17 +47,17 @@ py -3 -m pip install -U dopamine-framework
 
 The framework includes a Command Registry that compares local command states with remote Discord API states. This ensures that global and guild-specific slash commands are only synced when changes are detected, preventing unnecessary API overhead and rate-limit triggers.
 
-### 2. Dopamine Commands decorator with Preconditions
-The `@dopamine_commands.command` decorator replaces the standard discord.py version, allowing you to define permissions and cooldowns in a single line.
+### 2. Beacon Commands decorator with Preconditions
+The `@beacon.command` decorator replaces the standard discord.py version, allowing you to define permissions and cooldowns in a single line.
 
 * **Simplified Syntax:** Define name, description, permissions, and cooldowns within one decorator.
 * **Implicit Global Cooldown:** Every command is protected by the bot's global rate limit by default.
-* **Group Support:** Use `dopamine_commands.Group` to apply permissions or cooldowns to an entire category of subcommands at once.
+* **Group Support:** Use `beacon.Group` to apply permissions or cooldowns to an entire category of subcommands at once.
 
 ```python
-from dopamineframework import dopamine_commands
+from beacon import beacon
 
-@dopamine_commands.command(
+@beacon.command(
     name="ban",
     permissions_preset="moderator",
     global_cooldown=True
@@ -112,7 +112,7 @@ The built-in `Diagnostics` "cog" (module) provides real-time monitoring of the b
 
 ### Comparison (with Sapphire Framework and standard discord.py)
 
-| Feature                                                |     Dopamine Framework      |      Sapphire (js/ts)       |           discord.py            |
+| Feature                                                |     Beacon      |      Sapphire (js/ts)       |           discord.py            |
 |:-------------------------------------------------------|:---------------------------:|:---------------------------:|:-------------------------------:|
 | **Easy Setup**                                         | **✅ <br/>(minimal boilerplate)** | **❌** <br/>(Lots of boilerplate) |              **❌**              |
 | **Preconditions Support**                              |            **✅**            |            **✅**            |              **❌**              |
@@ -128,7 +128,7 @@ The built-in `Diagnostics` "cog" (module) provides real-time monitoring of the b
 | **Built-in Resource Monitoring**                       |            **✅**            |            **❌**            |              **❌**              |
 | **Is it JS, tho?**                                     |            **❌**            |            **✅**            |              **❌**              |
 | **Wins Imaginary Benchmarks**                          |            **❌**            |            **✅**            |              **❌**              |
-| **Gives you that Dopamine rush?**                      |      **✅ <br/>(Built-in)**       |            **❌**            |              **❌**              |
+| **Lights the way with Beacon?**                      |      **✅ <br/>(Built-in)**       |            **❌**            |              **❌**              |
 
 <sup>*Scalability refers to ability to run without problems when the bot is in tens of thousands of servers or more. While it's a common myth that "Python is bloated", that's not true in the context of Discord bots. The real bottleneck in popular Discord bots always comes down to network, not code execution time or memory usage.</sup>
 
@@ -137,11 +137,11 @@ The built-in `Diagnostics` "cog" (module) provides real-time monitoring of the b
 
 ## Implementation Example
 
-To initialize a bot using the Dopamine Framework, follow the following example:
+To initialize a bot using the Beacon, follow the following example:
 
 ```python
 import discord
-from dopamineframework import Bot
+from beacon import Bot
 
 bot = Bot(command_prefix="?", cogs_path="your cogs/modules folder path here*", logging_path="path to .sqlite, .db, or .db3 file; only define if you want to use this logging backend.", default_diagnostics=True, intents=discord.Intents.default()) # If no cogs folder is defined, it will default to "cogs". If no logging path, logging will be disabled.
 
@@ -163,11 +163,11 @@ bot.run("YOUR_BOT_TOKEN_HERE")
 
 ## License & Attribution
 
-Dopamine Framework is licensed under the **Apache License 2.0**.
+Beacon is licensed under the **Apache License 2.0**.
 
 ### How to Credit
-While you are free to use this framework for private or commercial bots, I require explicit credit. Please include a link to this repository or a mention of "Dopamine Framework" in:
+While you are free to use this framework for private or commercial bots, I require explicit credit. Please include a link to this repository or a mention of "Beacon" in:
 1. Your project's **README** or documentation.
 2. Your bot's **info/credits command** (for example `/about` or `/help`).
 
-*Example: "Built with [__Dopamine Framework__](https://github.com/smite-codes/dopamine-framework)"*
+*Example: "Built with [__Beacon__](https://github.com/smite-codes/beacon)"*

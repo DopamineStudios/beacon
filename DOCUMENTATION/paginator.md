@@ -21,7 +21,7 @@ A standard interface for paginating data using a `discord.ui.View`.
 **Usage**
 
 ```python
-from dopamineframework import ViewPaginator
+from beacon import ViewPaginator
 
 # Example: Displaying a list of strings
 data = [f"Item {i}" for i in range(1, 101)]
@@ -53,7 +53,7 @@ Developers using `LayoutViewPaginator` must define `build_layout()` in a subclas
 **Usage**
 
 ```python
-from dopamineframework import LayoutViewPaginator
+from beacon import LayoutViewPaginator
 from discord.ui import Container
 
 class MyPaginator(LayoutViewPaginator):

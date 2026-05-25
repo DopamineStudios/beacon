@@ -20,7 +20,7 @@ Parses a string containing time units and returns the total duration in seconds.
 **Example Usage:**
 
 ```python
-from dopamineframework import duration_to_seconds
+from beacon import duration_to_seconds
 
 # Single unit
 seconds = duration_to_seconds("1h") 
@@ -46,7 +46,7 @@ Calculates a future timestamp by adding the provided number of seconds to the cu
 **Example Usage:**
 
 ```python
-from dopamineframework import duration_to_seconds, now_plus_seconds_unix
+from beacon import duration_to_seconds, now_plus_seconds_unix
 
 # Calculate a timestamp for 7 days from now
 duration = duration_to_seconds("7d")

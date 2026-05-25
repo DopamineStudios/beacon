@@ -68,17 +68,17 @@ class Group(app_commands.Group):
             description=description or (self.__doc__ or "No description provided"),
             **kwargs
         )
-        self._dopamine_settings = {
+        self._beacon_settings = {
             'permissions_preset': permissions_preset,
             'cooldown': cooldown,
             'global_cooldown': global_cooldown
         }
 
     def add_command(self, command: app_commands.Command, /) -> None:
-        """Apply Dopamine features to every command added to this group."""
-        preset_val = self._dopamine_settings['permissions_preset']
-        cooldown_val = self._dopamine_settings['cooldown']
-        global_cd = self._dopamine_settings['global_cooldown']
+        """Apply Beacon features to every command added to this group."""
+        preset_val = self._beacon_settings['permissions_preset']
+        cooldown_val = self._beacon_settings['cooldown']
+        global_cd = self._beacon_settings['global_cooldown']
 
         if preset_val:
             preset(preset_val)(command)

@@ -1,18 +1,18 @@
-## Dopamine Commands Documentation
-<sub>(This documentation is about the framework's `@dopamine_commands` wrapper for standard discord.py's decorator `@app_commands`, and about how to use the preconditions feature through it. To read about the decorators meant to be used with slash commands when you use the discord.py `@app_commands.command` decorator instead of Dopamine Framework's equivalent, read `preconditions.md`.)
+## Beacon Commands Documentation
+<sub>(This documentation is about the framework's `@beacon` wrapper for standard discord.py's decorator `@app_commands`, and about how to use the preconditions feature through it. To read about the decorators meant to be used with slash commands when you use the discord.py `@app_commands.command` decorator instead of Beacon's equivalent, read `preconditions.md`.)
 
-The `dopamine_commands` module provides a wrapper around standard `discord.py` app commands. It simplifies the process of creating slash commands by integrating **permission presets**, **cooldowns**, and **global rate limiting** directly into a single decorator or group class.
+The `beacon` module provides a wrapper around standard `discord.py` app commands. It simplifies the process of creating slash commands by integrating **permission presets**, **cooldowns**, and **global rate limiting** directly into a single decorator or group class.
 
 ---
 
-## `dopamine_commands.command`
+## `beacon.command`
 This decorator replaces the standard `@app_commands.command()`. It allows you to define functional constraints (like permissions and rate limits) as keyword arguments.
 
 ### **Usage**
 ```python
-from dopamineframework.core import dopamine_commands
+from beacon.core import beacon
 
-@dopamine_commands.command(
+@beacon.command(
     name="ban",
     description="Ban a user from the server",
     permissions_preset="moderator",
@@ -34,14 +34,14 @@ async def ban_member(interaction: discord.Interaction, member: discord.Member):
 
 ---
 
-## `dopamine_commands.Group`
+## `beacon.Group`
 A subclass of `app_commands.Group` that allows you to apply permissions or cooldowns to an entire group of subcommands at once.
 
 ### **Usage**
 ```python
-from dopamineframework.core import dopamine_commands
+from beacon.core import beacon
 
-admin_commands = dopamine_commands.Group(name="admin", description="Admin commands", permissions_preset="admin")
+admin_commands = beacon.Group(name="admin", description="Admin commands", permissions_preset="admin")
 @admin_commands.command(name="check", description="This command only works if you're an admin!")
 async def admin_check(interaction: discord.Interaction):
     interaction.response.send_message(f"{interaction.user.mention} You're an admin!")
@@ -75,5 +75,5 @@ The framework includes a built-in error handler in `bot.py` that catches issues 
 ---
 
 ## Key Differences from Standard Discord.py
-1.  **Implicit Global Cooldown:** Every `dopamine_command` is protected by the global rate limit by default.
+1.  **Implicit Global Cooldown:** Every `beacon command` is protected by the global rate limit by default.
 2. **Error Handling:** Precondition failures (cooldowns/perms) are automatically sent as ephemeral messages so they don't clutter the chat.
