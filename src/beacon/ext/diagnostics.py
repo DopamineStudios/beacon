@@ -351,7 +351,7 @@ class Diagnostics(commands.Cog):
         message = await interaction.original_response()
         await message.edit(content=None, embed=embed)
 
-    latency = beacon.Group(name="latency", description="Shows latency information about the bot")
+    latency = beacon_commands.Group(name="latency", description="Shows latency information about the bot")
     @latency.command(name="graph", description="Shows a graph of the average latency in the last 24 hours")
     async def graph(self, interaction: discord.Interaction):
         """Return a generated latency trend graph when enough samples exist.
