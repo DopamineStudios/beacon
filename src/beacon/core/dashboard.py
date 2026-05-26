@@ -306,6 +306,7 @@ class OwnerDashboard(PrivateLayoutView):
             await owner_message.attachments[0].save(file_path)
 
             await upload_message.edit(content="File successfully uploaded!")
+            await owner_message.delete()
             self.build_layout()
             await dashboard_message.edit(view=self)
 
