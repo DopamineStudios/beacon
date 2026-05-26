@@ -21,7 +21,7 @@ class Bot(commands.Bot):
 
     """
     def __init__(self, cogs_path: str = "cogs", log_path: str = None, default_diagnostics: bool = True, status: discord.Status = None, activity: discord.Activity = None, global_cooldown_rate: int = 10,
-        global_cooldown_per: float = 60.0, minimal_cacheing: bool = False, accent_colour: discord.Colour = discord.Colour(0x944ae8), bot_logger: logging.Logger = logging.getLogger("discord"), *args, **kwargs):
+        global_cooldown_per: float = 60.0, minimal_cacheing: bool = False, accent_colour: discord.Colour = discord.Colour(0x2C817C), bot_logger: logging.Logger = logging.getLogger("discord"), *args, **kwargs):
         """Initialize the bot with framework defaults, cooldowns, and extension settings.
 
         Args:
