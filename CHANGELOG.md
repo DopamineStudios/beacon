@@ -1,3 +1,12 @@
+## [v3.1.0](https://github.com/DopamineStudios/beacon/compare/vv3.0.1...vv3.1.0) (2026-05-26)
+### Features & Minor Updates and Changes
+
+* Owner Message containing the file is now automatically deleted upon successful upload. ([abdb118](https://github.com/DopamineStudios/beacon/commit/abdb1180ee515b375c9b510c6152dc00d7f0728d))
+
+### Documentation Changes
+
+* Updated README. ([1efc9b1](https://github.com/DopamineStudios/beacon/commit/1efc9b12702e6c7e0aa481a40d4d24d74c7b943f))
+
 ## [v3.0.1](https://github.com/DopamineStudios/beacon/compare/vv3.0.0...vv3.0.1) (2026-05-26)
 ### Bug Fixes
 
