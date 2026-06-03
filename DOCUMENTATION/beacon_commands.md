@@ -1,18 +1,18 @@
 ## Beacon Commands Documentation
-<sub>(This documentation is about the framework's `@beacon` wrapper for standard discord.py's decorator `@app_commands`, and about how to use the preconditions feature through it. To read about the decorators meant to be used with slash commands when you use the discord.py `@app_commands.command` decorator instead of Beacon's equivalent, read `preconditions.md`.)
+<sub>(This documentation is about the framework's `@beacon_commands` wrapper for standard discord.py's decorator `@app_commands`, and about how to use the preconditions feature through it. To read about the decorators meant to be used with slash commands when you use the discord.py `@app_commands.command` decorator instead of Beacon's equivalent, read `preconditions.md`.)
 
 The `beacon` module provides a wrapper around standard `discord.py` app commands. It simplifies the process of creating slash commands by integrating **permission presets**, **cooldowns**, and **global rate limiting** directly into a single decorator or group class.
 
 ---
 
-## `beacon.command`
+## `beacon_commands.command`
 This decorator replaces the standard `@app_commands.command()`. It allows you to define functional constraints (like permissions and rate limits) as keyword arguments.
 
 ### **Usage**
 ```python
 from beacon.core import beacon
 
-@beacon.command(
+@beacon_commands.command(
     name="ban",
     description="Ban a user from the server",
     permissions_preset="moderator",

@@ -1,6 +1,6 @@
 ## Preconditions Feature Documentation
 
-<sub>(This documentation is about the decorators meant to be used with slash commands when you use the discord.py `@app_commands.command` decorator instead of Beacon's equivalent. To use preconditions through the `@beacon.command()` decorator, read `beacon.md`.)
+<sub>(This documentation is about the decorators meant to be used with slash commands when you use the discord.py `@app_commands.command` decorator instead of Beacon's equivalent. To use preconditions through the `@beacon_commands.command()` decorator, read `beacon.md`.)
 
 The **Preconditions** feature provides set of decorators for `discord.py` slash commands to enforce specific rules. They cover common use cases such as permission checks and rate limiting (cooldowns).
 
