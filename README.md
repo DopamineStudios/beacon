@@ -26,7 +26,7 @@
 
 Beacon is an **Unopinionated Framework** for discord.py which allows you to initialise a production-ready Discord bot in just 4 lines of code. It is designed to streamline the development of scalable Discord applications by automating the process of registering commands and simplify the process of creating them, diagnosing the bot, and various other utilities such as a paginator helper and "Private View" helpers which let only the user who initiated the interaction to interact with the components like buttons.
 
-A **Dopamine Studios** product.
+A **Dopamine Studios** project.
 
 ---
 ## Installing
@@ -169,4 +169,4 @@ While you are free to use this framework for private or commercial bots, I requi
 1. Your project's **README** or documentation.
 2. Your bot's **info/credits command** (for example `/about` or `/help`).
 
-*Example: "Built with [__Beacon__](https://github.com/smite-codes/beacon)"*
+*Example: "Built with [__Beacon__](https://github.com/dopaminestudios/beacon)"*
