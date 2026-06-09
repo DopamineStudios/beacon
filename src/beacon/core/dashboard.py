@@ -463,6 +463,7 @@ class OwnerGoToPageModal(discord.ui.Modal):
         self.page_input = discord.ui.TextInput(
             label=f"Page Number (1-{self.total_pages})",
             placeholder="Enter a page number...",
+            default=str(self.parent_view.page),
             min_length=1, max_length=5, required=True
         )
         self.add_item(self.page_input)
