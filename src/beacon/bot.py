@@ -5,23 +5,26 @@ import asyncio
 import logging
 import discord
 import datetime
+import re
+import sys
 from discord import app_commands, Status, Activity
 from discord.ext import commands
 from .utils.log import LoggingManager
 from .core.commands_registry import CommandRegistry
 from .ext.path import framework_version
-import os
-import sys
 
 logger = logging.getLogger("discord")
 
 
 class Bot(commands.Bot):
-    """Framework bot subclass that loads extensions, syncs commands, and manages lifecycle.
+    """Framework bot subclass that loads extensions, syncs commands, and manages lifecycle."""
 
-    """
-    def __init__(self, cogs_path: str = "cogs", log_path: str = None, default_diagnostics: bool = True, status: discord.Status = None, activity: discord.Activity = None, global_cooldown_rate: int = 10,
-        global_cooldown_per: float = 60.0, minimal_cacheing: bool = False, accent_colour: discord.Colour = discord.Colour(0x2C817C), bot_logger: logging.Logger = logging.getLogger("discord"), *args, **kwargs):
+    def __init__(self, cogs_path: str = "cogs", log_path: str = None, default_diagnostics: bool = True,
+                 status: discord.Status = None, activity: discord.Activity = None, global_cooldown_rate: int = 10,
+                 global_cooldown_per: float = 60.0, minimal_cacheing: bool = False,
+                 accent_colour: discord.Colour = discord.Colour(0x2C817C),
+                 bot_logger: logging.Logger = logging.getLogger("discord"),
+                 version_file: str = None, *args, **kwargs):
         """Initialize the bot with framework defaults, cooldowns, and extension settings.
 
         Args:
@@ -35,6 +38,7 @@ class Bot(commands.Bot):
             minimal_cacheing: Whether to minimize member caching for lower memory usage.
             accent_colour: The colour to be used for accents (and more) in the `/ping` embed, and the `/latency info` graph.
             bot_logger: The logger for the bot process.
+            version_file: Optional path to a file containing the bot's deployment version.
             *args: Additional positional arguments forwarded to the parent implementation.
             **kwargs: Additional keyword arguments forwarded to the underlying API.
         """
@@ -59,8 +63,8 @@ class Bot(commands.Bot):
         self.log_path = log_path
         self.process_start_time = time.time()
         self.default_diagnostics = default_diagnostics
-        self._status=status
-        self._activity=activity
+        self._status = status
+        self._activity = activity
         self.global_cooldown_rate = global_cooldown_rate
         self.global_cooldown_per = global_cooldown_per
         self.global_cooldown_mapping = commands.CooldownMapping.from_cooldown(
@@ -72,16 +76,50 @@ class Bot(commands.Bot):
         self.accent_colour = accent_colour.to_rgb()
         self.registry = CommandRegistry(self)
         self.logger = bot_logger
+
+        self.version = self._parse_version_file(version_file)
+
         self.start_time = None
         self.count = None
         self.total_setup_time = None
 
-    async def setup_hook(self):
-        """Load configured extensions, wire command error handling, and run smart sync.
+    def _parse_version_file(self, path: str) -> str:
+        """Helper method to dynamically parse the version file and normalise its format."""
+        if not path or not os.path.exists(path):
+            return "v0.0.0"
 
-        Returns:
-            Any: Result produced by this function.
-        """
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                content = f.read().strip()
+
+            if not content:
+                logger.warning("""Beacon: Your given version file is empty. Bot version will not be shown in /ping command's embed. For the safest method, define it as: bot_version="Your.Bot.Version".""")
+                return None
+
+            assignment_match = re.search(r'(?:bot_version|version)\s*[:=]\s*["\']?([^"\']+)["\']?', content,
+                                         re.IGNORECASE)
+            if assignment_match:
+                version_str = assignment_match.group(1).strip()
+            else:
+                standalone_match = re.search(r'v?\d+(?:\.\d+)+[^\s"\']*', content, re.IGNORECASE)
+                if standalone_match:
+                    version_str = standalone_match.group(0).strip()
+                else:
+                    version_str = content.splitlines()[0].strip()
+
+            version_str = version_str.strip("'\" ")
+
+            if version_str and not version_str.lower().startswith('v'):
+                version_str = f"v{version_str}"
+
+            return version_str or None
+
+        except Exception as e:
+            logger.error(f"""Beacon: Bot version is not defined in your provided file, or isn't defined properly. Bot version will not be shown in /ping command's embed. For the safest method, define it as: bot_version="Your.Bot.Version".""")
+            return None
+
+    async def setup_hook(self):
+        """Load configured extensions, wire command error handling, and run smart sync."""
         if self.log_path:
             try:
                 self.logger = LoggingManager(self.log_path)
@@ -117,16 +155,7 @@ class Bot(commands.Bot):
             )
 
         async def on_tree_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
-
-            """Handle slash-command errors and convert framework exceptions to user responses.
-
-            Args:
-                interaction: Interaction context received from Discord.
-                error: Value for error.
-
-            Returns:
-                Any: Result produced by this function.
-            """
+            """Handle slash-command errors and convert framework exceptions to user responses."""
             if isinstance(error, app_commands.CommandInvokeError):
                 error = error.original
 
@@ -149,15 +178,10 @@ class Bot(commands.Bot):
                 await interaction.response.send_message("⚠An unexpected error occurred.", ephemeral=True)
 
         self.tree.on_error = on_tree_error
-
         self.total_setup_time = time.time() - self.init_start_time
 
     async def signal_handler(self):
-        """Gracefully unload extensions and close the bot process.
-
-        Returns:
-            Any: Result produced by this function.
-        """
+        """Gracefully unload extensions and close the bot process."""
         print("\nBeacon: Bot shutdown requested...")
         extensions = list(self.extensions.keys())
         if self.default_diagnostics:
@@ -177,22 +201,14 @@ class Bot(commands.Bot):
         await self.close()
 
     async def restart_bot(self):
-        """Restart the running bot process after a graceful shutdown.
-
-        Returns:
-            Any: Result produced by this function.
-        """
+        """Restart the running bot process after a graceful shutdown."""
         print()
         print("Beacon: Restarting bot...")
         await self.signal_handler()
         os.execv(sys.executable, [sys.executable] + sys.argv)
 
     async def on_ready(self):
-        """Finalize startup presence and emit readiness diagnostics once connected.
-
-        Returns:
-            Any: Result produced by this function.
-        """
+        """Finalize startup presence and emit readiness diagnostics once connected."""
         start = time.time()
         if self.owner_id is None:
             app_info = await self.application_info()
@@ -203,7 +219,6 @@ class Bot(commands.Bot):
 
         owner_user = self.get_user(self.owner_id) or await self.fetch_user(self.owner_id)
         owner_user_name = owner_user.name
-
 
         if self._activity and self._status:
             try:
@@ -222,10 +237,10 @@ class Bot(commands.Bot):
                 logger.critical(f"Beacon: ERROR: Failed to set status: {e}")
 
         total_ready = time.time() - start
-
-
+        bot_version_line = f"Bot Version: {self.version}\n" if self.version else ""
         banner = ("\n"
                   f"---------------------------------------------------\n"
+                  f"{bot_version_line}"
                   f"Powered by Beacon v{framework_version}\n"
                   "\n"
                   f"Internal Initialization Time (setup hook + init of Bot class): {self.total_setup_time:.2f}s\n"
@@ -238,7 +253,5 @@ class Bot(commands.Bot):
                   "\n")
 
         print(banner)
-
         logger.info(banner)
-
         self.start_time = time.time()

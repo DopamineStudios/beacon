@@ -14,7 +14,7 @@ import discord
 bot = Bot(
     command_prefix="!",
     cogs_path="cogs",
-    log_path="data/logs.db",
+    version_file="VERSION.txt",
     default_diagnostics=True,
     status=discord.Status.online,
     activity=discord.Game(name="Example"),
@@ -39,11 +39,12 @@ bot.run("YOUR_TOKEN_HERE")
 | `global_cooldown_per`  |      `float`       |             `60.0`             |                        The length of the cooldown window in seconds.                         |
 |   `minimal_cacheing`   |       `bool`       |            `False`             |              Reduces memory usage by disabling useless caching of all members.               |
 |    `accent_colour`     |  `discord.Colour`  |   `discord.Color(0x944ae8)`    |             Accent colour used for the `/ping` embed and `/latency graph` graph.             |
-|     `abot_logger`      |  `logging.Logger`  | `logging.GetLogger("discord")` |                               The logger for the bot process.                                |
+|      `bot_logger`      |  `logging.Logger`  | `logging.GetLogger("discord")` |                               The logger for the bot process.                                |
+|     `version_file`     |        `str`       |             `None`             |               Optional path to a file containing the bot's deployment version.               |
 |   `*args / **kwargs`   |       `Any`        |               -                |        Supports all standard `discord.ext.commands.Bot` arguments (e.g., `intents`).         |
 
 ---
 
 ### Usage Notes
 
-* **IMPORTANT:** Do NOT define a `steup_hook` or `on_ready` function in your main.py. The framework already defines those. If you try to define your own, the bot may crash due to conficts.
+* **IMPORTANT:** Do NOT define a `setup_hook` or `on_ready` function in your main.py. The framework already defines those. If you try to define your own, the bot may crash due to conflicts.
