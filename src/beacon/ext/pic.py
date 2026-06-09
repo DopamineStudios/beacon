@@ -28,7 +28,19 @@ class Pic(commands.Cog):
         Returns:
             Any: Result produced by this function.
         """
-        view = OwnerDashboard(self.bot, interaction.user, ephemeral=ephemeral)
+        bot_in_guild = self.bot.get_guild(interaction.guild_id) is not None if interaction.guild_id else False
+
+        if not ephemeral:
+            is_external_guild = interaction.guild_id is not None and not bot_in_guild
+
+            is_own_dm = interaction.channel_id == interaction.user.dm_channel.id if interaction.user.dm_channel else False
+            is_external_dm = interaction.guild_id is None and not is_own_dm
+
+            dashboard_ephemeral = True if (is_external_guild or is_external_dm) else False
+        else:
+            dashboard_ephemeral = True
+
+        view = OwnerDashboard(self.bot, interaction.user, ephemeral=dashboard_ephemeral)
         await interaction.response.send_message(view=view, ephemeral=True if ephemeral else False)
 
 

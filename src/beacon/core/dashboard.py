@@ -139,7 +139,7 @@ class OwnerDashboard(PrivateLayoutView):
         sync_btn = discord.ui.Button(label="Sync Slash Global", style=discord.ButtonStyle.primary)
         sync_local_btn = discord.ui.Button(label="Sync Slash Guild", style=discord.ButtonStyle.primary)
         reload_btn = discord.ui.Button(label="Reload All Cogs", style=discord.ButtonStyle.primary)
-        upload_btn = discord.ui.Button(label="Upload Module", style=discord.ButtonStyle.success)
+        upload_btn = discord.ui.Button(label="Upload Cog", style=discord.ButtonStyle.success, disabled=True if self.ephemeral else False)
         shutdown_btn = discord.ui.Button(label="Shutdown", style=discord.ButtonStyle.danger)
         restart_btn = discord.ui.Button(label="Restart", style=discord.ButtonStyle.danger)
         log_btn = discord.ui.Button(label="Show Log", style=discord.ButtonStyle.secondary)
@@ -165,6 +165,7 @@ class OwnerDashboard(PrivateLayoutView):
         action_row.add_item(restart_btn)
 
         container.add_item(action_row)
+        container.add_item(discord.ui.TextDisplay("-# For Beacon's Upload Cog feature to function, please run the `/od` command in a server where your bot is present or in the bot's own DMs and not any other DM, with the ephemeral mode set to False."))
         self.add_item(container)
 
     def create_toggle_callback(self, ext_name, is_loaded):
@@ -237,7 +238,7 @@ class OwnerDashboard(PrivateLayoutView):
         total_pages = (len(cog_files) + self.items_per_page - 1) // self.items_per_page
         await interaction.response.send_modal(OwnerGoToPageModal(self, total_pages))
 
-    async def upload_module_callback(self, interaction: discord.Interaction):
+    async def upload_cog_callback(self, interaction: discord.Interaction):
         """Enable a timed upload window so the owner can send a cog file via Discord.
 
         Args:
