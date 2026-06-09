@@ -3,23 +3,29 @@ import discord
 import hashlib
 import json
 import os
+import asyncio
 from discord import app_commands
 
 logger = logging.getLogger("discord")
 
 
 class CommandRegistry:
-    """Tracks local app-command state and synchronizes it only when changed.
+    """Tracks local app-command state and synchronises it only when changed with rate-limiting protection.
 
     """
+
     def __init__(self, bot):
-        """Store bot context and initialize sync-state storage details.
+        """Store bot context and initialise sync-state storage details.
 
         Args:
             bot: Bot instance that owns this object or callback.
         """
         self.bot = bot
         self.state_path = os.path.join("core", "sync_state.json")
+
+        if not hasattr(bot, "_global_cmd_sync_lock"):
+            bot._global_cmd_sync_lock = asyncio.Lock()
+        self.sync_lock = bot._global_cmd_sync_lock
 
     def _get_local_signature(self, command):
         """Build a deterministic signature dict for a local command node.
@@ -126,7 +132,7 @@ class CommandRegistry:
             json.dump(data, f, indent=4)
 
     async def smart_sync(self, guild: discord.Guild = None):
-        """Sync commands only when the local tree hash differs from stored state.
+        """Sync commands only when the local tree hash differs from stored state, using backoff and lock mechanisms.
 
         Args:
             guild: Guild to scope the operation to; uses global scope when omitted.
@@ -134,27 +140,52 @@ class CommandRegistry:
         Returns:
             str: Human-readable sync status message.
         """
+        if self.sync_lock.locked():
+            return "Beacon: A command synchronisation is already in progress. Please wait for it to complete."
+
         scope_id = f"guild_{guild.id}" if guild else "global"
         scope_name = f"Guild({guild.id})" if guild else "Global"
 
         current_hash = self._generate_tree_hash(guild)
         stored_hash = self._get_stored_hash(scope_id)
 
-        if current_hash != stored_hash:
-            logger.info(f"Beacon: Detected  changes. Syncing {scope_name} commands...")
-            try:
-                await self.bot.tree.sync(guild=guild)
-                self._save_hash(scope_id, current_hash)
-                return f"Beacon: Detected changes, and completed command sync for {scope_name} successfully."
-            except Exception as e:
-                logger.error(f"Beacon: Sync failed: {e}")
-                return f"Beacon: Error syncing {scope_name}."
+        if current_hash == stored_hash:
+            logger.info(
+                f"Beacon: Compared stored local hash to current local hash. {scope_name} commands are up to date. Skipping sync API call.")
+            return f"Beacon: Compared stored local hash to current local hash. {scope_name} commands are up to date. Skipping sync API call."
 
-        logger.info(f"Beacon: Compared stored local hash to current local hash. {scope_name} commands are up to date. Skipping sync API call.")
-        return f"Beacon: Compared stored local hash to current local hash. {scope_name} commands are up to date. Skipping sync API call."
+        async with self.sync_lock:
+            logger.info(f"Beacon: Detected changes. Syncing {scope_name} commands...")
+            backoff = 2.0
+            max_backoff = 300.0
+
+            while True:
+                try:
+                    await self.bot.tree.sync(guild=guild)
+                    self._save_hash(scope_id, current_hash)
+                    return f"Beacon: Detected changes, and completed command sync for {scope_name} successfully."
+
+                except discord.HTTPException as e:
+                    if e.status == 429 or 500 <= e.status < 600:
+                        logger.warning(f"Beacon: Sync hit HTTP {e.status}. Retrying in {backoff} seconds...")
+                        await asyncio.sleep(backoff)
+
+                        if backoff >= max_backoff:
+                            logger.error(
+                                f"Beacon: Sync aborted. Maximum backoff time of 5 minutes reached for {scope_name}.")
+                            return f"Beacon: Error syncing {scope_name}. The Discord API did not accept requests after maximum backoff configurations."
+
+                        backoff = min(backoff * 2, max_backoff)
+                    else:
+                        logger.error(f"Beacon: Sync failed with unretriable error: {e}")
+                        return f"Beacon: Error syncing {scope_name}: HTTP status {e.status} encountered."
+
+                except Exception as e:
+                    logger.error(f"Beacon: Unexpected error during sync execution: {e}")
+                    return f"Beacon: Error syncing {scope_name}: {e}"
 
     async def force_sync(self, guild: discord.Guild = None):
-        """Force a command sync call regardless of hash comparison.
+        """Force a command sync call regardless of hash comparison, respecting the global lock.
 
         Args:
             guild: Guild to scope the operation to; uses global scope when omitted.
@@ -162,9 +193,16 @@ class CommandRegistry:
         Returns:
             str: Human-readable sync status message.
         """
+        if self.sync_lock.locked():
+            return "Beacon: A command synchronisation is already in progress. Please wait for it to complete."
+
         scope = f"Guild: {guild.name} ({guild.id})" if guild else "Global"
-        try:
-            await self.bot.tree.sync(guild=guild)
-            return f"Beacon: Synced slash commands to: {scope}."
-        except discord.HTTPException as e:
-            return f"Beacon: Rate limit or API error: {e}"
+
+        async with self.sync_lock:
+            try:
+                await self.bot.tree.sync(guild=guild)
+                scope_id = f"guild_{guild.id}" if guild else "global"
+                self._save_hash(scope_id, self._generate_tree_hash(guild))
+                return f"Beacon: Synced slash commands to: {scope}."
+            except discord.HTTPException as e:
+                return f"Beacon: Rate limit or API error: {e}"
