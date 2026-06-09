@@ -40,7 +40,7 @@ class Pic(commands.Cog):
         else:
             dashboard_ephemeral = True
 
-        view = OwnerDashboard(self.bot, interaction.user, ephemeral=dashboard_ephemeral)
+        view = OwnerDashboard(self.bot, interaction.user, ephemeral=dashboard_ephemeral, secure_mode=self.bot.secure_mode)
         await interaction.response.send_message(view=view, ephemeral=True if ephemeral else False)
 
 

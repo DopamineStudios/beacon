@@ -10,7 +10,6 @@ from PIL import Image, ImageDraw, ImageFont
 from collections import deque
 from .path import framework_version, BOLDFONT_PATH
 from ..core import beacon_commands
-import geocoder
 
 
 class Diagnostics(commands.Cog):
@@ -30,6 +29,7 @@ class Diagnostics(commands.Cog):
         self.process.cpu_percent(interval=None)
         self.current_cpu = 0.0
         self.cache_task.start()
+
 
     def cog_unload(self):
         """Stop background sampling when the cog is unloaded.
@@ -100,10 +100,13 @@ class Diagnostics(commands.Cog):
             Returns:
                 Any: Result produced by this function.
             """
-            g = geocoder.ip('me')
-            if g.ok:
-                return f"{g.country} ({g.city})" if g.city else g.country
-            return "Unknown Region"
+            if not self.bot.secure_mode:
+                import geocoder
+                g = geocoder.ip('me')
+                if g.ok:
+                    return f"{g.country} ({g.city})" if g.city else g.country
+                return "Unknown Region"
+            return None
 
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(None, fetch)
@@ -280,7 +283,10 @@ class Diagnostics(commands.Cog):
             0] if 'gateway-' in gateway_raw else "Global/Unknown"
         round_latency = round((end_time - start_time) * 1000)
         discord_latency = round(self.bot.latency * 1000)
-        location = await self.get_location()
+        location = None
+        if not self.bot.secure_mode:
+            location = await self.get_location()
+        location_line = f"> Bot Host Location: `{location}`\n\n" if location else ""
         try:
             start = time.perf_counter()
             await self.bot.http.request(discord.http.Route("GET", "/gateway"))
@@ -335,7 +341,7 @@ class Diagnostics(commands.Cog):
                 f"{bot_version_line}"
                 f"> Powered by Beacon `v{framework_version}`\n\n"
                 f"> Connected to Discord Gateway: `{gateway_node}`\n"
-                f"> Bot Host Location: `{location}`\n\n"
+                f"{location_line}"
                 f"> API Latency: `{connection_latency}ms`\n"
                 f"> Round-trip Latency: `{round_latency}ms`\n"
                 f"> Heartbeat/WebSocket Latency: `{discord_latency}ms`\n\n"

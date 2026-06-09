@@ -24,7 +24,9 @@ class Bot(commands.Bot):
                  global_cooldown_per: float = 60.0, minimal_cacheing: bool = False,
                  accent_colour: discord.Colour = discord.Colour(0x2C817C),
                  bot_logger: logging.Logger = logging.getLogger("discord"),
-                 version_file: str = None, *args, **kwargs):
+                 version_file: str = None,
+                 secure_mode: bool = False,
+                 *args, **kwargs):
         """Initialize the bot with framework defaults, cooldowns, and extension settings.
 
         Args:
@@ -39,6 +41,7 @@ class Bot(commands.Bot):
             accent_colour: The colour to be used for accents (and more) in the `/ping` embed, and the `/latency info` graph.
             bot_logger: The logger for the bot process.
             version_file: Optional path to a file containing the bot's deployment version.
+            secure_mode: Optional parameter to enable Beacon's secure mode. Strips down the /ping command to not show host location and not load in geocoder, and Owner Dashboard to only cog reloading and slash command syncing to prevent damage if owner account is hacked. Cog unloading & uploading, bot shutdown and restart, and the ability to view logs is disabled.
             *args: Additional positional arguments forwarded to the parent implementation.
             **kwargs: Additional keyword arguments forwarded to the underlying API.
         """
@@ -78,7 +81,7 @@ class Bot(commands.Bot):
         self.logger = bot_logger
 
         self.version = self._parse_version_file(version_file)
-
+        self.secure_mode = secure_mode
         self.start_time = None
         self.count = None
         self.total_setup_time = None

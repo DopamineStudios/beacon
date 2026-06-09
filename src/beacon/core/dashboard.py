@@ -56,7 +56,7 @@ class OwnerDashboard(PrivateLayoutView):
         "* **Step 3:** Click Enter!"
     )
 
-    def __init__(self, bot: 'commands.Bot', user: discord.User, page: int = 1, ephemeral: bool = False):
+    def __init__(self, bot: 'commands.Bot', user: discord.User, page: int = 1, ephemeral: bool = False, secure_mode: bool = False):
         """Initialize owner dashboard state and build the first layout.
 
         Args:
@@ -69,6 +69,7 @@ class OwnerDashboard(PrivateLayoutView):
         self.bot = bot
         self.page = page
         self.ephemeral = ephemeral
+        self.secure_mode = secure_mode
         self._upload_in_progress = False
         self.items_per_page = 5
         self.registry = CommandRegistry(bot)
@@ -99,7 +100,9 @@ class OwnerDashboard(PrivateLayoutView):
         current_page_cogs = cog_files[start_idx:end_idx]
 
         if not current_page_cogs:
-            container.add_item(discord.ui.TextDisplay("*No extensions found in /cogs.*"))
+            container.add_item(discord.ui.TextDisplay("*No extensions found in cogs folder.*"))
+        if self.secure_mode:
+            container.add_item(discord.ui.TextDisplay("*Secure mode is enabled, cog unloading is not allowed.*"))
         else:
             for idx, filename in enumerate(current_page_cogs, start_idx + 1):
                 ext_name = f"cogs.{filename[:-3]}"
@@ -155,17 +158,21 @@ class OwnerDashboard(PrivateLayoutView):
         action_row = discord.ui.ActionRow()
         action_row.add_item(sync_btn)
         action_row.add_item(sync_local_btn)
-        action_row.add_item(log_btn)
+        if not self.secure_mode:
+            action_row.add_item(log_btn)
         container.add_item(action_row)
 
         action_row = discord.ui.ActionRow()
-        action_row.add_item(upload_btn)
+        if not self.secure_mode:
+            action_row.add_item(upload_btn)
         action_row.add_item(reload_btn)
-        action_row.add_item(shutdown_btn)
-        action_row.add_item(restart_btn)
+        if not self.secure_mode:
+            action_row.add_item(shutdown_btn)
+            action_row.add_item(restart_btn)
 
         container.add_item(action_row)
-        container.add_item(discord.ui.TextDisplay("-# For Beacon's Upload Cog feature to function, please run the `/od` command in a server where your bot is present or in the bot's own DMs and not any other DM, with the ephemeral mode set to False."))
+        if not self.secure_mode:
+            container.add_item(discord.ui.TextDisplay("-# For Beacon's Upload Cog feature to function, please run the `/od` command in a server where your bot is present or in the bot's own DMs and not any other DM, with the ephemeral mode set to False."))
         self.add_item(container)
 
     def create_toggle_callback(self, ext_name, is_loaded):
