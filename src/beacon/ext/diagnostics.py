@@ -139,15 +139,13 @@ class Diagnostics(commands.Cog):
         draw = ImageDraw.Draw(img)
 
         try:
-            # Try loading your custom font
-            title_font = ImageFont.truetype(BOLDFONT_PATH, 18 * scale_factor)
+            title_font = ImageFont.truetype(BOLDFONT_PATH, 22 * scale_factor)
         except Exception as e:
-            # Fallback to a default system font if Bold.ttf is missing
             print(f"Beacon: Custom font not found at {BOLDFONT_PATH}. Using default.\n{e}")
             title_font = ImageFont.load_default()
 
         draw.text(
-            (50, 50),
+            (50, 60),
             "Average API Latency - Powered by Beacon",
             fill=(255, 255, 255, 255),
             font=title_font
@@ -330,9 +328,11 @@ class Diagnostics(commands.Cog):
             formatted_cpu_usage = "0"
         else:
             formatted_cpu_usage = f"{cpu_usage:.1f}"
+        bot_version_line = f"> Bot Version: {self.bot.version}\n" if self.bot.version else ""
         embed = discord.Embed(
             title="Pong!",
             description=(
+                f"{bot_version_line}"
                 f"> Powered by Beacon `v{framework_version}`\n\n"
                 f"> Connected to Discord Gateway: `{gateway_node}`\n"
                 f"> Bot Host Location: `{location}`\n\n"
