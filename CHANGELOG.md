@@ -1,3 +1,24 @@
+## [v3.2.0](https://github.com/DopamineStudios/beacon/compare/vv3.1.0...vv3.2.0) (2026-06-10)
+### Features & Minor Updates and Changes
+
+* Implemented optional parameter to enable Beacon's secure mode. False by default. Strips down the /ping command to not show host location and not load in geocoder, and Owner Dashboard to only cog reloading and slash command syncing to prevent damage if owner account is hacked. Cog unloading & uploading, bot shutdown and restart, and the ability to view logs is disabled. ([cc382c1](https://github.com/DopamineStudios/beacon/commit/cc382c19be4f345de29574c7bce6ceba9411c39c))
+* Implemented the new bot version into `/ping` embed. ([719c828](https://github.com/DopamineStudios/beacon/commit/719c828f2b9d51e6eaaeb3ac7f094719ffce9c78))
+* New "bot version" feature. Shows your bot's version in startup banner and in `/ping` command's embed. ([71b0433](https://github.com/DopamineStudios/beacon/commit/71b0433846edebac4abcedf1786d5d38bd970690))
+* New feature to detect if the battery is idling/bypass charging to avoid showing the misleading "discharging" text. ([2efec5c](https://github.com/DopamineStudios/beacon/commit/2efec5ca9c00dde932ebf8f79d1a9c85df1ba9c1))
+
+### Bug Fixes
+
+* Both sync buttons in owner dashboard now send the response message first instead of deferring response, and then later edit it, so that the bot owner isn't left hanging and confused. ([49d8e63](https://github.com/DopamineStudios/beacon/commit/49d8e63a5a0d0edcbd67adc8c1dc8729f8b2dd57))
+* Current page number is now shown as default value in the go to page modal for owner dashboard. ([ace6380](https://github.com/DopamineStudios/beacon/commit/ace6380850b1c16e59de9df102dff16aa4948a5e))
+* Fixed upload cog button behaviour. Renamed it from Upload Module to Upload Cog for consistency, and the button now stays disabled if the command is either run in a server where the bot is not present or in any DM other than the bot's own DMs because the framework can't see the uploaded file in those contexts. ([daa0a88](https://github.com/DopamineStudios/beacon/commit/daa0a8842a0963dd1c9563c4ada633c16aa13b26))
+* Implemented sync lock and exponential backoff ([7538eac](https://github.com/DopamineStudios/beacon/commit/7538eac7060ac020763857095bfd847833a06026))
+* Simplified error messages, fixed code where it was using print() statements to log instead of using the logger. ([17ecbbb](https://github.com/DopamineStudios/beacon/commit/17ecbbbfccde9cc7b1ad3c779492593f83114186))
+
+### Documentation Changes
+
+* Fixed documentation. ([3bf2684](https://github.com/DopamineStudios/beacon/commit/3bf26841e56a1a49a022d033c9523376957db57c))
+* Updated README. ([1b35a26](https://github.com/DopamineStudios/beacon/commit/1b35a268b9ff2e65a00c7ba5af0dd68e776c0bcd))
+
 ## [v3.1.0](https://github.com/DopamineStudios/beacon/compare/vv3.0.1...vv3.1.0) (2026-05-26)
 ### Features & Minor Updates and Changes
 
