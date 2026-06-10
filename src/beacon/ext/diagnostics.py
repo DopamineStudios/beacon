@@ -408,7 +408,7 @@ class Diagnostics(commands.Cog):
             formatted_cpu_usage = "0"
         else:
             formatted_cpu_usage = f"{cpu_usage:.1f}"
-        bot_version_line = f"> Bot Version: {self.bot.version}\n" if self.bot.version else ""
+        bot_version_line = f"> Bot Version: `{self.bot.version}`\n" if self.bot.version else ""
         embed = discord.Embed(
             title="Pong!",
             description=(
