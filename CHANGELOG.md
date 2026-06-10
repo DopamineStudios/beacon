@@ -1,3 +1,8 @@
+## [v3.2.4](https://github.com/DopamineStudios/beacon/compare/vv3.2.3...vv3.2.4) (2026-06-10)
+### Bug Fixes
+
+* Fixed line breaks in `/ping` embed when secure mode is on (again) ([902e4ad](https://github.com/DopamineStudios/beacon/commit/902e4ad88f8d0edb6182162130b33dbd44f85d10))
+
 ## [v3.2.3](https://github.com/DopamineStudios/beacon/compare/vv3.2.2...vv3.2.3) (2026-06-10)
 ### Bug Fixes
 
