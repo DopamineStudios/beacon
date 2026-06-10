@@ -201,7 +201,7 @@ class Diagnostics(commands.Cog):
         draw = ImageDraw.Draw(img)
 
         try:
-            title_font = ImageFont.truetype(BOLDFONT_PATH, 22 * scale_factor)
+            title_font = ImageFont.truetype(BOLDFONT_PATH, 24 * scale_factor)
         except Exception as e:
             self.bot.logger.error(f"Beacon: Custom font not found at {BOLDFONT_PATH}. Using default.\n{e}")
             title_font = ImageFont.load_default()
