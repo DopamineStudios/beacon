@@ -30,6 +30,14 @@ class Diagnostics(commands.Cog):
         self.current_cpu = 0.0
         self.cache_task.start()
 
+        self.battery_cache = []
+        self.battery_interval_mins = 10
+        self.battery_duration_mins = 60
+        self.battery_max_mins = 240
+        self.battery_increment_mins = 20
+        self.is_battery_idling = False
+        self.battery_task.start()
+
 
     def cog_unload(self):
         """Stop background sampling when the cog is unloaded.
@@ -38,6 +46,7 @@ class Diagnostics(commands.Cog):
             Any: Result produced by this function.
         """
         self.cache_task.cancel()
+        self.battery_task.cancel()
 
     @tasks.loop(seconds=5.0)
     async def cache_task(self):
@@ -87,6 +96,56 @@ class Diagnostics(commands.Cog):
         """
         await self.bot.wait_until_ready()
         await asyncio.sleep(10)
+
+    @tasks.loop(minutes=10.0)
+    async def battery_task(self):
+        """Periodically sample host battery metrics to detect bypass charging or idling status.
+
+        Returns:
+            Any: Result produced by this function.
+        """
+        if not self.bot.is_ready():
+            return
+
+        try:
+            battery = psutil.sensors_battery()
+            if not battery:
+                return
+
+            percent = battery.percent
+            charging = battery.power_plugged
+            status_str = "(Charging)" if charging else "(Discharging)"
+            current_state = f"{percent}% {status_str}"
+
+            if self.battery_cache and current_state != self.battery_cache[-1]:
+                self.is_battery_idling = False
+                self.battery_cache.clear()
+                if self.battery_duration_mins < self.battery_max_mins:
+                    self.battery_duration_mins = min(
+                        self.battery_max_mins,
+                        self.battery_duration_mins + self.battery_increment_mins
+                    )
+
+            self.battery_cache.append(current_state)
+
+            required_samples = self.battery_duration_mins // self.battery_interval_mins
+            while len(self.battery_cache) > required_samples:
+                self.battery_cache.pop(0)
+
+            if len(self.battery_cache) >= required_samples and len(set(self.battery_cache)) == 1:
+                self.is_battery_idling = True
+
+        except Exception as e:
+            print(f"Beacon: Error in battery diagnostics task: {e}")
+
+    @battery_task.before_loop
+    async def before_battery_task(self):
+        """Wait for readiness before starting periodic battery diagnostics sampling.
+
+        Returns:
+            Any: Result produced by this function.
+        """
+        await self.bot.wait_until_ready()
 
     async def get_location(self):
         """Resolve host geolocation information from the current public IP.
@@ -323,7 +382,22 @@ class Diagnostics(commands.Cog):
             if battery:
                 percent = battery.percent
                 charging = battery.power_plugged
-                battery_status = f"> Host Device Battery Status: `{percent}% {'(Charging)' if charging else ''}`"
+                status_str = "(Charging)" if charging else "(Discharging)"
+                current_state = f"{percent}% {status_str}"
+
+                if self.battery_cache and current_state != self.battery_cache[-1]:
+                    self.is_battery_idling = False
+                    self.battery_cache.clear()
+                    if self.battery_duration_mins < self.battery_max_mins:
+                        self.battery_duration_mins = min(
+                            self.battery_max_mins,
+                            self.battery_duration_mins + self.battery_increment_mins
+                        )
+
+                if self.is_battery_idling:
+                    battery_status = f"> Host Device Battery Status: `{percent}% (Idling/Bypass Charging)`"
+                else:
+                    battery_status = f"> Host Device Battery Status: `{percent}% {status_str}`"
             else:
                 battery_status = ""
         except Exception:
