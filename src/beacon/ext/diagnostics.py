@@ -73,7 +73,7 @@ class Diagnostics(commands.Cog):
             except asyncio.TimeoutError:
                 total_latency = None
             except Exception as e:
-                print(f"Beacon: Error: {e}")
+                self.bot.logger.error(f"Beacon: {e}")
                 total_latency = None
 
             if isinstance(total_latency, (int, float)):
@@ -85,7 +85,7 @@ class Diagnostics(commands.Cog):
                 self.temp_samples.clear()
 
         except Exception as e:
-            print(f"Beacon: CRITICAL ERROR in cache task: {e}")
+            self.bot.logger.critical(f"Beacon: {e}")
 
     @cache_task.before_loop
     async def before_cache_task(self):
@@ -136,7 +136,7 @@ class Diagnostics(commands.Cog):
                 self.is_battery_idling = True
 
         except Exception as e:
-            print(f"Beacon: Error in battery diagnostics task: {e}")
+            self.bot.logger.error(f"Beacon: {e}")
 
     @battery_task.before_loop
     async def before_battery_task(self):
@@ -203,7 +203,7 @@ class Diagnostics(commands.Cog):
         try:
             title_font = ImageFont.truetype(BOLDFONT_PATH, 22 * scale_factor)
         except Exception as e:
-            print(f"Beacon: Custom font not found at {BOLDFONT_PATH}. Using default.\n{e}")
+            self.bot.logger.error(f"Beacon: Custom font not found at {BOLDFONT_PATH}. Using default.\n{e}")
             title_font = ImageFont.load_default()
 
         draw.text(

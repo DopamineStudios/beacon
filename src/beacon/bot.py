@@ -133,24 +133,23 @@ class Bot(commands.Bot):
 
         if os.path.exists(self.cogs_path):
             base_module = self.cogs_path.replace(os.path.sep, ".").strip(".")
-            print()
             for filename in os.listdir(self.cogs_path):
                 if filename.endswith(".py") and not filename.startswith("__"):
                     extension = f"{base_module}.{filename[:-3]}"
                     try:
                         await self.load_extension(extension)
-                        print(f"> Beacon: Loaded {extension} Successfully")
+                        logger.info(f"> Beacon: Loaded {extension} Successfully")
                         count += 1
                     except Exception as e:
-                        print(f"Beacon: ERROR: Failed to load {extension}: {e}")
+                        logger.error(f"Beacon: Failed to load {extension}: {e}")
             self.count = count
         else:
-            print(f"Beacon: WARNING: '{self.cogs_path}' directory not found.")
+            logger.warning(f"Beacon: '{self.cogs_path}' directory not found.")
         if self.default_diagnostics:
             await self.load_extension("beacon.ext.diagnostics")
         await self.load_extension("beacon.ext.pic")
         status = await self.registry.smart_sync()
-        print(status)
+        logger.info(status)
 
         for s in (signal.SIGINT, signal.SIGTERM):
             self.loop.add_signal_handler(
@@ -185,28 +184,27 @@ class Bot(commands.Bot):
 
     async def signal_handler(self):
         """Gracefully unload extensions and close the bot process."""
-        print("\nBeacon: Bot shutdown requested...")
+        logger.info("Beacon: Bot shutdown requested...")
         extensions = list(self.extensions.keys())
         if self.default_diagnostics:
             await self.unload_extension("beacon.ext.diagnostics")
         await self.unload_extension("beacon.ext.pic")
         internal_extensions = ("beacon.ext.diagnostics", "beacon.ext.pic")
-        print()
         for extension in extensions:
             if extension not in internal_extensions:
                 try:
                     await self.unload_extension(extension)
-                    print(f"> Beacon: Unloaded {extension} successfully")
+                    logger.info(f"> Beacon: Unloaded {extension} successfully")
                 except Exception as e:
-                    print(f"Beacon: Error unloading {extension}: {e}")
+                    logger.error(f"Beacon: Error unloading {extension}: {e}")
 
         print("👋 Goodbye!")
+        logger.info("👋 Goodbye!")
         await self.close()
 
     async def restart_bot(self):
         """Restart the running bot process after a graceful shutdown."""
-        print()
-        print("Beacon: Restarting bot...")
+        logger.info("Beacon: Restarting bot...")
         await self.signal_handler()
         os.execv(sys.executable, [sys.executable] + sys.argv)
 
@@ -227,17 +225,17 @@ class Bot(commands.Bot):
             try:
                 await self.change_presence(activity=self._activity, status=self._status)
             except Exception as e:
-                logger.critical(f"Beacon: ERROR: Failed to set activity or status: {e}")
+                logger.error(f"Beacon: ERROR: Failed to set activity or status: {e}")
         elif self._activity:
             try:
                 await self.change_presence(activity=self._activity)
             except Exception as e:
-                logger.critical(f"Beacon: ERROR: Failed to set activity: {e}")
+                logger.error(f"Beacon: ERROR: Failed to set activity: {e}")
         elif self._status:
             try:
                 await self.change_presence(status=self._status)
             except Exception as e:
-                logger.critical(f"Beacon: ERROR: Failed to set status: {e}")
+                logger.error(f"Beacon: ERROR: Failed to set status: {e}")
 
         total_ready = time.time() - start
         bot_version_line = f"Bot Version: {self.version}\n" if self.version else ""
