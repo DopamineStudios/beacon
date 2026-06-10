@@ -1,3 +1,12 @@
+## [v3.2.1](https://github.com/DopamineStudios/beacon/compare/vv3.2.0...vv3.2.1) (2026-06-10)
+### Bug Fixes
+
+* Added line break to goodbye statement so that there's a gap between each bot session and logs are easier to read. ([e559a15](https://github.com/DopamineStudios/beacon/commit/e559a153531d779af9b18abc25f7d8771f210669))
+* Fixed bot version not being inside code block. ([4117ab6](https://github.com/DopamineStudios/beacon/commit/4117ab6afb99f75c4da742bf5e3927619c70a677))
+* Fixed latency graph header text size to perfectly fit into the image. ([b807051](https://github.com/DopamineStudios/beacon/commit/b807051020044f57377c7920a6e09e8540f58625))
+* Fixed name of callback function in Owner Dashboard. ([ea0aa0e](https://github.com/DopamineStudios/beacon/commit/ea0aa0e3f52797a59b2be8d494c3976f8ce115bb))
+* Updated latency graph background to perfectly match Discord dark theme background ([93e3d78](https://github.com/DopamineStudios/beacon/commit/93e3d78c2c664e357f35530c314c0ab6cefc27be))
+
 ## [v3.2.0](https://github.com/DopamineStudios/beacon/compare/vv3.1.0...vv3.2.0) (2026-06-10)
 ### Features & Minor Updates and Changes
 
