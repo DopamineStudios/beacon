@@ -345,7 +345,7 @@ class Diagnostics(commands.Cog):
         location = None
         if not self.bot.secure_mode:
             location = await self.get_location()
-        location_line = f"> Bot Host Location: `{location}`\n\n" if location else "\n\n"
+        location_line = f"> Bot Host Location: `{location}`\n\n" if location else "\n"
         try:
             start = time.perf_counter()
             await self.bot.http.request(discord.http.Route("GET", "/gateway"))
