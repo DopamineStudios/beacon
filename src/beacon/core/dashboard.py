@@ -171,7 +171,7 @@ class OwnerDashboard(PrivateLayoutView):
             action_row.add_item(restart_btn)
 
         container.add_item(action_row)
-        if not self.secure_mode:
+        if not self.secure_mode and self.ephemeral:
             container.add_item(discord.ui.TextDisplay("-# For Beacon's Upload Cog feature to function, please run the `/od` command in a server where your bot is present or in the bot's own DMs and not any other DM, with the ephemeral mode set to False."))
         self.add_item(container)
 
