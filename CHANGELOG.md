@@ -1,3 +1,8 @@
+## [v3.2.2](https://github.com/DopamineStudios/beacon/compare/vv3.2.1...vv3.2.2) (2026-06-10)
+### Bug Fixes
+
+* Fixed latency graph header text positioning. ([5a6b6c8](https://github.com/DopamineStudios/beacon/commit/5a6b6c898981983e0cfbc7ea64442ef215897ff9))
+
 ## [v3.2.1](https://github.com/DopamineStudios/beacon/compare/vv3.2.0...vv3.2.1) (2026-06-10)
 ### Bug Fixes
 
