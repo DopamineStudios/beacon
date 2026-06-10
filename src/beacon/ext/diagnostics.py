@@ -197,7 +197,7 @@ class Diagnostics(commands.Cog):
         width, height = 600 * scale_factor, 300 * scale_factor
         pad_top, pad_bot, pad_left, pad_right = 175, 80, 100, 40
 
-        img = Image.new("RGBA", (width, height), color=(30, 31, 34, 255))
+        img = Image.new("RGBA", (width, height), color=(26, 26, 30, 255))
         draw = ImageDraw.Draw(img)
 
         try:
