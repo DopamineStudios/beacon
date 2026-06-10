@@ -207,7 +207,7 @@ class Diagnostics(commands.Cog):
             title_font = ImageFont.load_default()
 
         draw.text(
-            (55, 60),
+            (57, 60),
             "Average API Latency - Powered by Beacon",
             fill=(255, 255, 255, 255),
             font=title_font
