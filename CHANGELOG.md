@@ -1,3 +1,8 @@
+## [v3.2.5](https://github.com/DopamineStudios/beacon/compare/vv3.2.4...vv3.2.5) (2026-06-10)
+### Bug Fixes
+
+* Fixed the info line for limitations of upload cog function always being displayed. ([0c3eae7](https://github.com/DopamineStudios/beacon/commit/0c3eae718675327c41e34edff2362d5eecb21c82))
+
 ## [v3.2.4](https://github.com/DopamineStudios/beacon/compare/vv3.2.3...vv3.2.4) (2026-06-10)
 ### Bug Fixes
 
