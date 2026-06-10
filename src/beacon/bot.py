@@ -199,7 +199,7 @@ class Bot(commands.Bot):
                     logger.error(f"Beacon: Error unloading {extension}: {e}")
 
         print("👋 Goodbye!")
-        logger.info("👋 Goodbye!")
+        logger.info("👋 Goodbye!\n")
         await self.close()
 
     async def restart_bot(self):
