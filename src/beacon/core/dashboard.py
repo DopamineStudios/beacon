@@ -150,7 +150,7 @@ class OwnerDashboard(PrivateLayoutView):
         sync_btn.callback = self.sync_callback
         sync_local_btn.callback = self.sync_local_callback
         reload_btn.callback = self.reload_all_callback
-        upload_btn.callback = self.upload_module_callback
+        upload_btn.callback = self.upload_cog_callback
         shutdown_btn.callback = self.shutdown_callback
         restart_btn.callback = self.restart_callback
         log_btn.callback = self.show_log_callback
