@@ -1,3 +1,9 @@
+## [v3.2.3](https://github.com/DopamineStudios/beacon/compare/vv3.2.2...vv3.2.3) (2026-06-10)
+### Bug Fixes
+
+* Fixed latency graph header text size. ([c54345a](https://github.com/DopamineStudios/beacon/commit/c54345a6d68d4972c9433196f7babe9e443f8c64))
+* Fixed line breaks in `/ping` embed when secure mode is on. ([ab546a0](https://github.com/DopamineStudios/beacon/commit/ab546a0cf4f3bfb1fd5d0cc9e8a09976334ef3dd))
+
 ## [v3.2.2](https://github.com/DopamineStudios/beacon/compare/vv3.2.1...vv3.2.2) (2026-06-10)
 ### Bug Fixes
 
