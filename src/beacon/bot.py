@@ -149,7 +149,6 @@ class Bot(commands.Bot):
             await self.load_extension("beacon.ext.diagnostics")
         await self.load_extension("beacon.ext.pic")
         status = await self.registry.smart_sync()
-        logger.info(status)
 
         for s in (signal.SIGINT, signal.SIGTERM):
             self.loop.add_signal_handler(
