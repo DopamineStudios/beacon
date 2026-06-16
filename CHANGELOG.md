@@ -1,3 +1,10 @@
+## [v3.2.6](https://github.com/DopamineStudios/beacon/compare/vv3.2.5...vv3.2.6) (2026-06-16)
+### Bug Fixes
+
+* Fixed the crash caused by improper syntax for editing message after sync is done. ([3456682](https://github.com/DopamineStudios/beacon/commit/345668296011721eb12732214acfde32dbca9b73))
+* Moved sync state json file path from project folder to package's own directory to avoid cluttering the project directory. ([82eaa0b](https://github.com/DopamineStudios/beacon/commit/82eaa0b0c63a505709e6f311f13e069ac72a7b08))
+* Removed logger.info(...) line from bot.py to fix double logging when performing automatic smart sync on startup. ([b75a14e](https://github.com/DopamineStudios/beacon/commit/b75a14e4ea4d8375ad10e5335a20ec12cf2acf5a))
+
 ## [v3.2.5](https://github.com/DopamineStudios/beacon/compare/vv3.2.4...vv3.2.5) (2026-06-10)
 ### Bug Fixes
 
