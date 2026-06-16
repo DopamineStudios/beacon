@@ -21,7 +21,8 @@ class CommandRegistry:
             bot: Bot instance that owns this object or callback.
         """
         self.bot = bot
-        self.state_path = os.path.join("core", "sync_state.json")
+        package_dir = os.path.dirname(os.path.abspath(__file__))
+        self.state_path = os.path.join(package_dir, "sync_state.json")
 
         if not hasattr(bot, "_global_cmd_sync_lock"):
             bot._global_cmd_sync_lock = asyncio.Lock()
