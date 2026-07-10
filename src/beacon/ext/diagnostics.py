@@ -329,7 +329,7 @@ class Diagnostics(commands.Cog):
         )
 
         if self.latency_cache:
-            avg_latency = f"{round(sum(self.latency_cache) / len(self.latency_cache), 2)}ms"
+            avg_latency = f"{round(sum(self.latency_cache) / len(self.latency_cache))}ms"
             sample_count = len(self.latency_cache)
         else:
             avg_latency = "Calculating..."
@@ -419,7 +419,7 @@ class Diagnostics(commands.Cog):
                 f"> API Latency: `{connection_latency}ms`\n"
                 f"> Round-trip Latency: `{round_latency}ms`\n"
                 f"> Heartbeat/WebSocket Latency: `{discord_latency}ms`\n\n"
-                f"> Average API Latency: `{avg_latency}` (over `{sample_count}` samples where each sample is average of 12 samples)\n\n"
+                f"> Average API Latency: `{avg_latency}`\n\n"
                 f"> Connection Uptime: `{uptime_formatted}`\n"
                 f"> Process Uptime: `{proc_uptime}`\n\n"
                 f"> CPU Usage: `{formatted_cpu_usage}%`\n"
