@@ -364,7 +364,10 @@ class OwnerDashboard(PrivateLayoutView):
         """
         await interaction.response.send_message("Beacon: Syncing Slash commands. Please wait. This may take a while if you already synced recently due to Discord rate-limiting the bot.", ephemeral=True)
         response = await self.registry.smart_sync(guild=None)
-        await interaction.edit_original_response(response)
+        try:
+            await interaction.edit_original_response(content=response)
+        except discord.Forbidden or discord.NotFound:
+            pass
 
     async def sync_local_callback(self, interaction: discord.Interaction):
         """Run guild-scoped smart sync for the current server.
@@ -377,7 +380,10 @@ class OwnerDashboard(PrivateLayoutView):
         """
         await interaction.response.send_message("Beacon: Syncing Slash commands. Please wait. This may take a while if you already synced recently due to Discord rate-limiting the bot.", ephemeral=True)
         response = await self.registry.smart_sync(guild=interaction.guild)
-        await interaction.edit_original_response(response)
+        try:
+            await interaction.edit_original_response(content=response)
+        except discord.Forbidden or discord.NotFound:
+            pass
 
 
     async def shutdown_callback(self, interaction: discord.Interaction):
