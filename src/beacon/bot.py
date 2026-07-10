@@ -45,7 +45,7 @@ class Bot(commands.Bot):
             *args: Additional positional arguments forwarded to the parent implementation.
             **kwargs: Additional keyword arguments forwarded to the underlying API.
         """
-        self.init_start_time = time.time()
+        self.process_start_time = time.time()
         command_prefix = kwargs.pop("command_prefix", "!")
 
         cache_flags = (
@@ -64,7 +64,6 @@ class Bot(commands.Bot):
         )
         self.cogs_path = cogs_path
         self.log_path = log_path
-        self.process_start_time = time.time()
         self.default_diagnostics = default_diagnostics
         self._status = status
         self._activity = activity
@@ -84,7 +83,7 @@ class Bot(commands.Bot):
         self.secure_mode = secure_mode
         self.start_time = None
         self.count = None
-        self.total_setup_time = None
+        self.cog_load_time = None
 
     def _parse_version_file(self, path: str) -> str:
         """Helper method to dynamically parse the version file and normalise its format."""
@@ -133,6 +132,7 @@ class Bot(commands.Bot):
 
         if os.path.exists(self.cogs_path):
             base_module = self.cogs_path.replace(os.path.sep, ".").strip(".")
+            start = time.time()
             for filename in os.listdir(self.cogs_path):
                 if filename.endswith(".py") and not filename.startswith("__"):
                     extension = f"{base_module}.{filename[:-3]}"
@@ -142,6 +142,7 @@ class Bot(commands.Bot):
                         count += 1
                     except Exception as e:
                         logger.error(f"Beacon: Failed to load {extension}: {e}")
+            self.cog_load_time = time.time() - start
             self.count = count
         else:
             logger.warning(f"Beacon: '{self.cogs_path}' directory not found.")
@@ -179,7 +180,6 @@ class Bot(commands.Bot):
                 await interaction.response.send_message("⚠An unexpected error occurred.", ephemeral=True)
 
         self.tree.on_error = on_tree_error
-        self.total_setup_time = time.time() - self.init_start_time
 
     async def signal_handler(self):
         """Gracefully unload extensions and close the bot process."""
@@ -209,7 +209,6 @@ class Bot(commands.Bot):
 
     async def on_ready(self):
         """Finalize startup presence and emit readiness diagnostics once connected."""
-        start = time.time()
         if self.owner_id is None:
             app_info = await self.application_info()
             if app_info.team:
@@ -237,15 +236,15 @@ class Bot(commands.Bot):
                 logger.error(f"Beacon: ERROR: Failed to set status: {e}")
         if not self.owner_ids and self.application and self.application.team:
             self.owner_ids = {m.id for m in self.application.team.members}
-        total_ready = time.time() - start
+        total_startup_time = time.time() - self.process_start_time
         bot_version_line = f"Bot Version: {self.version}\n" if self.version else ""
         banner = ("\n"
                   f"---------------------------------------------------\n"
                   f"{bot_version_line}"
                   f"Powered by Beacon v{framework_version}\n"
                   "\n"
-                  f"Internal Initialization Time (setup hook + init of Bot class): {self.total_setup_time:.2f}s\n"
-                  f"Time taken by on_ready: {total_ready:.2f}s\n"
+                  f"Total Startup Time: {total_startup_time:.2f}s\n"
+                  f"Total Cogs Loading Time: {self.cog_load_time:.2f}s\n"
                   f"Total Cogs Loaded: {self.count}\n"
                   "\n"
                   f"Bot ready: {self.user} (ID: {self.user.id})\n"
