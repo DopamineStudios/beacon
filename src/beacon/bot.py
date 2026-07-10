@@ -88,7 +88,7 @@ class Bot(commands.Bot):
     def _parse_version_file(self, path: str) -> str:
         """Helper method to dynamically parse the version file and normalise its format."""
         if not path or not os.path.exists(path):
-            return "v0.0.0"
+            return None
 
         try:
             with open(path, "r", encoding="utf-8") as f:
