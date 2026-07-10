@@ -235,7 +235,8 @@ class Bot(commands.Bot):
                 await self.change_presence(status=self._status)
             except Exception as e:
                 logger.error(f"Beacon: ERROR: Failed to set status: {e}")
-
+        if not self.owner_ids and self.application and self.application.team:
+            self.owner_ids = {m.id for m in self.application.team.members}
         total_ready = time.time() - start
         bot_version_line = f"Bot Version: {self.version}\n" if self.version else ""
         banner = ("\n"
