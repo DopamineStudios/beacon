@@ -59,8 +59,7 @@ from beacon import beacon_commands
 
 @beacon_commands.command(
     name="ban",
-    permissions_preset="moderator",
-    global_cooldown=True
+    permissions_preset="moderator"
 )
 async def ban_member(interaction: discord.Interaction, member: discord.Member):
     await member.ban()
@@ -140,13 +139,13 @@ To initialize a bot using the Beacon, follow the following example:
 
 ```python
 import discord
-from beacon import Bot
+from beacon import BeaconBot # or import and use BeaconAutoShardedBot so that your bot will automatically handle sharding as it grows
 
-bot = Bot(command_prefix="?", cogs_path="your cogs/modules folder path here*", logging_path="path to .sqlite, .db, or .db3 file; only define if you want to use this logging backend.", default_diagnostics=True, intents=discord.Intents.default()) # If no cogs folder is defined, it will default to "cogs". If no logging path, logging will be disabled.
+bot = BeaconBot(command_prefix="?", cogs_path="your cogs/modules folder path here*", logging_path="path to .sqlite, .db, or .db3 file; only define if you want to use this logging backend.", default_diagnostics=True, intents=discord.Intents.default()) # If no cogs folder is defined, it will default to "cogs". If no logging path, logging will be disabled.
 
 bot.run("YOUR_BOT_TOKEN_HERE")
 ```
-<sub>*Note: All .py files will be attempted to be loaded in the folder. It's recommended to only use the defined path for cogs/extensions/modules.</sub>
+<sub>*Note: It's recommended to put all your cogs or modules into the path you define for it. All .py files will be attempted to be loaded in the folder. However, if it can't be loaded for whatever reason, the bot will not crash and simply give a warning and continue, which is helpful if you don't want to create a second folder for non-cog files or load a cog manually. This is what makes Beacon an unopinionated framework.</sub>
 
 ---
 
