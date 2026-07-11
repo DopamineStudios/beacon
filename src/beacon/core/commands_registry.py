@@ -7,9 +7,9 @@ import asyncio
 from discord import app_commands
 
 logger = logging.getLogger("discord")
-GREY = "\033[90m"
-CYAN = "\033[96m"
-RESET = "\033[0m"
+GREY = ""
+CYAN = ""
+RESET = ""
 
 class CommandRegistry:
     """Tracks local app-command state and synchronises it only when changed with rate-limiting protection.

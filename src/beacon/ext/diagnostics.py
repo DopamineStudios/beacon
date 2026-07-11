@@ -14,9 +14,9 @@ from collections import deque
 from .path import framework_version, BOLDFONT_PATH
 from ..core import beacon_commands
 
-GREY = "\033[90m"
-CYAN = "\033[96m"
-RESET = "\033[0m"
+GREY = ""
+CYAN = ""
+RESET = ""
 
 
 class Diagnostics(commands.Cog):

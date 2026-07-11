@@ -18,10 +18,10 @@ from pathlib import Path
 
 logger = logging.getLogger("discord")
 
-GREY = "\033[90m"
-CYAN = "\033[96m"
-MAGENTA = "\033[95m"
-RESET = "\033[0m"
+GREY = ""
+CYAN = ""
+MAGENTA = ""
+RESET = ""
 
 class BeaconFrameworkBotMixin:
     """A mixin providing Beacon Framework features, ensuring compatibility with both
@@ -282,18 +282,21 @@ class BeaconFrameworkBotMixin:
                 # pyrefly: ignore [missing-attribute]
                 await self.change_presence(activity=self._activity, status=self._status)
             except Exception as e:
+                # pyrefly: ignore [unbound-name]
                 logger.error(f"{GREY}[{self.instance_id}]{CYAN} Beacon{RESET}: ERROR: Failed to set activity or status: {e}")
         elif self._activity:
             try:
                 # pyrefly: ignore [missing-attribute]
                 await self.change_presence(activity=self._activity)
             except Exception as e:
+                # pyrefly: ignore [unbound-name]
                 logger.error(f"{GREY}[{self.instance_id}]{CYAN} Beacon{RESET}: ERROR: Failed to set activity: {e}")
         elif self._status:
             try:
                 # pyrefly: ignore [missing-attribute]
                 await self.change_presence(status=self._status)
             except Exception as e:
+                # pyrefly: ignore [unbound-name]
                 logger.error(f"{GREY}[{self.instance_id}]{CYAN} Beacon{RESET}: ERROR: Failed to set status: {e}")
         owner_user_name = None
         # pyrefly: ignore [missing-attribute]
@@ -319,6 +322,27 @@ class BeaconFrameworkBotMixin:
             bot_version_line = f"Bot Version: {self.version}\n" if self.version else ""
             banner = ("\n"
                       f"---------------------------------------------------\n"
+                      # pyrefly: ignore [unbound-name]
+                      f"{CYAN}Beacon{RESET} Instance ID: {self.instance_id}\n"
+                      f"{bot_version_line}"
+                      # pyrefly: ignore [unbound-name]
+                      f"Powered by {CYAN}Beacon Framework{RESET} v{framework_version} by {MAGENTA}Dopamine Studios{RESET}\n"
+                      "\n"
+                      f"Total Startup Time: {total_startup_time:.2f}s\n"
+                      f"Total Cogs Loading Time: {self.cog_load_time:.2f}s\n"
+                      f"Total Cogs Loaded: {self.count}\n"
+                      "\n"
+                      # pyrefly: ignore [missing-attribute]
+                      f"Bot ready: {self.user} (ID: {self.user.id})\n"
+                      f"Bot Owner(s) identified: {owner_user_name}\n"
+                      f"---------------------------------------------------"
+                      "\n")
+            logger.info(banner)
+            CYAN = "\033[96m"
+            MAGENTA = "\033[95m"
+            RESET = "\033[0m"
+            banner = ("\n"
+                      f"---------------------------------------------------\n"
                       f"{CYAN}Beacon{RESET} Instance ID: {self.instance_id}\n"
                       f"{bot_version_line}"
                       f"Powered by {CYAN}Beacon Framework{RESET} v{framework_version} by {MAGENTA}Dopamine Studios{RESET}\n"
@@ -332,9 +356,8 @@ class BeaconFrameworkBotMixin:
                       f"Bot Owner(s) identified: {owner_user_name}\n"
                       f"---------------------------------------------------"
                       "\n")
-
             print(banner)
-            logger.info(banner)
+
         self.booted = True
         self.start_time = time.time()
 
