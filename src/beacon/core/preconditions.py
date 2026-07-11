@@ -75,6 +75,11 @@ def permissions_preset(preset_name: str):
     def decorator(obj):
         if preset_name.lower() != "bot_owner":
             obj = app_commands.guild_only()(obj)
+
+            perms_to_check = PRESETS.get(preset_name.lower())
+            if perms_to_check:
+                obj = app_commands.default_permissions(**perms_to_check)(obj)
+
         return app_commands.check(predicate)(obj)
 
     return decorator
@@ -107,6 +112,8 @@ def has_permissions(min_required: int = None, **perms):
 
     def decorator(obj):
         obj = app_commands.guild_only()(obj)
+        if min_required is None:
+            obj = app_commands.default_permissions(**perms)(obj)
         return app_commands.check(predicate)(obj)
 
     return decorator
