@@ -1,7 +1,7 @@
 from discord import app_commands
 from functools import wraps
 from .preconditions import global_cooldown as g_cooldown, permissions_preset as preset, cooldown as local_cooldown
-
+import sys
 
 def command(
         name: str = None,
@@ -77,3 +77,8 @@ class Group(app_commands.Group):
             g_cooldown()(command)
 
         return super().add_command(command)
+
+_current_module = sys.modules[__name__]
+for attr in dir(app_commands):
+    if not hasattr(_current_module, attr):
+        setattr(_current_module, attr, getattr(app_commands, attr))
