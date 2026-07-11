@@ -12,6 +12,9 @@ from .utils.log import LoggingManager
 from .core.commands_registry import CommandRegistry
 from .ext.path import framework_version
 import secrets
+import inspect
+from collections.abc import Callable, Coroutine
+from typing import Any
 
 logger = logging.getLogger("discord")
 
@@ -28,6 +31,7 @@ class BeaconFrameworkBotMixin:
                  bot_logger: logging.Logger = logging.getLogger("discord"),
                  version_file: str = None,
                  secure_mode: bool = False,
+                 on_shard_ready_callback: Callable[[int], Any | Coroutine[Any, Any, Any]] | None = None,
                  *args, **kwargs):
         """Initialize the bot with framework defaults, cooldowns, and extension settings.
 
@@ -45,6 +49,7 @@ class BeaconFrameworkBotMixin:
             bot_logger: The logger for the bot process.
             version_file: Optional path to a file containing the bot's deployment version.
             secure_mode: Optional parameter to enable Beacon's secure mode. Strips down the /ping command to not show host location and not load in geocoder, and Owner Dashboard to only cog reloading and slash command syncing to prevent damage such as if bot owner account is hacked. Cog unloading & uploading, bot shutdown and restart, and the ability to view logs is disabled.
+            on_shard_ready_callback: Custom callback that will be executed automatically for each shard when using AutoShardedBot. Useful for purposes such as setting a custom Bot status for each shard like "Running on shard 67 of 69", etc.
             *args: Additional positional arguments forwarded to the parent implementation.
             **kwargs: Additional keyword arguments forwarded to the underlying API.
         """
@@ -89,6 +94,7 @@ class BeaconFrameworkBotMixin:
         self.cog_load_time = None
         self.booted = False
         self.instance_id = self.generate_instance_id()
+        self.on_shard_ready_callback = on_shard_ready_callback
 
     def generate_instance_id(self):
         alphabet = "23456789abcdefghjklmnpqrstuvwxyz"
@@ -218,6 +224,15 @@ class BeaconFrameworkBotMixin:
         logger.info("Beacon: Restarting bot...")
         await self.signal_handler()
         os.execv(sys.executable, [sys.executable] + sys.argv)
+
+    async def on_shard_ready(self, shard_id: int):
+        self.logger.info(f"[{self.instance_id}] Beacon: Shard {shard_id} is ready.")
+
+        if self.on_shard_ready_callback:
+            if inspect.iscoroutinefunction(self.on_shard_ready_callback):
+                await self.on_shard_ready_callback(shard_id)
+            else:
+                self.on_shard_ready_callback(shard_id)
 
     async def on_ready(self):
         """Finalize startup presence and emit readiness diagnostics once connected."""
