@@ -21,7 +21,7 @@ class BeaconFrameworkBotMixin:
     commands.Bot and commands.AutoShardedBot base implementations.
     """
 
-    def __init__(self, cogs_path: str = "cogs", log_path: str = None, default_diagnostics: bool = True,
+    def __init__(self, cogs_path: str = "cogs", log_path: str = None, default_diagnostics: bool = True, default_help_command: commands.HelpCommand | None = None,
                  status: discord.Status = None, activity: discord.Activity = None, global_cooldown_rate: int = 10,
                  global_cooldown_per: float = 60.0, minimal_caching: bool = False,
                  accent_colour: discord.Colour = discord.Colour(0x2C817C),
@@ -35,6 +35,7 @@ class BeaconFrameworkBotMixin:
             cogs_path: Directory that contains extension modules to load.
             log_path: Path to the logging database file. If none is defined, logging backend is disabled.
             default_diagnostics: Whether to load the built-in diagnostics extension at startup.
+            default_help_command: Configuration for the default built-in prefix help command. Expects an instance of a class that inherits from commands.HelpCommand to customise the output of the command, or None to disable the default help command. Defaults to None.
             status: Discord presence status to apply when the bot is ready.
             activity: Discord activity to apply when the bot is ready.
             global_cooldown_rate: Default global cooldown rate limit for slash commands.
@@ -43,7 +44,7 @@ class BeaconFrameworkBotMixin:
             accent_colour: The colour to be used for accents (and more) in the `/ping` embed, and the `/latency info` graph.
             bot_logger: The logger for the bot process.
             version_file: Optional path to a file containing the bot's deployment version.
-            secure_mode: Optional parameter to enable Beacon's secure mode. Strips down the /ping command to not show host location and not load in geocoder, and Owner Dashboard to only cog reloading and slash command syncing to prevent damage if owner account is hacked. Cog unloading & uploading, bot shutdown and restart, and the ability to view logs is disabled.
+            secure_mode: Optional parameter to enable Beacon's secure mode. Strips down the /ping command to not show host location and not load in geocoder, and Owner Dashboard to only cog reloading and slash command syncing to prevent damage such as if bot owner account is hacked. Cog unloading & uploading, bot shutdown and restart, and the ability to view logs is disabled.
             *args: Additional positional arguments forwarded to the parent implementation.
             **kwargs: Additional keyword arguments forwarded to the underlying API.
         """
@@ -58,7 +59,7 @@ class BeaconFrameworkBotMixin:
 
         super().__init__(
             command_prefix=command_prefix,
-            help_command=None,
+            help_command=default_help_command,
             member_cache_flags=cache_flags,
             chunk_guilds_at_startup=chunk_at_startup,
             guild_ready_timeout=0 if minimal_caching else 2.0,
