@@ -84,6 +84,7 @@ class Bot(commands.Bot):
         self.start_time = None
         self.count = None
         self.cog_load_time = None
+        self.booted = False
 
     def _parse_version_file(self, path: str) -> str:
         """Helper method to dynamically parse the version file and normalise its format."""
@@ -236,22 +237,24 @@ class Bot(commands.Bot):
                 logger.error(f"Beacon: ERROR: Failed to set status: {e}")
         if not self.owner_ids and self.application and self.application.team:
             self.owner_ids = {m.id for m in self.application.team.members}
-        total_startup_time = time.time() - self.process_start_time
-        bot_version_line = f"Bot Version: {self.version}\n" if self.version else ""
-        banner = ("\n"
-                  f"---------------------------------------------------\n"
-                  f"{bot_version_line}"
-                  f"Powered by Beacon v{framework_version}\n"
-                  "\n"
-                  f"Total Startup Time: {total_startup_time:.2f}s\n"
-                  f"Total Cogs Loading Time: {self.cog_load_time:.2f}s\n"
-                  f"Total Cogs Loaded: {self.count}\n"
-                  "\n"
-                  f"Bot ready: {self.user} (ID: {self.user.id})\n"
-                  f"Bot Owner identified: {owner_user_name}\n"
-                  f"---------------------------------------------------"
-                  "\n")
+        if not self.booted:
+            total_startup_time = time.time() - self.process_start_time
+            bot_version_line = f"Bot Version: {self.version}\n" if self.version else ""
+            banner = ("\n"
+                      f"---------------------------------------------------\n"
+                      f"{bot_version_line}"
+                      f"Powered by Beacon v{framework_version}\n"
+                      "\n"
+                      f"Total Startup Time: {total_startup_time:.2f}s\n"
+                      f"Total Cogs Loading Time: {self.cog_load_time:.2f}s\n"
+                      f"Total Cogs Loaded: {self.count}\n"
+                      "\n"
+                      f"Bot ready: {self.user} (ID: {self.user.id})\n"
+                      f"Bot Owner identified: {owner_user_name}\n"
+                      f"---------------------------------------------------"
+                      "\n")
 
-        print(banner)
-        logger.info(banner)
+            print(banner)
+            logger.info(banner)
+        self.booted = True
         self.start_time = time.time()
