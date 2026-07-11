@@ -155,7 +155,7 @@ class BeaconFrameworkBotMixin:
                     try:
                         # pyrefly: ignore [missing-attribute]
                         await self.load_extension(extension)
-                        logger.info(f"> [{self.instance_id}] Beacon: Loaded {extension} Successfully")
+                        logger.info(f"[{self.instance_id}] Beacon: Loaded {extension} Successfully")
                         count += 1
                     except Exception as e:
                         logger.error(f"[{self.instance_id}] Beacon: Failed to load {extension}: {e}")
@@ -221,7 +221,7 @@ class BeaconFrameworkBotMixin:
                 try:
                     # pyrefly: ignore [missing-attribute]
                     await self.unload_extension(extension)
-                    logger.info(f"> [{self.instance_id}] Beacon: Unloaded {extension} successfully")
+                    logger.info(f"[{self.instance_id}] Beacon: Unloaded {extension} successfully")
                 except Exception as e:
                     logger.error(f"[{self.instance_id}] Beacon: Error unloading {extension}: {e}")
 
