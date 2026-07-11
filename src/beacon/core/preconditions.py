@@ -111,6 +111,24 @@ def has_permissions(min_required: int = None, **perms):
 
     return decorator
 
+def is_bot_owner():
+    """Create a check that enforces the user must be a bot owner."""
+    async def predicate(interaction: discord.Interaction) -> bool:
+        bot = interaction.client
+
+        is_owner = (
+            interaction.user.id in bot.owner_ids
+            if bot.owner_ids else
+            interaction.user.id == bot.owner_id
+        )
+
+        if not is_owner:
+            raise NotBotOwner()
+
+        return True
+
+    return app_commands.check(predicate)
+
 def cooldown(rate: int = 10, per: float = 60):
     """Create a per-command user cooldown check."""
     mapping = commands.CooldownMapping.from_cooldown(rate, per, commands.BucketType.user)
