@@ -1,3 +1,5 @@
+## [v4.1.0](https://github.com/DopamineStudios/beacon/compare/vv4.0.0...vv4.1.0) (2026-07-11)
+
 ## [v4.0.0](https://github.com/DopamineStudios/beacon/compare/v3.2.6...v4.0.0) (2026-07-11)
 
 ### Features
