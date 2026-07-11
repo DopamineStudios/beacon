@@ -2,7 +2,7 @@ from beacon.core import beacon_commands
 
 ## `views.py` Documentation
 
-The `views.py` utility provides subclasses or wrappers of `discord.ui.View` and `discord.ui.LayoutView` that restrict interaction to a specific user and doesn't let anyone use the interaction (buttons, dropdowns, etc.) other than the person who triggered the command or interaction, and provides Confirmation Views that trigger a given callback upon confirmation.
+The `views.py` utility provides subclasses or wrappers of `discord.ui.View` and `discord.ui.LayoutView` that restrict interaction to a specific user and don't let anyone use the interaction (buttons, dropdowns, etc.) other than the person who triggered the command or interaction, and provides Confirmation Views that trigger a given callback upon confirmation.
 
 ---
 
@@ -26,7 +26,7 @@ class MyLayout(PrivateLayoutView):
         container = discord.ui.Container()
         
         my_button = discord.ui.Button(label="Click Me", style=discord.ButtonStyle.primary)
-        my_button.callback = my_button
+        my_button.callback = self.my_button
         
         container.add_item(discord.ui.ActionRow(my_button))
         
@@ -72,10 +72,10 @@ async def private_button(interaction: discord.Interaction):
 
 ### Private View Parameters
 
-|       Parameter       |       Type       |                                                                                                       Description                                                                                                       |
-|:---------------------:|:----------------:|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
-|        `user`         |  `discord.User`  |  The user who triggered the internation. IMPORTANT: This is a required perimeter for the Private Views to function. Your bot will crash if you don't pass internaction.user into the function as shown in the example.  |
-| `*args` / `**kwargs`  |        -         |                                                                                 Standard `discord.ui.View` arguments (e.g., `timeout`).                                                                                 |
+|       Parameter       |       Type       |                                                                                                     Description                                                                                                      |
+|:---------------------:|:----------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
+|        `user`         |  `discord.User`  | The user who triggered the interation. IMPORTANT: This is a required perameter for the Private Views to function. Your bot will crash if you don't pass internaction.user into the function as shown in the example. |
+| `*args` / `**kwargs`  |        -         |                                                                               Standard `discord.ui.View` arguments (e.g., `timeout`).                                                                                |
 
 ---
 
