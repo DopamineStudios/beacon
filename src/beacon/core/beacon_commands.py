@@ -11,28 +11,12 @@ def command(
         cooldown: tuple[int, float] = None,
         **kwargs
 ):
-    """Build a slash-command decorator that applies framework defaults and checks.
+    """Build a slash-command decorator that applies framework defaults and checks."""
 
-    Args:
-        name: Slash-command name override.
-        description: Slash-command description override.
-        global_cooldown: Whether the framework-level cooldown should be attached.
-        permissions_preset: Optional preset name that adds permission checks.
-        cooldown: Optional per-command cooldown as a `(rate, per)` tuple.
-        **kwargs: Additional keyword arguments forwarded to the underlying API.
+    if permissions_preset and permissions_preset.lower() != "bot_owner":
+        kwargs['guild_only'] = True
 
-    Returns:
-        Any: Result produced by this function.
-    """
     def decorator(func):
-        """Transform a coroutine into an app command with configured checks.
-
-        Args:
-            func: Function that will be wrapped by this decorator.
-
-        Returns:
-            Any: Result produced by this function.
-        """
         cmd = app_commands.command(
             name=name or func.__name__,
             description=description or (func.__doc__ or "No description provided"),
@@ -79,6 +63,9 @@ class Group(app_commands.Group):
         preset_val = self._beacon_settings['permissions_preset']
         cooldown_val = self._beacon_settings['cooldown']
         global_cd = self._beacon_settings['global_cooldown']
+
+        if preset_val and preset_val.lower() != "bot_owner":
+            command.guild_only = True
 
         if preset_val:
             preset(preset_val)(command)

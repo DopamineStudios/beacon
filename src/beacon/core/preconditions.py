@@ -4,20 +4,8 @@ from discord.ext import commands
 from .errors import MissingBeaconPermissions, RateLimited, PreconditionFailed, NotBotOwner
 
 def global_cooldown():
-    """Create a global slash-command cooldown check bound to the bot mapping.
-
-    Returns:
-        Any: Result produced by this function.
-    """
+    """Create a global slash-command cooldown check bound to the bot mapping."""
     async def predicate(interaction: discord.Interaction) -> bool:
-        """Allow invocation only when the user is not globally rate limited.
-
-        Args:
-            interaction: Interaction context received from Discord.
-
-        Returns:
-            bool: True when the check passes.
-        """
         bot = interaction.client
 
         if not hasattr(bot, 'global_cooldown_mapping'):
@@ -28,7 +16,6 @@ def global_cooldown():
                 self.author = user
 
         bucket = bot.global_cooldown_mapping.get_bucket(MockMessage(interaction.user))
-
         retry_after = bucket.update_rate_limit()
 
         if retry_after:
@@ -40,14 +27,7 @@ def global_cooldown():
 
 
 def permissions_preset(preset_name: str):
-    """Create a check that enforces one of the framework permission presets.
-
-    Args:
-        preset_name: Name of the built-in permission preset to enforce.
-
-    Returns:
-        Any: Result produced by this function.
-    """
+    """Create a check that enforces one of the framework permission presets."""
     PRESETS = {
         "moderator": {"manage_messages": True, "kick_members": True, "ban_members": True},
         "admin": {"administrator": True},
@@ -61,14 +41,6 @@ def permissions_preset(preset_name: str):
     }
 
     async def predicate(interaction: discord.Interaction) -> bool:
-        """Validate guild or owner permissions for the selected preset.
-
-        Args:
-            interaction: Interaction context received from Discord.
-
-        Returns:
-            bool: True when the check passes.
-        """
         bot = interaction.client
 
         if preset_name.lower() == "bot_owner":
@@ -100,27 +72,17 @@ def permissions_preset(preset_name: str):
 
         return True
 
-    return app_commands.check(predicate)
+    def decorator(obj):
+        if preset_name.lower() != "bot_owner":
+            obj = app_commands.guild_only()(obj)
+        return app_commands.check(predicate)(obj)
+
+    return decorator
+
 
 def has_permissions(**perms):
-
-    """Create a check requiring all provided permission values to match.
-
-    Args:
-        **perms: Permission names mapped to required boolean values.
-
-    Returns:
-        bool: True when the check passes.
-    """
+    """Create a check requiring all provided permission values to match."""
     async def predicate(interaction: discord.Interaction) -> bool:
-        """Validate that the member satisfies every requested permission flag.
-
-        Args:
-            interaction: Interaction context received from Discord.
-
-        Returns:
-            bool: True when the check passes.
-        """
         if not interaction.guild:
             raise PreconditionFailed("This command can only be used in a server.")
 
@@ -132,28 +94,16 @@ def has_permissions(**perms):
 
         return True
 
-    return app_commands.check(predicate)
+    def decorator(obj):
+        obj = app_commands.guild_only()(obj)
+        return app_commands.check(predicate)(obj)
+
+    return decorator
 
 
 def has_permissions_any(**perms):
-
-    """Create a check requiring at least one provided permission to match.
-
-    Args:
-        **perms: Permission names mapped to required boolean values.
-
-    Returns:
-        bool: True when the check passes.
-    """
+    """Create a check requiring at least one provided permission to match."""
     async def predicate(interaction: discord.Interaction) -> bool:
-        """Validate that the member satisfies at least one permission flag.
-
-        Args:
-            interaction: Interaction context received from Discord.
-
-        Returns:
-            bool: True when the check passes.
-        """
         if not interaction.guild:
             raise PreconditionFailed("This command can only be used in a server.")
 
@@ -169,30 +119,18 @@ def has_permissions_any(**perms):
 
         return True
 
-    return app_commands.check(predicate)
+    def decorator(obj):
+        obj = app_commands.guild_only()(obj)
+        return app_commands.check(predicate)(obj)
+
+    return decorator
+
 
 def cooldown(rate: int = 10, per: float = 60):
-    """Create a per-command user cooldown check.
-
-    Args:
-        rate: Maximum number of allowed uses in the time window.
-        per: Cooldown window size in seconds.
-
-    Returns:
-        Any: Result produced by this function.
-    """
+    """Create a per-command user cooldown check."""
     mapping = commands.CooldownMapping.from_cooldown(rate, per, commands.BucketType.user)
 
     async def predicate(interaction: discord.Interaction) -> bool:
-        """Allow invocation only when the local cooldown bucket permits it.
-
-        Args:
-            interaction: Interaction context received from Discord.
-
-        Returns:
-            bool: True when the check passes.
-        """
-
         class MockMessage:
             def __init__(self, user):
                 self.author = user
