@@ -4,7 +4,6 @@ import discord
 import signal
 import asyncio
 from typing import TYPE_CHECKING
-from ..bot import Bot
 from ..core.commands_registry import CommandRegistry
 import logging
 import io
