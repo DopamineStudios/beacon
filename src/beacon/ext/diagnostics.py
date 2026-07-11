@@ -415,7 +415,7 @@ class Diagnostics(commands.Cog):
         end_time = time.time()
         shard_id_line = None
         if hasattr(self.bot, 'shards'):
-            shard_id = interaction.guild.shard_id if interaction.guild else 0
+            shard_id = interaction.guild.shard_id if interaction.guild else (interaction.user.id >> 22) % self.bot.shard_count or 0
             shard_id_line = f"> Running on Shard `{shard_id}` of `{self.bot.shard_count}` Shards\n"
             shard = self.bot.get_shard(shard_id)
             gateway_raw = str(shard.ws.gateway) if shard and shard.ws else "Global/Unknown"
