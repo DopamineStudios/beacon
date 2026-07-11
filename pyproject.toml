@@ -11,7 +11,6 @@ readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "discord.py>=2.6.4",
-    "aiosqlite",
     "psutil",
     "pyvips",
     "geocoder"

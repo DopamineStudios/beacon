@@ -8,7 +8,6 @@ import re
 import sys
 from discord import app_commands
 from discord.ext import commands
-from .utils.log import LoggingManager
 from .core.commands_registry import CommandRegistry
 from .ext.path import framework_version
 import secrets
@@ -24,7 +23,7 @@ class BeaconFrameworkBotMixin:
     commands.Bot and commands.AutoShardedBot base implementations.
     """
 
-    def __init__(self, cogs_path: str = "cogs", log_path: str = None, default_diagnostics: bool = True, default_help_command: commands.HelpCommand | None = None,
+    def __init__(self, cogs_path: str = "cogs", default_diagnostics: bool = True, default_help_command: commands.HelpCommand | None = None,
                  status: discord.Status = None, activity: discord.Activity = None, global_cooldown_rate: int = 10,
                  global_cooldown_per: float = 60.0, minimal_caching: bool = False,
                  accent_colour: discord.Colour = discord.Colour(0x2C817C),
@@ -37,7 +36,6 @@ class BeaconFrameworkBotMixin:
 
         Args:
             cogs_path: Directory that contains extension modules to load.
-            log_path: Path to the logging database file. If none is defined, logging backend is disabled.
             default_diagnostics: Whether to load the built-in diagnostics extension at startup.
             default_help_command: Configuration for the default built-in prefix help command. Expects an instance of a class that inherits from commands.HelpCommand to customise the output of the command, or None to disable the default help command. Defaults to None.
             status: Discord presence status to apply when the bot is ready.
@@ -71,7 +69,6 @@ class BeaconFrameworkBotMixin:
             *args, **kwargs
         )
         self.cogs_path = cogs_path
-        self.log_path = log_path
         self.default_diagnostics = default_diagnostics
         self._status = status
         self._activity = activity
@@ -137,12 +134,6 @@ class BeaconFrameworkBotMixin:
 
     async def setup_hook(self):
         """Load configured extensions, wire command error handling, and run smart sync."""
-        if self.log_path:
-            try:
-                self.logger = LoggingManager(self.log_path)
-            except Exception as e:
-                logger.error(f"[{self.instance_id}] Beacon: Failed to initialise logging manager: {e}")
-
         self.logger.info(f"This is the beginning of the Discord bot instance powered by Beacon Framework, with the Beacon Instance ID: {self.instance_id}.")
         print(f"This is the beginning of the Discord bot instance powered by Beacon Framework, with the Beacon Instance ID: {self.instance_id}.")
 

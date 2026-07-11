@@ -153,7 +153,6 @@ bot.run("YOUR_BOT_TOKEN_HERE")
 ## Requirements
 
 * `discord.py`
-* `aiosqlite`
 * `psutil`
 * `pyvips`
 * `geocoder`
