@@ -80,16 +80,27 @@ def permissions_preset(preset_name: str):
     return decorator
 
 
-def has_permissions(**perms):
-    """Create a check requiring all provided permission values to match."""
+def has_permissions(min_required: int = None, **perms):
+    """Create a check requiring a minimum number of the provided permission values to match.
+
+    Args:
+        min_required: The number of permissions out of all permissions that the user must have for the check to pass. Defaults to None which means all the permissions must be present."""
+    if min_required is not None and min_required > len(perms):
+        raise ValueError(
+            f"Beacon: min_required ({min_required}) cannot be greater than the number of permissions provided ({len(perms)})."
+        )
     async def predicate(interaction: discord.Interaction) -> bool:
         if not interaction.guild:
             raise PreconditionFailed("This command can only be used in a server.")
 
         permissions = interaction.permissions
-        missing = [perm for perm, value in perms.items() if getattr(permissions, perm) != value]
 
-        if missing:
+        matching_count = sum(1 for perm, value in perms.items() if getattr(permissions, perm) == value)
+
+        required_count = min_required if min_required is not None else len(perms)
+
+        if matching_count < required_count:
+            missing = [perm for perm, value in perms.items() if getattr(permissions, perm) != value]
             raise MissingBeaconPermissions(missing)
 
         return True
@@ -99,32 +110,6 @@ def has_permissions(**perms):
         return app_commands.check(predicate)(obj)
 
     return decorator
-
-
-def has_permissions_any(**perms):
-    """Create a check requiring at least one provided permission to match."""
-    async def predicate(interaction: discord.Interaction) -> bool:
-        if not interaction.guild:
-            raise PreconditionFailed("This command can only be used in a server.")
-
-        permissions = interaction.permissions
-
-        has_at_least_one = any(
-            getattr(permissions, perm) == value
-            for perm, value in perms.items()
-        )
-
-        if not has_at_least_one:
-            raise MissingBeaconPermissions(list(perms.keys()))
-
-        return True
-
-    def decorator(obj):
-        obj = app_commands.guild_only()(obj)
-        return app_commands.check(predicate)(obj)
-
-    return decorator
-
 
 def cooldown(rate: int = 10, per: float = 60):
     """Create a per-command user cooldown check."""
