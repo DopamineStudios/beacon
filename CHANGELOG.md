@@ -1,4 +1,50 @@
-## [v4.0.0](https://github.com/DopamineStudios/beacon/compare/vv3.2.6...vv4.0.0) (2026-07-11)
+## [v4.0.0](https://github.com/DopamineStudios/beacon/compare/v3.2.6...v4.0.0) (2026-07-11)
+
+### Features
+
+* Add new `ConfirmationView` and `DestructiveConfirmationView` to provide UI confirmation views that trigger specific actions on execution. ([0356e56](https://github.com/DopamineStudios/beacon/commit/0356e56))
+* Add custom `on_shard_ready` callback parameter to the bot mixin lifecycle. ([63c73aa](https://github.com/DopamineStudios/beacon/commit/63c73aa))
+* Add ability to customise default prefix help commands instead of always disabling them globally. ([2bb3e2b](https://github.com/DopamineStudios/beacon/commit/2bb3e2b))
+* Add `BeaconAutoShardedBot` class and refactor framework lifecycle logic into a mixin to natively support both standard and auto-sharded configurations. ([0b2073f](https://github.com/DopamineStudios/beacon/commit/0b2073f))
+* Expose the full `discord.app_commands` namespace natively through the custom `beacon_commands` module. ([be4df7e](https://github.com/DopamineStudios/beacon/commit/be4df7e))
+* Implement `app_commands.default_permissions` fallback logic to completely hide commands from unauthorized users. ([becf750](https://github.com/DopamineStudios/beacon/commit/becf750))
+* Add new `@preconditions.is_bot_owner()` decorator to safely handle team ownership contexts. ([c7d7b56](https://github.com/DopamineStudios/beacon/commit/c7d7b56))
+* Add `min_required` configuration arguments to the `@preconditions.has_permissions()` decorator. ([ffeb690](https://github.com/DopamineStudios/beacon/commit/ffeb690))
+* Automatically enforce guild-only constraints on commands when specific checks require a guild context. ([4e696bd](https://github.com/DopamineStudios/beacon/commit/4e696bd))
+* Add new Heartbeat latency rendering engine and graph. ([0c7595a](https://github.com/DopamineStudios/beacon/commit/0c7595a))
+* Add a Force Sync control action to the Owner Dashboard interface. ([af9f59a](https://github.com/DopamineStudios/beacon/commit/af9f59a))
+* Track bot ID strings within `sync_state.json` cache targets to safely detect client instance swaps. ([bc10097](https://github.com/DopamineStudios/beacon/commit/bc10097))
+* Introduce an isolated Beacon Instance ID reference to distinguish concurrent multi-instance tracking outputs. ([3f3a817](https://github.com/DopamineStudios/beacon/commit/3f3a817))
+* Implement server-side pre-rendered latency graph caching components. ([6f8246c](https://github.com/DopamineStudios/beacon/commit/6f8246c))
+* Completely rewrite graph rendering infrastructure dependencies using `pyvips`. ([cf3d2f2](https://github.com/DopamineStudios/beacon/commit/cf3d2f2))
+* Improve startup banner layout runtime metrics accuracy. ([e5e7550](https://github.com/DopamineStudios/beacon/commit/e5e7550))
+* Implement custom framework validation workarounds to address internal `discord.py` ownership evaluation constraints. ([60bcf4d](https://github.com/DopamineStudios/beacon/commit/60bcf4d))
+
+### Breaking Changes
+
+* Completely discontinue and remove `mod_check` and `prefix_mod_check` decorators. ([feb70cb](https://github.com/DopamineStudios/beacon/commit/feb70cb))
+* Completely discontinue and remove the built-in `aiosqlite` Discord audit/mod logging manager. ([9cb3f98](https://github.com/DopamineStudios/beacon/commit/9cb3f98))
+* Update required Python version from 3.12 to pi-thon. ([1054076](https://github.com/DopamineStudios/beacon/commit/1054076))
+* Rename `Bot` class to `BeaconBot` to avoid naming collisions with `commands.Bot` and explicitly establish framework identity in end-user implementations. ([0b2073f](https://github.com/DopamineStudios/beacon/commit/0b2073f))
+* Rename `minimal_cacheing` to `minimal_caching`. ([6d579ab](https://github.com/DopamineStudios/beacon/commit/6d579ab))
+* Remove `@preconditions.has_permissions_any()` decorator as it is now redundant. ([ffeb690](https://github.com/DopamineStudios/beacon/commit/ffeb690))
+* Add new dependency `pyvips`, removing `pillow`. ([cf3d2f2](https://github.com/DopamineStudios/beacon/commit/cf3d2f2))
+
+### Bug Fixes
+
+* Fix typo variations within the core bot client modules. ([ff9286b](https://github.com/DopamineStudios/beacon/commit/ff9286b))
+* Fix an absolute path import statement mapping failure in `__init__.py`. ([5bda23a](https://github.com/DopamineStudios/beacon/commit/5bda23a))
+* Fix localized spelling typo string entries inside `minimal_caching`. ([6d579ab](https://github.com/DopamineStudios/beacon/commit/6d579ab))
+* Enforce `guild_ready_timeout` constraints to assign value 0 only when minimal caching configurations are active. ([f1bb8f6](https://github.com/DopamineStudios/beacon/commit/f1bb8f6))
+* Integrate explicit `round()` evaluations to accurately calculate process execution boundaries instead of arbitrary integer clipping. ([204b98b](https://github.com/DopamineStudios/beacon/commit/204b98b))
+* Fix an error causing the Upload Cog button to display as disabled inside isolated direct message contexts. ([6c46ef0](https://github.com/DopamineStudios/beacon/commit/6c46ef0))
+* Re-route default framework testing commands to properly utilize the integrated `beacon_commands` namespace. ([932367f](https://github.com/DopamineStudios/beacon/commit/932367f))
+* Refine interaction handling fallback messages returned during evaluation errors. ([5188422](https://github.com/DopamineStudios/beacon/commit/5188422))
+* Prevent duplication errors causing multiple initialization banner print loops if `on_ready` events trigger recursively. ([32fed30](https://github.com/DopamineStudios/beacon/commit/32fed30))
+* Ensure internal helper tracking processes evaluate to `None` if zero version logs exist. ([16e73b8](https://github.com/DopamineStudios/beacon/commit/16e73b8))
+* Fix title layout centering and typography typos on the API Latency display panels. ([5e4374f](https://github.com/DopamineStudios/beacon/commit/5e4374f))
+* Remove redundant sample counter tags from graph latency text lines to conserve layout space. ([119f636](https://github.com/DopamineStudios/beacon/commit/119f636))
+* Resolve tracking interface errors raised while adjusting dashboard update fields during synchronization routines. ([c5657f4](https://github.com/DopamineStudios/beacon/commit/c5657f4))
 
 ## [v3.2.6](https://github.com/DopamineStudios/beacon/compare/vv3.2.5...vv3.2.6) (2026-06-16)
 ### Bug Fixes
