@@ -19,28 +19,25 @@ class Pic(commands.Cog):
     @beacon_commands.command(name="od", description=".", permissions_preset="bot_owner")
     @app_commands.describe(ephemeral="Set to True so that only you can see the dashboard message.")
     async def zc(self, interaction: discord.Interaction, ephemeral: bool = False):
-        """Open the owner dashboard UI when invoked by the bot owner.
-
-        Args:
-            interaction: Interaction context received from Discord.
-            ephemeral: Whether the response should only be visible to the command user.
-
-        Returns:
-            Any: Result produced by this function.
-        """
+        """Open the owner dashboard UI when invoked by the bot owner."""
         bot_in_guild = self.bot.get_guild(interaction.guild_id) is not None if interaction.guild_id else False
 
         if not ephemeral:
             is_external_guild = interaction.guild_id is not None and not bot_in_guild
 
-            is_own_dm = interaction.channel_id == interaction.user.dm_channel.id if interaction.user.dm_channel else False
-            is_external_dm = interaction.guild_id is None and not is_own_dm
+            try:
+                dm_channel = interaction.user.dm_channel or await interaction.user.create_dm()
+                is_own_dm = interaction.channel_id == dm_channel.id
+            except discord.HTTPException:
+                is_own_dm = False
 
+            is_external_dm = interaction.guild_id is None and not is_own_dm
             dashboard_ephemeral = True if (is_external_guild or is_external_dm) else False
         else:
             dashboard_ephemeral = True
 
-        view = OwnerDashboard(self.bot, interaction.user, ephemeral=dashboard_ephemeral, secure_mode=self.bot.secure_mode)
+        view = OwnerDashboard(self.bot, interaction.user, ephemeral=dashboard_ephemeral,
+                              secure_mode=self.bot.secure_mode)
         await interaction.response.send_message(view=view, ephemeral=True if ephemeral else False)
 
 
