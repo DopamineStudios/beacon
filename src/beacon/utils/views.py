@@ -79,7 +79,7 @@ class ConfirmationView(PrivateLayoutView):
                     timeout: The timeout for the discord view.
                     title_text: The big title text shown at the top of the confirmation view.
                     body_text: The body text of the confirmation view.
-                    on_confirmation_callback: A synchronous or asynchronous function to execute when "Confirm" is successfully pressed. Use functools.partial if it requires any custom arguments other than interaction.
+                    on_confirmation_callback: A synchronous or asynchronous function to execute when "Confirm" is successfully pressed. Use functools.partial if it requires any extra arguments other than interaction.
                     *args: Positional arguments forwarded to the underlying implementation.
                     **kwargs: Additional keyword arguments forwarded to the underlying implementation.
                 """
@@ -163,7 +163,7 @@ class DestructiveConfirmationView(PrivateLayoutView):
                     timeout: The timeout for the discord view.
                     title_text: The big title text shown at the top of the confirmation view.
                     body_text: The body text of the confirmation view.
-                    on_confirmation_callback: A synchronous or asynchronous function to execute when "Confirm" is successfully pressed. Use functools.partial if it requires any custom arguments other than interaction.
+                    on_confirmation_callback: A synchronous or asynchronous function to execute when "Confirm" is successfully pressed. Use functools.partial if it requires any extra arguments other than interaction.
                     *args: Positional arguments forwarded to the underlying implementation.
                     **kwargs: Additional keyword arguments forwarded to the underlying implementation.
                 """
