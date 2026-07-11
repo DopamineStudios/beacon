@@ -345,8 +345,7 @@ class Diagnostics(commands.Cog):
             self.bot.logger.error(f"[{self.bot.instance_id}] Beacon: Graph generation error: {e}\n{traceback.format_exc()}")
             return None
 
-    @app_commands.command(name="ping", description="Get detailed latency and bot information")
-
+    @beacon_commands.command(name="ping", description="Get detailed latency and bot information")
     async def ping(self, interaction: discord.Interaction):
         """Send an embed with detailed latency, uptime, and system stats.
 
