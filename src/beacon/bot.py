@@ -33,7 +33,7 @@ class BeaconFrameworkBotMixin:
                  secure_mode: bool = False,
                  on_shard_ready_callback: Callable[[int], Any | Coroutine[Any, Any, Any]] | None = None,
                  *args, **kwargs):
-        """Initialize the bot with framework defaults, cooldowns, and extension settings.
+        """Initialise the bot with framework defaults, cooldowns, and extension settings.
 
         Args:
             cogs_path: Directory that contains extension modules to load.
