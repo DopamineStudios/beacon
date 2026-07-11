@@ -16,8 +16,10 @@ import secrets
 logger = logging.getLogger("discord")
 
 
-class Bot(commands.Bot):
-    """Framework bot subclass that loads extensions, syncs commands, and manages lifecycle."""
+class BeaconFrameworkBotMixin:
+    """A mixin providing Beacon Framework features, ensuring compatibility with both
+    commands.Bot and commands.AutoShardedBot base implementations.
+    """
 
     def __init__(self, cogs_path: str = "cogs", log_path: str = None, default_diagnostics: bool = True,
                  status: discord.Status = None, activity: discord.Activity = None, global_cooldown_rate: int = 10,
@@ -267,3 +269,11 @@ class Bot(commands.Bot):
             logger.info(banner)
         self.booted = True
         self.start_time = time.time()
+
+class BeaconBot(BeaconFrameworkBotMixin, commands.Bot):
+    """Standard framework bot subclass that loads extensions, syncs commands, and manages lifecycle."""
+    pass
+
+class BeaconAutoShardedBot(BeaconFrameworkBotMixin, commands.AutoShardedBot):
+    """Auto-sharded variant of the framework bot subclass that fetches shard configurations from Discord."""
+    pass
