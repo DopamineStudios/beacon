@@ -88,7 +88,7 @@ If you prefer using standard `app_commands`, you can use the standalone `@precon
 
 ### 4. In-Discord Owner Dashboard
 
-No need for terminal access/SSH. This simple to use and feature-rich dashboard for bot owners allows you to unload/reload cogs on the fly, restart the bot, or check logs, accessed using `/od`. This allows bot owner(s) to manage, diagnose the bot right within Discord itself. This dashboard allows the bot to run idefinitely without restarts:
+No need for terminal access/SSH. This simple to use and feature-rich dashboard for bot owners allows you to unload/reload cogs on the fly, restart the bot, or check logs, accessed using `/od`. This allows bot owner(s) to manage and diagnose the bot right within Discord itself. This dashboard allows the bot to run idefinitely without restarts:
 
 * **Cog Management:** Dynamic loading, unloading, and uploading/replacing of cogs.
 * **Power State:** Remote shutdown and process-level restarts.
