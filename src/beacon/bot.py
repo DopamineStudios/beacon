@@ -59,7 +59,7 @@ class Bot(commands.Bot):
             help_command=None,
             member_cache_flags=cache_flags,
             chunk_guilds_at_startup=chunk_at_startup,
-            guild_ready_timeout=0,
+            guild_ready_timeout=0 if minimal_cacheing else 2.0,
             *args, **kwargs
         )
         self.cogs_path = cogs_path
