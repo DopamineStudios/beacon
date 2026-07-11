@@ -73,18 +73,18 @@ If you prefer using standard `app_commands`, you can use the standalone `@precon
 * **Advanced Logic:** Includes `has_permissions_any` (pass if user has one of many) and `has_permissions` (must have all).
 * **Smart Rate Limiting:** Easily implement command-specific or bot-wide global cooldowns to prevent spam.
 
-| Preset | Required Permissions |
-| :--- | :--- |
-| `"bot_owner"` | Restricts usage to the bot owner/team owners. |
-| `moderator` | Manage Messages, Kick Members, Ban Members |
-| `admin` | Administrator |
-| `giveaways` | Manage Guild, Manage Messages |
-| `automation` | Manage Guild, Manage Messages, Manage Channels |
-| `manager` | Manage Guild, Manage Roles, Manage Channels |
-| `support` | Manage Messages, Read Message History |
-| `security` | View Audit Log, Moderate Members |
-| `community` | Manage Expressions, Manage Threads, Create Public Threads |
-| `technical` | Manage Webhooks, Manage Guild |
+|    Preset     |                   Required Permissions                    |
+|:-------------:|:---------------------------------------------------------:|
+| `"bot_owner"` |       Restricts usage to the bot owner/team owners.       |
+|  `moderator`  |        Manage Messages, Kick Members, Ban Members         |
+|    `admin`    |                       Administrator                       |
+|  `giveaways`  |               Manage Guild, Manage Messages               |
+| `automation`  |      Manage Guild, Manage Messages, Manage Channels       |
+|   `manager`   |        Manage Guild, Manage Roles, Manage Channels        |
+|   `support`   |           Manage Messages, Read Message History           |
+|  `security`   |             View Audit Log, Moderate Members              |
+|  `community`  | Manage Expressions, Manage Threads, Create Public Threads |
+|  `technical`  |               Manage Webhooks, Manage Guild               |
 
 ### 4. In-Discord Owner Dashboard
 
@@ -103,30 +103,32 @@ The built-in `Diagnostics` "cog" (module) provides real-time monitoring of the b
 * **Graphs:** Generate graphs for the bot's latency for visual performance auditing.
 * **Host Device Metrics:** Integration with system sensors to report host location and battery status, if available.
 
-### 6. Built-in Logging Backend
+### 6. Helper Views
 
-* A robust Logging Manager utilizing `aiosqlite` that can be plugged into any feature of your bot to implement a logging system, such as for mod logs, action logs, etc.
+* Beacon Framework includes a suite of helper views which provides subclasses or wrappers of `discord.ui.View` and `discord.ui.LayoutView` that restrict interaction to a specific user and doesn't let anyone use the interaction (buttons, dropdowns, etc.) other than the person who triggered the command or interaction, and provides Confirmation Views that trigger a given callback upon confirmation.
+
 
 ---
 
 ### Comparison (with Sapphire Framework and standard discord.py)
 
-| Feature                                                |     Beacon      |      Sapphire (js/ts)       |           discord.py            |
-|:-------------------------------------------------------|:---------------------------:|:---------------------------:|:-------------------------------:|
-| **Easy Setup**                                         | **✅ <br/>(minimal boilerplate)** | **❌** <br/>(Lots of boilerplate) |              **❌**              |
-| **Preconditions Support**                              |            **✅**            |            **✅**            |              **❌**              |
-| **Presets for Permission Checks<br/>in Preconditions** |            **✅**            |             **❌**            |              **❌**              |
-| **No tantrums over different structure**               |            **✅**            |            **❌**            |              **✅**              |
-| **Python's ease of use**                               |            **✅**            |            **❌**            |              **✅**              |
-| **Smart Commands Sync**                                |       **✅<br/>(Built-in)**       |   **✅** <br/>(Through plugins)   |  **❌** <br/>(not included/standard)  |
-| **In-Discord Dashboard**                               |      **✅ <br/>(Built-in)**       |            **❌**            |              **❌**              |
-| **Latency Graphs**                                     |      **✅ <br/>(Built-in)**       |            **❌**            |              **❌**              |
-| **Scalability***                                       |            **✅**            |            **✅**            |              **✅**              |
-| **Fast Iteration**                                     |            **✅**            |            **❌**            |              **❌**              |
-| **Strict TypeScript Rules**                            |            **❌**            |            **✅**            |              **❌**              |
-| **Built-in Resource Monitoring**                       |            **✅**            |            **❌**            |              **❌**              |
-| **Is it JS, tho?**                                     |            **❌**            |            **✅**            |              **❌**              |
-| **Wins Imaginary Benchmarks**                          |            **❌**            |            **✅**            |              **❌**              |
+| Feature                                                |              Beacon              |         Sapphire (js/ts)         |             discord.py             |
+|:-------------------------------------------------------|:--------------------------------:|:--------------------------------:|:----------------------------------:|
+| **Easy Setup**                                         | **✅ <br/>(minimal boilerplate)** | **❌** <br/>(Lots of boilerplate) |               **❌**                |
+| **Preconditions Support**                              |              **✅**               |              **✅**               |               **❌**                |
+| **Presets for Permission Checks<br/>in Preconditions** |              **✅**               |              **❌**               |               **❌**                |
+| **No tantrums over different structure**               |              **✅**               |              **❌**               |               **✅**                |
+| **Python's ease of use**                               |              **✅**               |              **❌**               |               **✅**                |
+| **Smart Commands Sync**                                |       **✅<br/>(Built-in)**       |   **✅** <br/>(Through plugins)   | **❌** <br/>(not included/standard) |
+| **In-Discord Dashboard**                               |      **✅ <br/>(Built-in)**       |              **❌**               |               **❌**                |
+| **Latency Graphs**                                     |      **✅ <br/>(Built-in)**       |              **❌**               |               **❌**                |
+| **Scalability***                                       |              **✅**               |              **✅**               |               **✅**                |
+| **Fast Iteration**                                     |              **✅**               |              **❌**               |               **❌**                |
+| **Strict TypeScript Rules**                            |              **❌**               |              **✅**               |               **❌**                |
+| **Built-in Resource Monitoring**                       |              **✅**               |              **❌**               |               **❌**                |
+| **Built-in helper Views**                              |              **✅**               |              **❌**               |               **❌**                |
+| **Is it JS, tho?**                                     |              **❌**               |              **✅**               |               **❌**                |
+| **Wins Imaginary Benchmarks**                          |              **❌**               |              **✅**               |               **❌**                |
 
 <sup>*Scalability refers to ability to run without problems when the bot is in tens of thousands of servers or more. While it's a common myth that "Python is bloated", that's not true in the context of Discord bots. The real bottleneck in popular Discord bots always comes down to network, not code execution time or memory usage.</sup>
 
@@ -159,13 +161,13 @@ bot.run("YOUR_BOT_TOKEN_HERE")
 
 ---
 
-## License & Attribution
+## Licence & Attribution
 
-Beacon is licensed under the **Apache License 2.0**.
+Beacon is licensed under the **Apache Licence 2.0**.
 
 ### How to Credit
-While you are free to use this framework for private or commercial bots, I require explicit credit. Please include a link to this repository or a mention of "Beacon" in:
+While you are free to use this framework for private or commercial bots, we require explicit credit. Please include a link to this repository or a mention of "Beacon Framework by Dopamine Studios" in:
 1. Your project's **README** or documentation.
 2. Your bot's **info/credits command** (for example `/about` or `/help`).
 
-*Example: "Built with [__Beacon__](https://github.com/dopaminestudios/beacon)"*
+*Example: "Built with [__Beacon Framework by Dopamine Studios__](https://github.com/dopaminestudios/beacon)"*
