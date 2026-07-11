@@ -8,7 +8,7 @@ class PrivateView(discord.ui.View):
     """Base view that only accepts interactions from one authorized user.
 
     """
-    def __init__(self, user, *args, **kwargs):
+    def __init__(self, user: discord.User | discord.Member, *args, **kwargs):
         """Initialize a private interaction view bound to a specific user.
 
         Args:
@@ -42,11 +42,11 @@ class PrivateLayoutView(discord.ui.LayoutView):
     """Layout-view variant that enforces single-user interaction ownership.
 
     """
-    def __init__(self, user, *args, **kwargs):
+    def __init__(self, user: discord.User | discord.Member, *args, **kwargs):
         """Initialize a private layout view bound to a specific user.
 
         Args:
-            user: User that is allowed to interact with this flow.
+            user (discord.User | discord.Member): User that is allowed to interact with this flow.
             *args: Additional positional arguments forwarded to the parent implementation.
             **kwargs: Additional keyword arguments forwarded to the underlying API.
         """

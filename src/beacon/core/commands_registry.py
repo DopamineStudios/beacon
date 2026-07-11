@@ -75,7 +75,7 @@ class CommandRegistry:
         signature["options"] = sorted(signature["options"], key=lambda x: x["name"])
         return signature
 
-    def _generate_tree_hash(self, guild: discord.Guild = None):
+    def _generate_tree_hash(self, guild: discord.Guild | None = None):
         """Hash the current local command tree for a guild or global scope.
 
         Args:
@@ -135,7 +135,7 @@ class CommandRegistry:
         with open(self.state_path, "w") as f:
             json.dump(data, f, indent=4)
 
-    async def smart_sync(self, guild: discord.Guild = None):
+    async def smart_sync(self, guild: discord.Guild | None = None):
         """Sync commands only when the local tree hash or bot ID differs from stored state."""
         if self.sync_lock.locked():
             return "Beacon: A command synchronisation is already in progress. Please wait for it to complete."
@@ -191,7 +191,7 @@ class CommandRegistry:
                     logger.error(f"[{self.bot.instance_id}] Beacon: Unexpected error during sync execution: {e}")
                     return f"[`{self.bot.instance_id}`] Beacon: Error syncing {scope_name}: {e}"
 
-    async def force_sync(self, guild: discord.Guild = None):
+    async def force_sync(self, guild: discord.Guild | None = None):
         """Force a command sync call regardless of configuration states, respecting the global lock."""
         if self.sync_lock.locked():
             return f"[`{self.bot.instance_id}`] Beacon: A command synchronisation is already in progress. Please wait for it to complete."

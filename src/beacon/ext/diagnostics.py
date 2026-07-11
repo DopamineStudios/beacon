@@ -48,7 +48,7 @@ class Diagnostics(commands.Cog):
         self.font_family_title = "Montserrat"
 
 
-    def cog_unload(self):
+    async def cog_unload(self):
         """Stop background sampling when the cog is unloaded.
 
         Returns:
@@ -512,7 +512,7 @@ class Diagnostics(commands.Cog):
         app_commands.Choice(name="Heartbeat Latency Graph", value="heartbeat")
     ])
     @app_commands.describe(graph_type="The type of latency graph you want to see, either for API latency or for Heartbeat latency. Defaults to API latency graph.")
-    async def graph(self, interaction: discord.Interaction, graph_type: app_commands.Choice[str] = None):
+    async def graph(self, interaction: discord.Interaction, graph_type: app_commands.Choice[str] | None = None):
         """Return a generated latency trend graph when enough samples exist.
 
         Args:
@@ -532,7 +532,7 @@ class Diagnostics(commands.Cog):
             try:
                 buffer = io.BytesIO(self.cached_api_graph_bytes)
                 file = discord.File(buffer, filename="beacon_api_graph.png")
-                await interaction.response.send_message(content=None, attachments=file)
+                await interaction.response.send_message(content=None, file=file)
             except Exception as e:
                 return await interaction.response.send_message(content=f"Beacon: ERROR: {e}", ephemeral=True)
         elif graph_type_value == "heartbeat":
@@ -544,7 +544,7 @@ class Diagnostics(commands.Cog):
             try:
                 buffer = io.BytesIO(self.cached_heartbeat_graph_bytes)
                 file = discord.File(buffer, filename="beacon_heartbeat_graph.png")
-                await interaction.response.send_message(content=None, attachments=file)
+                await interaction.response.send_message(content=None, file=file)
             except Exception as e:
                 return await interaction.response.send_message(content=f"Beacon: ERROR: {e}", ephemeral=True)
         else:

@@ -46,7 +46,9 @@ def permissions_preset(preset_name: str):
         if preset_name.lower() == "bot_owner":
             is_owner = (
                 interaction.user.id in bot.owner_ids
-                if bot.owner_ids else
+                # pyrefly: ignore [missing-attribute]
+                if isinstance(bot.owner_ids, (set, list, tuple)) else
+                # pyrefly: ignore [missing-attribute]
                 interaction.user.id == bot.owner_id
             )
             if not is_owner:
@@ -55,6 +57,7 @@ def permissions_preset(preset_name: str):
 
         perms_to_check = PRESETS.get(preset_name.lower())
         if perms_to_check is None:
+            # pyrefly: ignore [missing-attribute]
             raise ValueError(f"[{bot.instance_id}] Beacon: Permission preset '{preset_name}' not found.")
 
         if not interaction.guild:
@@ -85,7 +88,7 @@ def permissions_preset(preset_name: str):
     return decorator
 
 
-def has_permissions(min_required: int = None, **perms):
+def has_permissions(min_required: int | None = None, **perms):
     """Create a check requiring a minimum number of the provided permission values to match.
 
     Args:
@@ -125,7 +128,9 @@ def is_bot_owner():
 
         is_owner = (
             interaction.user.id in bot.owner_ids
-            if bot.owner_ids else
+            # pyrefly: ignore [missing-attribute]
+            if isinstance(bot.owner_ids, (set, list, tuple)) else
+            # pyrefly: ignore [missing-attribute]
             interaction.user.id == bot.owner_id
         )
 
@@ -138,15 +143,19 @@ def is_bot_owner():
 
 def cooldown(rate: int = 10, per: float = 60):
     """Create a per-command user cooldown check."""
+    # pyrefly: ignore [bad-argument-type]
     mapping = commands.CooldownMapping.from_cooldown(rate, per, commands.BucketType.user)
 
     async def predicate(interaction: discord.Interaction) -> bool:
+        retry_after = None
+
         class MockMessage:
             def __init__(self, user):
                 self.author = user
 
         bucket = mapping.get_bucket(MockMessage(interaction.user))
-        retry_after = bucket.update_rate_limit()
+        if not bucket is None:
+            retry_after = bucket.update_rate_limit()
 
         if retry_after:
             raise RateLimited(retry_after)

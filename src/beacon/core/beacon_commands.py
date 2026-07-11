@@ -4,11 +4,11 @@ from .preconditions import global_cooldown as g_cooldown, permissions_preset as 
 import sys
 
 def command(
-        name: str = None,
-        description: str = None,
-        global_cooldown: bool = True,
-        permissions_preset: str = None,
-        cooldown: tuple[int, float] = None,
+        name: str | None = None,
+        description: str | None = None,
+        global_cooldown: bool | None = True,
+        permissions_preset: str | None = None,
+        cooldown: tuple[int, float] | None = None,
         **kwargs
 ):
     """Build a slash-command decorator that applies framework defaults and checks."""
@@ -40,11 +40,11 @@ def command(
 class Group(app_commands.Group):
     def __init__(
             self,
-            name: str = None,
-            description: str = None,
-            global_cooldown: bool = True,
-            permissions_preset: str = None,
-            cooldown: tuple[int, float] = None,
+            name: str | None = None,
+            description: str | None = None,
+            global_cooldown: bool | None = True,
+            permissions_preset: str | None = None,
+            cooldown: tuple[int, float] | None = None,
             **kwargs
     ):
         super().__init__(
@@ -58,7 +58,7 @@ class Group(app_commands.Group):
             'global_cooldown': global_cooldown
         }
 
-    def add_command(self, command: app_commands.Command, /) -> None:
+    def add_command(self, command: app_commands.Command | app_commands.Group, /, *, override: bool = False) -> None:
         """Apply Beacon features to every command added to this group."""
         preset_val = self._beacon_settings['permissions_preset']
         cooldown_val = self._beacon_settings['cooldown']
@@ -76,7 +76,7 @@ class Group(app_commands.Group):
         elif global_cd:
             g_cooldown()(command)
 
-        return super().add_command(command)
+        return super().add_command(command, override=override)
 
 _current_module = sys.modules[__name__]
 for attr in dir(app_commands):

@@ -14,6 +14,7 @@ import secrets
 import inspect
 from collections.abc import Callable, Coroutine
 from typing import Any
+from pathlib import Path
 
 logger = logging.getLogger("discord")
 
@@ -24,11 +25,11 @@ class BeaconFrameworkBotMixin:
     """
 
     def __init__(self, cogs_path: str = "cogs", default_diagnostics: bool = True, default_help_command: commands.HelpCommand | None = None,
-                 status: discord.Status = None, activity: discord.Activity = None, global_cooldown_rate: int = 10,
+                 status: discord.Status | None = None, activity: discord.Activity | None = None, global_cooldown_rate: int = 10,
                  global_cooldown_per: float = 60.0, minimal_caching: bool = False,
                  accent_colour: discord.Colour = discord.Colour(0x2C817C),
                  bot_logger: logging.Logger = logging.getLogger("discord"),
-                 version_file: str = None,
+                 version_file: str | None = None,
                  secure_mode: bool = False,
                  on_shard_ready_callback: Callable[[int], Any | Coroutine[Any, Any, Any]] | None = None,
                  *args, **kwargs):
@@ -59,12 +60,17 @@ class BeaconFrameworkBotMixin:
             if minimal_caching else discord.MemberCacheFlags.all()
         )
         chunk_at_startup = False if minimal_caching else True
-
+        # pyrefly: ignore [unexpected-keyword]
         super().__init__(
+            # pyrefly: ignore [unexpected-keyword]
             command_prefix=command_prefix,
+            # pyrefly: ignore [unexpected-keyword]
             help_command=default_help_command,
+            # pyrefly: ignore [unexpected-keyword]
             member_cache_flags=cache_flags,
+            # pyrefly: ignore [unexpected-keyword]
             chunk_guilds_at_startup=chunk_at_startup,
+            # pyrefly: ignore [unexpected-keyword]
             guild_ready_timeout=0 if minimal_caching else 2.0,
             *args, **kwargs
         )
@@ -77,14 +83,15 @@ class BeaconFrameworkBotMixin:
         self.global_cooldown_mapping = commands.CooldownMapping.from_cooldown(
             self.global_cooldown_rate,
             self.global_cooldown_per,
+            # pyrefly: ignore [bad-argument-type]
             commands.BucketType.user
         )
         self.minimal_caching = minimal_caching
         self.accent_colour = accent_colour.to_rgb()
         self.registry = CommandRegistry(self)
         self.logger = bot_logger
-
-        self.version = self._parse_version_file(version_file)
+        if version_file is not None:
+            self.version = self._parse_version_file(version_file)
         self.secure_mode = secure_mode
         self.start_time = None
         self.count = None
@@ -97,7 +104,7 @@ class BeaconFrameworkBotMixin:
         alphabet = "23456789abcdefghjklmnpqrstuvwxyz"
         return "".join(secrets.choice(alphabet) for _ in range(5))
 
-    def _parse_version_file(self, path: str) -> str:
+    def _parse_version_file(self, path: str) -> str | None:
         """Helper method to dynamically parse the version file and normalise its format."""
         if not path or not os.path.exists(path):
             return None
@@ -146,6 +153,7 @@ class BeaconFrameworkBotMixin:
                 if filename.endswith(".py") and not filename.startswith("__"):
                     extension = f"{base_module}.{filename[:-3]}"
                     try:
+                        # pyrefly: ignore [missing-attribute]
                         await self.load_extension(extension)
                         logger.info(f"> [{self.instance_id}] Beacon: Loaded {extension} Successfully")
                         count += 1
@@ -156,11 +164,14 @@ class BeaconFrameworkBotMixin:
         else:
             logger.warning(f"[{self.instance_id}] Beacon: '{self.cogs_path}' directory not found.")
         if self.default_diagnostics:
+            # pyrefly: ignore [missing-attribute]
             await self.load_extension("beacon.ext.diagnostics")
+        # pyrefly: ignore [missing-attribute]
         await self.load_extension("beacon.ext.pic")
         status = await self.registry.smart_sync()
 
         for s in (signal.SIGINT, signal.SIGTERM):
+            # pyrefly: ignore [missing-attribute]
             self.loop.add_signal_handler(
                 s, lambda: asyncio.create_task(self.signal_handler())
             )
@@ -168,13 +179,16 @@ class BeaconFrameworkBotMixin:
         async def on_tree_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
             """Handle slash-command errors and convert framework (or any other) exceptions to user responses."""
             if isinstance(error, app_commands.CommandInvokeError):
+                # pyrefly: ignore [bad-assignment]
                 error = error.original
 
             from .core.errors import PreconditionFailed
             if isinstance(error, PreconditionFailed):
                 if not interaction.response.is_done():
+                    # pyrefly: ignore [missing-attribute]
                     await interaction.response.send_message(f"{error.message}", ephemeral=True)
                 else:
+                    # pyrefly: ignore [missing-attribute]
                     await interaction.followup.send(f"{error.message}", ephemeral=True)
                 return
 
@@ -183,24 +197,29 @@ class BeaconFrameworkBotMixin:
                     await interaction.response.send_message("Beacon: You do not meet the requirements to run this command.",
                                                             ephemeral=True)
                 return
+            if interaction.command is not None:
+                self.logger.error(f"[{self.instance_id}] Beacon: Ignoring exception in command {interaction.command.name}: {error}")
+                if not interaction.response.is_done():
+                    await interaction.response.send_message(content=f"""An unexpected error occurred :(\nPlease contact the developers or the support team of this Discord bot.\nThis unhandled error was caught by [Beacon Framework](https://beacon.dopaminestudios.in/). If you are a developer, please check the logs where it says: "[{self.instance_id}] Beacon: Ignoring exception in command {interaction.command.name}".""", suppress_embeds=True, ephemeral=True)
 
-            self.logger.error(f"[{self.instance_id}] Beacon: Ignoring exception in command {interaction.command.name}: {error}")
-            if not interaction.response.is_done():
-                await interaction.response.send_message(content=f"""An unexpected error occurred :(\nPlease contact the developers or the support team of this Discord bot.\nThis unhandled error was caught by [Beacon Framework](https://beacon.dopaminestudios.in/). If you are a developer, please check the logs where it says: "[{self.instance_id}] Beacon: Ignoring exception in command {interaction.command.name}".""", suppress_embeds=True, ephemeral=True)
-
+        # pyrefly: ignore [missing-attribute]
         self.tree.on_error = on_tree_error
 
     async def signal_handler(self):
         """Gracefully unload extensions and close the bot process."""
         logger.info("Beacon: Bot shutdown requested...")
+        # pyrefly: ignore [missing-attribute]
         extensions = list(self.extensions.keys())
         if self.default_diagnostics:
+            # pyrefly: ignore [missing-attribute]
             await self.unload_extension("beacon.ext.diagnostics")
+        # pyrefly: ignore [missing-attribute]
         await self.unload_extension("beacon.ext.pic")
         internal_extensions = ("beacon.ext.diagnostics", "beacon.ext.pic")
         for extension in extensions:
             if extension not in internal_extensions:
                 try:
+                    # pyrefly: ignore [missing-attribute]
                     await self.unload_extension(extension)
                     logger.info(f"> [{self.instance_id}] Beacon: Unloaded {extension} successfully")
                 except Exception as e:
@@ -208,6 +227,7 @@ class BeaconFrameworkBotMixin:
 
         print(f"This is the end of the Discord bot instance powered by Beacon Framework, with the Beacon Instance ID: {self.instance_id}. 👋 Goodbye!")
         logger.info(f"This is the end of the Discord bot instance powered by Beacon Framework, with the Beacon Instance ID: {self.instance_id}. 👋 Goodbye!\n")
+        # pyrefly: ignore [missing-attribute]
         await self.close()
 
     async def restart_bot(self):
@@ -228,32 +248,53 @@ class BeaconFrameworkBotMixin:
     async def on_ready(self):
         """Finalize startup presence and emit readiness diagnostics once connected."""
         if self.owner_id is None:
+            # pyrefly: ignore [missing-attribute]
             app_info = await self.application_info()
             if app_info.team:
                 self.owner_id = app_info.team.owner_id
             else:
                 self.owner_id = app_info.owner.id
 
-        owner_user = self.get_user(self.owner_id) or await self.fetch_user(self.owner_id)
-        owner_user_name = owner_user.name
+        # pyrefly: ignore [missing-attribute]
+
 
         if self._activity and self._status:
             try:
+                # pyrefly: ignore [missing-attribute]
                 await self.change_presence(activity=self._activity, status=self._status)
             except Exception as e:
                 logger.error(f"[{self.instance_id}] Beacon: ERROR: Failed to set activity or status: {e}")
         elif self._activity:
             try:
+                # pyrefly: ignore [missing-attribute]
                 await self.change_presence(activity=self._activity)
             except Exception as e:
                 logger.error(f"[{self.instance_id}] Beacon: ERROR: Failed to set activity: {e}")
         elif self._status:
             try:
+                # pyrefly: ignore [missing-attribute]
                 await self.change_presence(status=self._status)
             except Exception as e:
                 logger.error(f"[{self.instance_id}] Beacon: ERROR: Failed to set status: {e}")
+        owner_user_name = None
+        # pyrefly: ignore [missing-attribute]
         if not self.owner_ids and self.application and self.application.team:
+            # pyrefly: ignore [missing-attribute]
             self.owner_ids = {m.id for m in self.application.team.members}
+        if self.owner_ids:
+            owner_names = []
+            for o_id in self.owner_ids:
+                # pyrefly: ignore [missing-attribute]
+                user = self.get_user(o_id) or await self.fetch_user(o_id)
+                owner_names.append(user.display_name)
+            owner_user_name = ", ".join(owner_names)
+        elif self.owner_id:
+            # pyrefly: ignore [missing-attribute]
+            user = self.get_user(self.owner_id) or await self.fetch_user(self.owner_id)
+            owner_user_name = user.display_name
+        else:
+            owner_user_name = "Unknown"
+
         if not self.booted:
             total_startup_time = time.time() - self.process_start_time
             bot_version_line = f"Bot Version: {self.version}\n" if self.version else ""
@@ -267,8 +308,9 @@ class BeaconFrameworkBotMixin:
                       f"Total Cogs Loading Time: {self.cog_load_time:.2f}s\n"
                       f"Total Cogs Loaded: {self.count}\n"
                       "\n"
+                      # pyrefly: ignore [missing-attribute]
                       f"Bot ready: {self.user} (ID: {self.user.id})\n"
-                      f"Bot Owner identified: {owner_user_name}\n"
+                      f"Bot Owner(s) identified: {owner_user_name}\n"
                       f"---------------------------------------------------"
                       "\n")
 

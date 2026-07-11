@@ -183,20 +183,6 @@ class LayoutViewPaginator(LayoutView):
         self.per_page = per_page
         self.total_pages = (len(data) - 1) // per_page + 1 if data else 1
 
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        """Reject interactions from users other than the view owner.
-
-        Args:
-            interaction: Interaction context received from Discord.
-
-        Returns:
-            bool: True when the check passes.
-        """
-        if interaction.user.id != self.user.id:
-            await interaction.response.send_message("This isn't for you!", ephemeral=True)
-            return False
-        return True
-
     def get_current_page_data(self):
         """Return the data subset that should be shown on the current page.
 

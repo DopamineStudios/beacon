@@ -4,44 +4,18 @@ import discord
 import signal
 import asyncio
 from typing import TYPE_CHECKING
+
+from discord import Message
+
 from ..core.commands_registry import CommandRegistry
 import logging
 import io
+from pathlib import Path
 
 if TYPE_CHECKING:
     from discord.ext import commands
+from ..utils import PrivateLayoutView
 
-class PrivateLayoutView(discord.ui.LayoutView):
-    """Base layout view that restricts interactions to one authorized user.
-
-    """
-    def __init__(self, user: discord.User, *args, **kwargs):
-        """Initialize a restricted layout view for the provided user.
-
-        Args:
-            user: User that is allowed to interact with this flow.
-            *args: Additional positional arguments forwarded to the parent implementation.
-            **kwargs: Additional keyword arguments forwarded to the underlying API.
-        """
-        super().__init__(*args, **kwargs)
-        self.user = user
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        """Reject interactions from users other than the dashboard owner.
-
-        Args:
-            interaction: Interaction context received from Discord.
-
-        Returns:
-            bool: True when the check passes.
-        """
-        if interaction.user.id != self.user.id:
-            await interaction.response.send_message(
-                "This isn't for you!",
-                ephemeral=True
-            )
-            return False
-        return True
 
 class OwnerDashboard(PrivateLayoutView):
     """Interactive owner dashboard for extension control and sync operations.
@@ -55,12 +29,13 @@ class OwnerDashboard(PrivateLayoutView):
         "* **Step 3:** Click Enter!"
     )
 
-    def __init__(self, bot: 'commands.Bot', user: discord.User, page: int = 1, ephemeral: bool = False, secure_mode: bool = False):
+    def __init__(self, bot: 'commands.Bot', user: discord.User | discord.Member, page: int = 1, ephemeral: bool = False,
+                 secure_mode: bool = False):
         """Initialize owner dashboard state and build the first layout.
 
         Args:
             bot: Bot instance that owns this object or callback.
-            user: User that is allowed to interact with this flow.
+            user (discord.User | discord.Member): User that is allowed to interact with this flow.
             page: Initial dashboard page index (1-based).
             ephemeral: Whether the dashboard message is only visible to the owner.
         """
@@ -82,7 +57,11 @@ class OwnerDashboard(PrivateLayoutView):
         """
         self.clear_items()
         container = discord.ui.Container()
-        container.add_item((discord.ui.TextDisplay(f"## Beacon Owner Dashboard (Beacon Instance ID: `{self.bot.instance_id}`)")))
+
+        # pyrefly: ignore [missing-attribute]
+        container.add_item(
+            # pyrefly: ignore [missing-attribute]
+            (discord.ui.TextDisplay(f"## Beacon Owner Dashboard (Beacon Instance ID: `{self.bot.instance_id}`)")))
         container.add_item(discord.ui.Separator())
 
         cogs_dir = os.path.join(os.getcwd(), "cogs")
@@ -142,7 +121,8 @@ class OwnerDashboard(PrivateLayoutView):
         sync_local_btn = discord.ui.Button(label="Sync Slash Guild", style=discord.ButtonStyle.primary)
         force_sync_btn = discord.ui.Button(label="Force Sync", style=discord.ButtonStyle.secondary)
         reload_btn = discord.ui.Button(label="Reload All Cogs", style=discord.ButtonStyle.primary)
-        upload_btn = discord.ui.Button(label="Upload Cog", style=discord.ButtonStyle.success, disabled=True if self.ephemeral else False)
+        upload_btn = discord.ui.Button(label="Upload Cog", style=discord.ButtonStyle.success,
+                                       disabled=True if self.ephemeral else False)
         shutdown_btn = discord.ui.Button(label="Shutdown", style=discord.ButtonStyle.danger)
         restart_btn = discord.ui.Button(label="Restart", style=discord.ButtonStyle.danger)
         log_btn = discord.ui.Button(label="Show Log", style=discord.ButtonStyle.secondary)
@@ -174,7 +154,8 @@ class OwnerDashboard(PrivateLayoutView):
 
         container.add_item(action_row)
         if not self.secure_mode and self.ephemeral:
-            container.add_item(discord.ui.TextDisplay("-# For Beacon's Upload Cog feature to function, please run the `/od` command in a server where your bot is present or in the bot's own DMs and not any other DM, with the ephemeral mode set to False."))
+            container.add_item(discord.ui.TextDisplay(
+                "-# For Beacon's Upload Cog feature to function, please run the `/od` command in a server where your bot is present or in the bot's own DMs and not any other DM, with the ephemeral mode set to False."))
         self.add_item(container)
 
     def create_toggle_callback(self, ext_name, is_loaded):
@@ -187,6 +168,7 @@ class OwnerDashboard(PrivateLayoutView):
         Returns:
             Any: Result produced by this function.
         """
+
         async def callback(interaction: discord.Interaction):
             """Toggle extension state and refresh the dashboard message.
 
@@ -205,6 +187,7 @@ class OwnerDashboard(PrivateLayoutView):
                 await interaction.response.edit_message(view=self)
             except Exception as e:
                 await interaction.response.send_message(f"Error: {e}", ephemeral=True)
+
         return callback
 
     async def prev_page(self, interaction: discord.Interaction):
@@ -243,9 +226,10 @@ class OwnerDashboard(PrivateLayoutView):
             Any: Result produced by this function.
         """
         cogs_dir = os.path.join(os.getcwd(), "cogs")
-        cog_files = [f for f in os.listdir(cogs_dir) if f.endswith(".py") and not f.startswith("__")] if os.path.exists(cogs_dir) else []
+        cog_files = [f for f in os.listdir(cogs_dir) if f.endswith(".py") and not f.startswith("__")] if os.path.exists(
+            cogs_dir) else []
         total_pages = (len(cog_files) + self.items_per_page - 1) // self.items_per_page
-        await interaction.response.send_modal(OwnerGoToPageModal(self, total_pages))
+        await interaction.response.send_modal(OwnerGoToPageModal(self.bot, self, total_pages))
 
     async def upload_cog_callback(self, interaction: discord.Interaction):
         """Enable a timed upload window so the owner can send a cog file via Discord.
@@ -258,13 +242,14 @@ class OwnerDashboard(PrivateLayoutView):
         """
         if self._upload_in_progress:
             await interaction.response.send_message(
+                # pyrefly: ignore [missing-attribute]
                 f"[`{self.bot.instance_id}`] Beacon: An upload is already in progress.",
                 ephemeral=True,
             )
             return
 
         self._upload_in_progress = True
-        dashboard_message = interaction.message
+        dashboard_message: Message | None = interaction.message
 
         try:
             await interaction.response.defer(ephemeral=self.ephemeral)
@@ -276,9 +261,9 @@ class OwnerDashboard(PrivateLayoutView):
 
             def upload_check(message: discord.Message) -> bool:
                 return (
-                    message.author.id == self.user.id
-                    and message.channel.id == interaction.channel_id
-                    and len(message.attachments) > 0
+                        message.author.id == self.user.id
+                        and message.channel.id == interaction.channel_id
+                        and len(message.attachments) > 0
                 )
 
             try:
@@ -286,7 +271,10 @@ class OwnerDashboard(PrivateLayoutView):
                     "message", check=upload_check, timeout=60.0
                 )
             except asyncio.TimeoutError:
-                await upload_message.edit(content=f"[`{self.bot.instance_id}`] Beacon: Upload timed out. No file received within 60 seconds.")
+                # pyrefly: ignore [missing-attribute]
+                await upload_message.edit(
+                    # pyrefly: ignore [missing-attribute]
+                    content=f"[`{self.bot.instance_id}`] Beacon: Upload timed out. No file received within 60 seconds.")
                 if not self.ephemeral:
                     await asyncio.sleep(5.0)
                     try:
@@ -297,15 +285,22 @@ class OwnerDashboard(PrivateLayoutView):
 
             filename = owner_message.content.strip()
             if not filename:
-                await upload_message.edit(content=f"[`{self.bot.instance_id}`] Beacon: ERROR: Enter a filename (e.g. `moderation.py`) in your message.")
+                # pyrefly: ignore [missing-attribute]
+                await upload_message.edit(
+                    # pyrefly: ignore [missing-attribute]
+                    content=f"[`{self.bot.instance_id}`] Beacon: ERROR: Enter a filename (e.g. `moderation.py`) in your message.")
                 return
 
             if os.path.basename(filename) != filename or ".." in filename:
+                # pyrefly: ignore [missing-attribute]
                 await upload_message.edit(content=f"[`{self.bot.instance_id}`] Beacon: ERROR: Invalid filename.")
                 return
 
             if not filename.endswith(".py") or filename.startswith("__"):
-                await upload_message.edit(content=f"[`{self.bot.instance_id}`] Beacon: ERROR: Filename must end with `.py` and cannot start with `__`.")
+                # pyrefly: ignore [missing-attribute]
+                await upload_message.edit(
+                    # pyrefly: ignore [missing-attribute]
+                    content=f"[`{self.bot.instance_id}`] Beacon: ERROR: Filename must end with `.py` and cannot start with `__`.")
                 return
 
             cogs_path = getattr(self.bot, "cogs_path", "cogs")
@@ -313,21 +308,25 @@ class OwnerDashboard(PrivateLayoutView):
             os.makedirs(cogs_dir, exist_ok=True)
 
             file_path = os.path.join(cogs_dir, filename)
-            await owner_message.attachments[0].save(file_path)
+            await owner_message.attachments[0].save(Path(file_path))
 
             await upload_message.edit(content="File successfully uploaded!")
             await owner_message.delete()
             self.build_layout()
-            await dashboard_message.edit(view=self)
+            if not dashboard_message is None:
+                await dashboard_message.edit(view=self)
 
             if not self.ephemeral:
                 await asyncio.sleep(5)
                 await upload_message.delete()
         except Exception as e:
             if interaction.response.is_done():
+                # pyrefly: ignore [missing-attribute]
                 await interaction.followup.send(f"[`{self.bot.instance_id}`] Beacon: ERROR: {e}", ephemeral=True)
             else:
-                await interaction.response.send_message(f"[`{self.bot.instance_id}`] Beacon: ERROR: {e}", ephemeral=True)
+                # pyrefly: ignore [missing-attribute]
+                await interaction.response.send_message(f"[`{self.bot.instance_id}`] Beacon: ERROR: {e}",
+                                                        ephemeral=True)
         finally:
             self._upload_in_progress = False
 
@@ -351,6 +350,7 @@ class OwnerDashboard(PrivateLayoutView):
                     reloaded.append(ext)
                 except Exception as e:
                     failed.append(f"{ext} ({e})")
+        # pyrefly: ignore [missing-attribute]
         status = f"[`{self.bot.instance_id}`] Beacon: Reloaded {len(reloaded)} cogs."
         if failed: status += f"\n**Failed:** {', '.join(failed)}"
         await interaction.followup.send(status, ephemeral=True)
@@ -364,7 +364,11 @@ class OwnerDashboard(PrivateLayoutView):
         Returns:
             Any: Result produced by this function.
         """
-        await interaction.response.send_message(f"[`{self.bot.instance_id}`] Beacon: Syncing Slash commands, Please wait. This may take a while if you already synced recently due to Discord rate-limiting the bot.", ephemeral=True)
+        # pyrefly: ignore [missing-attribute]
+        await interaction.response.send_message(
+            # pyrefly: ignore [missing-attribute]
+            f"[`{self.bot.instance_id}`] Beacon: Syncing Slash commands, Please wait. This may take a while if you already synced recently due to Discord rate-limiting the bot.",
+            ephemeral=True)
         response = await self.registry.smart_sync(guild=None)
         try:
             await interaction.edit_original_response(content=response)
@@ -380,7 +384,11 @@ class OwnerDashboard(PrivateLayoutView):
         Returns:
             Any: Result produced by this function.
         """
-        await interaction.response.send_message(f"[`{self.bot.instance_id}`] Beacon: Syncing Slash commands, Please wait. This may take a while if you already synced recently due to Discord rate-limiting the bot.", ephemeral=True)
+        # pyrefly: ignore [missing-attribute]
+        await interaction.response.send_message(
+            # pyrefly: ignore [missing-attribute]
+            f"[`{self.bot.instance_id}`] Beacon: Syncing Slash commands, Please wait. This may take a while if you already synced recently due to Discord rate-limiting the bot.",
+            ephemeral=True)
         response = await self.registry.smart_sync(guild=None)
         try:
             await interaction.edit_original_response(content=response)
@@ -389,6 +397,7 @@ class OwnerDashboard(PrivateLayoutView):
 
     async def force_sync_callback(self, interaction: discord.Interaction):
         await interaction.response.send_message(
+            # pyrefly: ignore [missing-attribute]
             f"[`{self.bot.instance_id}`] Beacon: Syncing Slash commands using Beacon Framework's `force_sync` method which forces a sync regardless of whether there is a change detected or not, Please wait. This may take a while if you already synced recently due to Discord rate-limiting the bot.",
             ephemeral=True)
         response = await self.registry.force_sync(guild=interaction.guild)
@@ -407,6 +416,7 @@ class OwnerDashboard(PrivateLayoutView):
             Any: Result produced by this function.
         """
         await interaction.response.send_message("Beacon: Shutting down...", ephemeral=True)
+        # pyrefly: ignore [missing-attribute]
         await self.bot.signal_handler()
 
     async def restart_callback(self, interaction: discord.Interaction):
@@ -419,6 +429,7 @@ class OwnerDashboard(PrivateLayoutView):
             Any: Result produced by this function.
         """
         await interaction.response.send_message("Beacon: Restarting process...", ephemeral=True)
+        # pyrefly: ignore [missing-attribute]
         await self.bot.restart_bot()
 
     async def show_log_callback(self, interaction: discord.Interaction):
@@ -437,6 +448,7 @@ class OwnerDashboard(PrivateLayoutView):
 
         if not os.path.exists(log_path):
             return await interaction.response.send_message(
+                # pyrefly: ignore [missing-attribute]
                 f"[`{self.bot.instance_id}`] Beacon: ERROR: Log file not found.",
                 ephemeral=True
             )
@@ -458,6 +470,7 @@ class OwnerDashboard(PrivateLayoutView):
                         filename="tail_discord.log"
                     )
                     await interaction.followup.send(
+                        # pyrefly: ignore [missing-attribute]
                         f"[`{self.bot.instance_id}`] Beacon: Last 70 lines exceed 1900 chars, sending snippet file:",
                         file=log_file,
                         ephemeral=True
@@ -467,15 +480,18 @@ class OwnerDashboard(PrivateLayoutView):
 
         except Exception as e:
             await interaction.followup.send(
+                # pyrefly: ignore [missing-attribute]
                 f"[`{self.bot.instance_id}`] Beacon: ERROR: Failed to read log: {e}",
                 ephemeral=True
             )
+
 
 class OwnerGoToPageModal(discord.ui.Modal):
     """Modal that asks the owner which dashboard page to open.
 
     """
-    def __init__(self, parent_view: OwnerDashboard, total_pages: int):
+
+    def __init__(self, bot, parent_view: OwnerDashboard, total_pages: int):
         """Initialize page-jump modal bounds and input field.
 
         Args:
@@ -483,6 +499,7 @@ class OwnerGoToPageModal(discord.ui.Modal):
             total_pages: Maximum number of available pages.
         """
         super().__init__(title="Jump to Page")
+        self.bot = bot
         self.parent_view = parent_view
         self.total_pages = max(total_pages, 1)
         self.page_input = discord.ui.TextInput(
@@ -509,6 +526,8 @@ class OwnerGoToPageModal(discord.ui.Modal):
                 self.parent_view.build_layout()
                 await interaction.response.edit_message(view=self.parent_view)
             else:
-                await interaction.response.send_message(f"[`{self.bot.instance_id}`] Beacon: Enter a number between 1-{self.total_pages}.", ephemeral=True)
+                await interaction.response.send_message(
+                    f"[`{self.bot.instance_id}`] Beacon: Enter a number between 1-{self.total_pages}.", ephemeral=True)
         except ValueError:
-            await interaction.response.send_message(f"[`{self.bot.instance_id}`] Beacon: Invalid input.", ephemeral=True)
+            await interaction.response.send_message(f"[`{self.bot.instance_id}`] Beacon: Invalid input.",
+                                                    ephemeral=True)
