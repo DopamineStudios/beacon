@@ -26,12 +26,15 @@ class Diagnostics(commands.Cog):
             bot: Bot instance that owns this object or callback.
         """
         self.bot = bot
-        self.latency_cache = deque(maxlen=1440)
-        self.temp_samples = []
+        self.api_latency_cache = deque(maxlen=1440)
+        self.api_temp_samples = []
         self.process = psutil.Process(os.getpid())
         self.process.cpu_percent(interval=None)
         self.current_cpu = 0.0
-        self.cached_graph_bytes = None
+        self.cached_api_graph_bytes = None
+        self.heartbeat_latency_cache = deque(maxlen=1440)
+        self.heartbeat_temp_samples = []
+        self.cached_heartbeat_graph_bytes = None
         self.cache_task.start()
 
         self.battery_cache = []
@@ -56,18 +59,14 @@ class Diagnostics(commands.Cog):
 
     @tasks.loop(seconds=5.0)
     async def cache_task(self):
-        """Collect API latency samples and keep rolling latency averages.
-
-        Returns:
-            Any: Result produced by this function.
-        """
+        """Collect API and Heartbeat latency samples and keep rolling latency averages."""
         if not self.bot.is_ready():
             return
 
         try:
             self.current_cpu = self.process.cpu_percent(interval=None)
-            total_latency = None
 
+            total_latency = None
             try:
                 start = time.perf_counter()
                 await asyncio.wait_for(
@@ -83,18 +82,31 @@ class Diagnostics(commands.Cog):
                 total_latency = None
 
             if isinstance(total_latency, (int, float)):
-                self.temp_samples.append(total_latency)
+                self.api_temp_samples.append(total_latency)
 
-            if len(self.temp_samples) >= 12:
-                avg_latency = sum(self.temp_samples) / len(self.temp_samples)
-                self.latency_cache.append(avg_latency)
-                self.temp_samples.clear()
+            hb_latency = round(self.bot.latency * 1000) if self.bot.latency is not None else None
+            if isinstance(hb_latency, (int, float)):
+                self.heartbeat_temp_samples.append(hb_latency)
 
-                loop = asyncio.get_running_loop()
-                graph_buffer = await loop.run_in_executor(None, self.generate_latency_graph)
+            loop = asyncio.get_running_loop()
+
+            if len(self.api_temp_samples) >= 12:
+                avg_latency = sum(self.api_temp_samples) / len(self.api_temp_samples)
+                self.api_latency_cache.append(avg_latency)
+                self.api_temp_samples.clear()
+
+                graph_buffer = await loop.run_in_executor(None, self.generate_latency_graph, "API")
                 if graph_buffer:
+                    self.cached_api_graph_bytes = graph_buffer.getvalue()
 
-                    self.cached_graph_bytes = graph_buffer.getvalue()
+            if len(self.heartbeat_temp_samples) >= 12:
+                avg_hb = sum(self.heartbeat_temp_samples) / len(self.heartbeat_temp_samples)
+                self.heartbeat_latency_cache.append(avg_hb)
+                self.heartbeat_temp_samples.clear()
+
+                hb_graph_buffer = await loop.run_in_executor(None, self.generate_latency_graph, "Heartbeat")
+                if hb_graph_buffer:
+                    self.cached_heartbeat_graph_bytes = hb_graph_buffer.getvalue()
 
         except Exception as e:
             self.bot.logger.critical(f"[{self.bot.instance_id}] Beacon: {e}")
@@ -182,14 +194,17 @@ class Diagnostics(commands.Cog):
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(None, fetch)
 
-    def generate_latency_graph(self):
+    def generate_latency_graph(self, graph_type: str):
         """Render the cached latency history into an in-memory PNG graph using pyvips.
 
         Returns:
             io.BytesIO | None: Generated latency graph result or None if insufficient samples.
         """
         try:
-            data = list(self.latency_cache)
+            if graph_type.strip().lower() == "heartbeat":
+                data = list(self.heartbeat_latency_cache)
+            else:
+                data = list(self.api_latency_cache)
             num_samples = len(data)
 
             if num_samples < 2:
@@ -279,7 +294,7 @@ class Diagnostics(commands.Cog):
 
             fg_mutable = draw_text(
                 fg_mutable,
-                "API Latency Graph - Powered by Beacon",
+                f"{graph_type} Latency Graph - Powered by Beacon",
                 f"{font_family_title} Bold",
                 24 * scale_factor,
                 [255, 255, 255, 255],
@@ -382,12 +397,16 @@ class Diagnostics(commands.Cog):
             "Done! Icecream sent."
         )
 
-        if self.latency_cache:
-            avg_latency = f"{round(sum(self.latency_cache) / len(self.latency_cache))}ms"
-            sample_count = len(self.latency_cache)
+        if self.api_latency_cache:
+            avg_api_latency = f"{round(sum(self.api_latency_cache) / len(self.api_latency_cache))}ms"
+            sample_count = len(self.api_latency_cache)
         else:
-            avg_latency = "Calculating..."
+            avg_api_latency = "Calculating..."
             sample_count = 0
+        if self.heartbeat_latency_cache:
+            avg_heartbeat_latency = f"{round(sum(self.heartbeat_latency_cache) / len(self.heartbeat_latency_cache))}ms"
+        else:
+            avg_heartbeat_latency = "Calculating..."
         start_time = time.time()
         await interaction.response.send_message(initial_message)
         end_time = time.time()
@@ -474,7 +493,8 @@ class Diagnostics(commands.Cog):
                 f"> API Latency: `{connection_latency}ms`\n"
                 f"> Round-trip Latency: `{round_latency}ms`\n"
                 f"> Heartbeat/WebSocket Latency: `{discord_latency}ms`\n\n"
-                f"> Average API Latency: `{avg_latency}`\n\n"
+                f"> Average API Latency: `{avg_api_latency}`\n"
+                f"> Average Heartbeat/WebSocket Latency: `{avg_heartbeat_latency}`\n\n"
                 f"> Connection Uptime: `{uptime_formatted}`\n"
                 f"> Process Uptime: `{proc_uptime}`\n\n"
                 f"> CPU Usage: `{formatted_cpu_usage}%`\n"
@@ -488,26 +508,48 @@ class Diagnostics(commands.Cog):
 
     latency = beacon_commands.Group(name="latency", description="Shows latency information about the bot")
     @latency.command(name="graph", description="Shows a graph of the average latency in the last 24 hours")
-    async def graph(self, interaction: discord.Interaction):
+    @app_commands.choices(graph_type=[
+        app_commands.Choice(name="API Latency Graph", value="api"),
+        app_commands.Choice(name="Heartbeat Latency Graph", value="heartbeat")
+    ])
+    @app_commands.describe(graph_type="The type of latency graph you want to see, either for API latency or for Heartbeat latency. Defaults to API latency graph.")
+    async def graph(self, interaction: discord.Interaction, graph_type: app_commands.Choice[str] = None):
         """Return a generated latency trend graph when enough samples exist.
 
         Args:
             interaction: Interaction context received from Discord.
+            graph_type: The type of latency graph you want to see, either for API latency or for Heartbeat latency. Defaults to API latency graph.
 
         Returns:
             Any: Result produced by this function.
         """
-        if not self.cached_graph_bytes:
-            return await interaction.response.send_message(
-                "Beacon: Not enough data yet! The bot was restarted very recently. Please wait a few minutes.",
-                ephemeral=True
-            )
-        try:
-            buffer = io.BytesIO(self.cached_graph_bytes)
-            file = discord.File(buffer, filename="graph.png")
-            await interaction.response.send_message(content=None, attachments=file)
-        except Exception as e:
-            return await interaction.response.send_message(content=f"Beacon: ERROR: {e}", ephemeral=True)
+        graph_type_value = graph_type.value if graph_type is not None else "api"
+        if graph_type_value == "api":
+            if not self.cached_api_graph_bytes:
+                return await interaction.response.send_message(
+                    "Beacon: Not enough data yet! The bot was restarted very recently. Please wait a few minutes.",
+                    ephemeral=True
+                )
+            try:
+                buffer = io.BytesIO(self.cached_api_graph_bytes)
+                file = discord.File(buffer, filename="beacon_api_graph.png")
+                await interaction.response.send_message(content=None, attachments=file)
+            except Exception as e:
+                return await interaction.response.send_message(content=f"Beacon: ERROR: {e}", ephemeral=True)
+        elif graph_type_value == "heartbeat":
+            if not self.cached_heartbeat_graph_bytes:
+                return await interaction.response.send_message(
+                    "Beacon: Not enough data yet! The bot was restarted very recently. Please wait a few minutes.",
+                    ephemeral=True
+                )
+            try:
+                buffer = io.BytesIO(self.cached_heartbeat_graph_bytes)
+                file = discord.File(buffer, filename="beacon_heartbeat_graph.png")
+                await interaction.response.send_message(content=None, attachments=file)
+            except Exception as e:
+                return await interaction.response.send_message(content=f"Beacon: ERROR: {e}", ephemeral=True)
+        else:
+            return await interaction.response.send_message(content="That's not a valid Graph Type!")
 
 async def setup(bot):
     """Attach the diagnostics cog to the running bot.
