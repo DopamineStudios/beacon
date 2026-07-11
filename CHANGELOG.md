@@ -1,26 +1,27 @@
 ## [v4.1.1](https://github.com/DopamineStudios/beacon/compare/vv4.1.0...vv4.1.1) (2026-07-11)
-
+* Hotfix: Remove ANSI escape codes from .log file because they aren't being rendered properly ([daddebaa](https://www.google.com/search?q=https://github.com/DopamineStudios/beacon/commit/daddebaa))
+* Remove code that creates new logging processes, now everything uses self.bot.logger ([8827fd5b](https://github.com/DopamineStudios/beacon/commit/8827fd5b))
 ## [v4.1.0](https://github.com/DopamineStudios/beacon/compare/vv4.0.0...vv4.1.0) (2026-07-11)
 
 ### Features
 
-* **on_beacon_ready_callback:** Add a new `on_beacon_ready_callback` hook that allows executing any arbitrary function after the bot finishes its initialization and is completely ready. ([f177046](https://www.google.com/search?q=https://github.com/DopamineStudios/beacon/commit/f177046))
-* **Views & Callbacks:** Update `on_confirmation_callback` in confirmation views to natively pass the interaction context directly into the function. Additionally, refactor implementation to drop generic `args` and `kwargs` parameters in favour of expecting developers to use `functools.partial` to handle extra arguments. ([1fe9054](https://www.google.com/search?q=https://github.com/DopamineStudios/beacon/commit/1fe9054))
-* **Paginator Overhaul:** Completely re-vamp `LayoutViewPaginator` to make it genuinely functional and improve the core implementation details of the base `ViewPaginator`. ([5e183be](https://www.google.com/search?q=https://github.com/DopamineStudios/beacon/commit/5e183be))
-* **Visual Logging:** Update terminal and logging outputs across the framework, commands registry, and diagnostics modules to make logs visually cleaner and more beautiful. ([811071c](https://www.google.com/search?q=https://github.com/DopamineStudios/beacon/commit/811071c))
+* **on_beacon_ready_callback:** Add a new `on_beacon_ready_callback` hook that allows executing any arbitrary function after the bot finishes its initialization and is completely ready. ([f177046](https://github.com/DopamineStudios/beacon/commit/f177046))
+* **Views & Callbacks:** Update `on_confirmation_callback` in confirmation views to natively pass the interaction context directly into the function. Additionally, refactor implementation to drop generic `args` and `kwargs` parameters in favour of expecting developers to use `functools.partial` to handle extra arguments. ([1fe9054](https://github.com/DopamineStudios/beacon/commit/1fe9054))
+* **Paginator Overhaul:** Completely re-vamp `LayoutViewPaginator` to make it genuinely functional and improve the core implementation details of the base `ViewPaginator`. ([5e183be](https://github.com/DopamineStudios/beacon/commit/5e183be))
+* **Visual Logging:** Update terminal and logging outputs across the framework, commands registry, and diagnostics modules to make logs visually cleaner and more beautiful. ([811071c](https://github.com/DopamineStudios/beacon/commit/811071c))
 
 ### Bug Fixes
 
-* **Codebase Type Safety:** Resolve static analysis warnings and explicitly make the entire codebase fully type-safe across all core, extension, and utility modules. ([6c38739](https://www.google.com/search?q=https://github.com/DopamineStudios/beacon/commit/6c38739))
-* **AutoShardedBot Gateway & Ping:** Add missing gateway event handling infrastructure when running the `AutoShardedBot` configurations, and expose a new shard ID status field inside the diagnostics `/ping` command embed output. ([15f51b9](https://www.google.com/search?q=https://github.com/DopamineStudios/beacon/commit/15f51b9))
-* **Shard ID Calculation:** Fix an algorithmic calculation error responsible for evaluating incorrect shard ID numbers inside the diagnostic extension tracking states. ([c22e510](https://www.google.com/search?q=https://github.com/DopamineStudios/beacon/commit/c22e510))
-* **Crash Prevention:** Remove an out-of-date, unused legacy import block inside `dashboard.py` that was triggering an explicit framework crash due to referencing an old name. ([9f558a7](https://www.google.com/search?q=https://github.com/DopamineStudios/beacon/commit/9f558a7))
-* **Syntax Polish:** Clean up and remove a useless `>` character output string evaluated during bot lifecycle loops. ([3c82d17](https://www.google.com/search?q=https://github.com/DopamineStudios/beacon/commit/3c82d17))
-* **Documentation Fixes:** Rectify a syntax typo present in the view example code snippets inside `DOCUMENTATION/views.md`. ([f599586](https://www.google.com/search?q=https://github.com/DopamineStudios/beacon/commit/f599586))
+* **Codebase Type Safety:** Resolve static analysis warnings and explicitly make the entire codebase fully type-safe across all core, extension, and utility modules. ([6c38739](https://github.com/DopamineStudios/beacon/commit/6c38739))
+* **AutoShardedBot Gateway & Ping:** Add missing gateway event handling infrastructure when running the `AutoShardedBot` configurations, and expose a new shard ID status field inside the diagnostics `/ping` command embed output. ([15f51b9](https://github.com/DopamineStudios/beacon/commit/15f51b9))
+* **Shard ID Calculation:** Fix an algorithmic calculation error responsible for evaluating incorrect shard ID numbers inside the diagnostic extension tracking states. ([c22e510](https://github.com/DopamineStudios/beacon/commit/c22e510))
+* **Crash Prevention:** Remove an out-of-date, unused legacy import block inside `dashboard.py` that was triggering an explicit framework crash due to referencing an old name. ([9f558a7](https://github.com/DopamineStudios/beacon/commit/9f558a7))
+* **Syntax Polish:** Clean up and remove a useless `>` character output string evaluated during bot lifecycle loops. ([3c82d17](https://github.com/DopamineStudios/beacon/commit/3c82d17))
+* **Documentation Fixes:** Rectify a syntax typo present in the view example code snippets inside `DOCUMENTATION/views.md`. ([f599586](https://github.com/DopamineStudios/beacon/commit/f599586))
 
 ### Documentation Changes
 
-* General clean-ups, wording updates, and clarity improvements across the core framework documentation files. ([9595836](https://www.google.com/search?q=https://github.com/DopamineStudios/beacon/commit/9595836))
+* General clean-ups, wording updates, and clarity improvements across the core framework documentation files. ([9595836](https://github.com/DopamineStudios/beacon/commit/9595836))
 ## [v4.0.0](https://github.com/DopamineStudios/beacon/compare/v3.2.6...v4.0.0) (2026-07-11)
 
 ### Features
