@@ -27,7 +27,7 @@ class PrivateView(discord.ui.View):
         """
         if interaction.user.id != self.user.id:
             await interaction.response.send_message(
-                "This isn't for you!",
+                f"Beacon: This isn't for you! This menu was originally opened by {self.user.mention}. To use it, you will have to run the original command yourself, I don't make the rules.",
                 ephemeral=True
             )
             return False
@@ -61,7 +61,7 @@ class PrivateLayoutView(discord.ui.LayoutView):
         """
         if interaction.user.id != self.user.id:
             await interaction.response.send_message(
-                "This isn't for you!",
+                f"Beacon: This isn't for you! This menu was originally opened by {self.user.mention}. To use it, you will have to run the original command yourself, I don't make the rules.",
                 ephemeral=True
             )
             return False
