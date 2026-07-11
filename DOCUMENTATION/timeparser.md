@@ -1,3 +1,5 @@
+from beacon.core import beacon_commands
+
 ## `timeparser.py` Documentation
 
 The `timeparser.py` utility provides functions for converting human-readable duration strings into integer seconds and calculating future Unix timestamps. This is primarily used for features requiring time offsets, such as temporary bans, reminders, or mute durations.
@@ -63,7 +65,7 @@ print(timestamp)
 This utility is typically used within Discord commands to handle user input for durations.
 
 ```python
-@tree.command(name="mute", description="Mute a user for a specific duration")
+@beacon_commands.command(name="mute", description="Mute a user for a specific duration")
 async def mute(interaction: discord.Interaction, user: discord.Member, duration: str):
     # Convert input like "1d 6h" to seconds
     seconds = duration_to_seconds(duration)
