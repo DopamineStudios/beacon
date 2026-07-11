@@ -91,14 +91,14 @@ class CommandRegistry:
         dump = json.dumps(sorted_map, sort_keys=True)
         return hashlib.sha256(dump.encode('utf-8')).hexdigest()
 
-    def _get_stored_hash(self, scope_id: str):
-        """Load the last persisted command-tree hash for a scope.
+    def _get_stored_state(self, scope_id: str):
+        """Load the last persisted command-tree state for a scope.
 
         Args:
             scope_id: Storage key for the sync-hash scope.
 
         Returns:
-            Any: Result produced by this function.
+            dict: Dict containing 'hash' and 'bot_id', or None.
         """
         if not os.path.exists(self.state_path):
             return None
@@ -109,15 +109,12 @@ class CommandRegistry:
         except Exception:
             return None
 
-    def _save_hash(self, scope_id: str, new_hash: str):
-        """Persist the latest command-tree hash for a scope.
+    def _save_state(self, scope_id: str, new_hash: str):
+        """Persist the latest command-tree hash and bot ID for a scope.
 
         Args:
             scope_id: Storage key for the sync-hash scope.
             new_hash: Freshly calculated command-tree hash.
-
-        Returns:
-            Any: Result produced by this function.
         """
         os.makedirs(os.path.dirname(self.state_path), exist_ok=True)
         data = {}
@@ -128,19 +125,18 @@ class CommandRegistry:
             except Exception:
                 pass
 
-        data[scope_id] = new_hash
+        bot_id = self.bot.user.id if self.bot.user else None
+
+        data[scope_id] = {
+            "hash": new_hash,
+            "bot_id": bot_id
+        }
+
         with open(self.state_path, "w") as f:
             json.dump(data, f, indent=4)
 
     async def smart_sync(self, guild: discord.Guild = None):
-        """Sync commands only when the local tree hash differs from stored state, using backoff and lock mechanisms.
-
-        Args:
-            guild: Guild to scope the operation to; uses global scope when omitted.
-
-        Returns:
-            str: Human-readable sync status message.
-        """
+        """Sync commands only when the local tree hash or bot ID differs from stored state."""
         if self.sync_lock.locked():
             return "Beacon: A command synchronisation is already in progress. Please wait for it to complete."
 
@@ -148,54 +144,57 @@ class CommandRegistry:
         scope_name = f"Guild({guild.id})" if guild else "Global"
 
         current_hash = self._generate_tree_hash(guild)
-        stored_hash = self._get_stored_hash(scope_id)
+        stored_state = self._get_stored_state(scope_id)
 
-        if current_hash == stored_hash:
+        current_bot_id = self.bot.user.id if self.bot.user else None
+
+        if (
+                stored_state
+                and stored_state.get("hash") == current_hash
+                and stored_state.get("bot_id") == current_bot_id
+        ):
             logger.info(
-                f"[{self.bot.instance_id}] Beacon: Compared stored local hash to current local hash. {scope_name} commands are up to date. Skipping sync API call.")
-            return f"Beacon: Compared stored local hash to current local hash. {scope_name} commands are up to date. Skipping sync API call."
+                f"[{self.bot.instance_id}] Beacon: Compared stored state to current state. {scope_name} commands are up to date for this bot. Skipping sync API call."
+            )
+            return f"[`{self.bot.instance_id}`] Beacon: Compared stored state to current state. {scope_name} commands are up to date. Skipping sync API call."
 
         async with self.sync_lock:
-            logger.info(f"[{self.bot.instance_id}] Beacon: Detected changes. Syncing {scope_name} commands...")
+            logger.info(
+                f"[{self.bot.instance_id}] Beacon: Detected changes or bot swap. Syncing {scope_name} commands...")
             backoff = 2.0
             max_backoff = 300.0
 
             while True:
                 try:
                     await self.bot.tree.sync(guild=guild)
-                    self._save_hash(scope_id, current_hash)
-                    return f"Beacon: Detected changes, and completed command sync for {scope_name} successfully."
+                    self._save_state(scope_id, current_hash)
+                    return f"[`{self.bot.instance_id}`] Beacon: Detected changes, and completed command sync for {scope_name} successfully."
 
                 except discord.HTTPException as e:
                     if e.status == 429 or 500 <= e.status < 600:
-                        logger.warning(f"[{self.bot.instance_id}] Beacon: Sync hit HTTP {e.status}. Retrying in {backoff} seconds...")
+                        logger.warning(
+                            f"[{self.bot.instance_id}] Beacon: Sync hit HTTP {e.status}. Retrying in {backoff} seconds...")
                         await asyncio.sleep(backoff)
 
                         if backoff >= max_backoff:
                             logger.error(
-                                f"[{self.bot.instance_id}] Beacon: Sync aborted. Maximum backoff time of 5 minutes reached for {scope_name}.")
-                            return f"Beacon: Error syncing {scope_name}. The Discord API did not accept requests after maximum backoff configurations."
+                                f"[{self.bot.instance_id}] Beacon: Sync aborted. Maximum backoff time of 5 minutes reached for {scope_name}."
+                            )
+                            return f"[`{self.bot.instance_id}`] Beacon: Error syncing {scope_name}. The Discord API did not accept requests after maximum backoff configurations."
 
                         backoff = min(backoff * 2, max_backoff)
                     else:
                         logger.error(f"[{self.bot.instance_id}] Beacon: Sync failed with unretriable error: {e}")
-                        return f"Beacon: Error syncing {scope_name}: HTTP status {e.status} encountered."
+                        return f"[`{self.bot.instance_id}`] Beacon: Error syncing {scope_name}: HTTP status {e.status} encountered."
 
                 except Exception as e:
                     logger.error(f"[{self.bot.instance_id}] Beacon: Unexpected error during sync execution: {e}")
-                    return f"Beacon: Error syncing {scope_name}: {e}"
+                    return f"[`{self.bot.instance_id}`] Beacon: Error syncing {scope_name}: {e}"
 
     async def force_sync(self, guild: discord.Guild = None):
-        """Force a command sync call regardless of hash comparison, respecting the global lock.
-
-        Args:
-            guild: Guild to scope the operation to; uses global scope when omitted.
-
-        Returns:
-            str: Human-readable sync status message.
-        """
+        """Force a command sync call regardless of configuration states, respecting the global lock."""
         if self.sync_lock.locked():
-            return "Beacon: A command synchronisation is already in progress. Please wait for it to complete."
+            return f"[`{self.bot.instance_id}`] Beacon: A command synchronisation is already in progress. Please wait for it to complete."
 
         scope = f"Guild: {guild.name} ({guild.id})" if guild else "Global"
 
@@ -203,7 +202,7 @@ class CommandRegistry:
             try:
                 await self.bot.tree.sync(guild=guild)
                 scope_id = f"guild_{guild.id}" if guild else "global"
-                self._save_hash(scope_id, self._generate_tree_hash(guild))
-                return f"Beacon: Synced slash commands to: {scope}."
+                self._save_state(scope_id, self._generate_tree_hash(guild))
+                return f"[`{self.bot.instance_id}`] Beacon: Synced slash commands to: {scope}."
             except discord.HTTPException as e:
-                return f"Beacon: Rate limit or API error: {e}"
+                return f"[`{self.bot.instance_id}`] Beacon: Rate limit or API error: {e}"
