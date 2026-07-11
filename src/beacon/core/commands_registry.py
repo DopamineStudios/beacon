@@ -7,7 +7,9 @@ import asyncio
 from discord import app_commands
 
 logger = logging.getLogger("discord")
-
+GREY = "\033[90m"
+CYAN = "\033[96m"
+RESET = "\033[0m"
 
 class CommandRegistry:
     """Tracks local app-command state and synchronises it only when changed with rate-limiting protection.
@@ -138,7 +140,7 @@ class CommandRegistry:
     async def smart_sync(self, guild: discord.Guild | None = None):
         """Sync commands only when the local tree hash or bot ID differs from stored state."""
         if self.sync_lock.locked():
-            return "Beacon: A command synchronisation is already in progress. Please wait for it to complete."
+            return f"[`{self.bot.instance_id}`] Beacon: A command synchronisation is already in progress. Please wait for it to complete."
 
         scope_id = f"guild_{guild.id}" if guild else "global"
         scope_name = f"Guild({guild.id})" if guild else "Global"
@@ -154,13 +156,13 @@ class CommandRegistry:
                 and stored_state.get("bot_id") == current_bot_id
         ):
             logger.info(
-                f"[{self.bot.instance_id}] Beacon: Compared stored state to current state. {scope_name} commands are up to date for this bot. Skipping sync API call."
+                f"{GREY}[{self.bot.instance_id}]{CYAN} Beacon{RESET}: Compared stored state to current state. {scope_name} commands are up to date for this bot. Skipping sync API call."
             )
             return f"[`{self.bot.instance_id}`] Beacon: Compared stored state to current state. {scope_name} commands are up to date. Skipping sync API call."
 
         async with self.sync_lock:
             logger.info(
-                f"[{self.bot.instance_id}] Beacon: Detected changes or bot swap. Syncing {scope_name} commands...")
+                f"{GREY}[{self.bot.instance_id}]{CYAN} Beacon{RESET}: Detected changes or bot swap. Syncing {scope_name} commands...")
             backoff = 2.0
             max_backoff = 300.0
 
@@ -173,22 +175,22 @@ class CommandRegistry:
                 except discord.HTTPException as e:
                     if e.status == 429 or 500 <= e.status < 600:
                         logger.warning(
-                            f"[{self.bot.instance_id}] Beacon: Sync hit HTTP {e.status}. Retrying in {backoff} seconds...")
+                            f"{GREY}[{self.bot.instance_id}]{CYAN} Beacon{RESET}: Sync hit HTTP {e.status}. Retrying in {backoff} seconds...")
                         await asyncio.sleep(backoff)
 
                         if backoff >= max_backoff:
                             logger.error(
-                                f"[{self.bot.instance_id}] Beacon: Sync aborted. Maximum backoff time of 5 minutes reached for {scope_name}."
+                                f"{GREY}[{self.bot.instance_id}]{CYAN} Beacon{RESET}: Sync aborted. Maximum backoff time of 5 minutes reached for {scope_name}."
                             )
                             return f"[`{self.bot.instance_id}`] Beacon: Error syncing {scope_name}. The Discord API did not accept requests after maximum backoff configurations."
 
                         backoff = min(backoff * 2, max_backoff)
                     else:
-                        logger.error(f"[{self.bot.instance_id}] Beacon: Sync failed with unretriable error: {e}")
+                        logger.error(f"{GREY}[{self.bot.instance_id}]{CYAN} Beacon{RESET}: Sync failed with unretriable error: {e}")
                         return f"[`{self.bot.instance_id}`] Beacon: Error syncing {scope_name}: HTTP status {e.status} encountered."
 
                 except Exception as e:
-                    logger.error(f"[{self.bot.instance_id}] Beacon: Unexpected error during sync execution: {e}")
+                    logger.error(f"{GREY}[{self.bot.instance_id}]{CYAN} Beacon{RESET}: Unexpected error during sync execution: {e}")
                     return f"[`{self.bot.instance_id}`] Beacon: Error syncing {scope_name}: {e}"
 
     async def force_sync(self, guild: discord.Guild | None = None):
