@@ -6,7 +6,10 @@ import psutil
 import asyncio
 import os
 import io
-from PIL import Image, ImageDraw, ImageFont
+from pathlib import Path
+fonts_dir = Path(__file__).parent
+os.environ["FONTCONFIG_PATH"] = str(fonts_dir.resolve())
+import pyvips
 from collections import deque
 from .path import framework_version, BOLDFONT_PATH
 from ..core import beacon_commands
@@ -37,6 +40,8 @@ class Diagnostics(commands.Cog):
         self.battery_increment_mins = 20
         self.is_battery_idling = False
         self.battery_task.start()
+
+        self.font_family_title = "Montserrat"
 
 
     def cog_unload(self):
@@ -171,111 +176,152 @@ class Diagnostics(commands.Cog):
         return await loop.run_in_executor(None, fetch)
 
     def generate_latency_graph(self):
-        """Render the cached latency history into an in-memory PNG graph.
+        """Render the cached latency history into an in-memory PNG graph using pyvips.
 
         Returns:
-            Any: Generated latency graph result.
+            io.BytesIO | None: Generated latency graph result or None if insufficient samples.
         """
-
-        def get_secondary_colour(main_rgb, darken_factor=0.925, alpha=40):
-            """
-            Calculates a semi-transparent filler colour from a main line colour.
-
-            Args:
-                main_rgb (tuple): The (R, G, B) tuple of the main line.
-                darken_factor (float): How much to dim the colour (default 92.5%).
-                alpha (int): The transparency level (0-255).
-
-            Returns:
-                tuple: An (R, G, B, A) tuple for the filler.
-            """
-            secondary_rgb = tuple(max(0, min(255, int(channel * darken_factor))) for channel in main_rgb)
-
-            return secondary_rgb + (alpha,)
-
-        scale_factor = 2
-        width, height = 600 * scale_factor, 300 * scale_factor
-        pad_top, pad_bot, pad_left, pad_right = 175, 80, 100, 40
-
-        img = Image.new("RGBA", (width, height), color=(26, 26, 30, 255))
-        draw = ImageDraw.Draw(img)
-
         try:
-            title_font = ImageFont.truetype(BOLDFONT_PATH, 24 * scale_factor)
+            data = list(self.latency_cache)
+            num_samples = len(data)
+
+            if num_samples < 2:
+                return None
+
+            scale_factor = 2
+            width, height = 600 * scale_factor, 300 * scale_factor
+            pad_top, pad_bot, pad_left, pad_right = 175, 80, 100, 40
+
+            font_family_title = self.font_family_title
+            font_family_labels = "Sans"
+
+            max_val = max(data) if data else 100
+            steps = [10, 25, 50, 100, 250, 500, 1000]
+            target_step = next((s for s in steps if s > max_val / 4), max_val / 4)
+            y_limit = target_step * 4
+
+            graph_height = height - pad_top - pad_bot
+            graph_width = width - pad_left - pad_right
+
+            points = []
+            for i, val in enumerate(data):
+                x = pad_left + (i / (num_samples - 1)) * graph_width
+                y = (height - pad_bot) - (val / y_limit) * graph_height
+                points.append((x, y))
+
+            bg = (pyvips.Image.black(width, height, bands=4) + [26, 26, 30, 255]).cast("uchar")
+            base_mutable = bg.copy_memory()
+
+            grid_colour = [60, 62, 68, 255]
+            num_y_labels = 4
+            for i in range(num_y_labels + 1):
+                val = target_step * i
+                y = (height - pad_bot) - (val / y_limit) * graph_height
+                base_mutable = base_mutable.draw_rect(grid_colour, int(pad_left), int(y - scale_factor // 2),
+                                                      int(graph_width),
+                                                      int(1 * scale_factor), fill=True)
+
+            fill_points = [(pad_left, height - pad_bot)] + points + [(width - pad_right, height - pad_bot)]
+            svg_points_str = " ".join(f"{int(x)},{int(y)}" for x, y in fill_points)
+            svg_mask_str = f'<svg width="{width}" height="{height}"><polygon points="{svg_points_str}" fill="white" /></svg>'
+
+            svg_img = pyvips.Image.svgload_buffer(svg_mask_str.encode('utf-8'))
+            poly_alpha = svg_img[3] if svg_img.bands == 4 else svg_img[0]
+            poly_mask = (poly_alpha * (40 / 255)).cast("uchar")
+
+            accent_rgb = list(self.bot.accent_colour[:3])
+            secondary_rgb = [max(0, min(255, int(channel * 0.925))) for channel in accent_rgb]
+            poly_colour_block = (pyvips.Image.black(width, height, bands=3) + secondary_rgb).cast("uchar")
+            fill_layer = poly_colour_block.bandjoin(poly_mask).copy(interpretation="srgb")
+
+            composited_base = base_mutable.copy(interpretation="srgb").composite(fill_layer, "over")
+
+            fg_mutable = pyvips.Image.black(width, height, bands=4).copy_memory()
+
+            def draw_text(mutable_img, text, font_family, size, colour, target_x, target_y, anchor="mt"):
+                try:
+                    font_string = f"{font_family} {int(size)}"
+                    print(font_string)
+                    mask = pyvips.Image.text(text, font=font_string, dpi=72)
+                except Exception as e:
+                    mask = pyvips.Image.text(text, font=f"Sans {int(size)}", dpi=72)
+                    print("Error in font:\n", e)
+
+                if anchor == "mt":
+                    x = target_x - mask.width // 2
+                    y = target_y
+                elif anchor == "rm":
+                    x = target_x - mask.width
+                    y = target_y - mask.height // 2
+                else:
+                    x = target_x
+                    y = target_y
+
+                mask_buffer = mask.write_to_memory()
+                safe_mask = pyvips.Image.new_from_memory(mask_buffer, mask.width, mask.height, 1, "uchar")
+                return mutable_img.draw_mask(colour, safe_mask, int(x), int(y))
+
+            def draw_thick_line(mutable_img, colour, x1, y1, x2, y2, thickness):
+                half = thickness // 2
+                for d in range(-half, half + 1):
+                    if abs(x2 - x1) > abs(y2 - y1):
+                        mutable_img = mutable_img.draw_line(colour, int(x1), int(y1 + d), int(x2), int(y2 + d))
+                    else:
+                        mutable_img = mutable_img.draw_line(colour, int(x1 + d), int(y1), int(x2 + d), int(y2))
+                return mutable_img
+
+            fg_mutable = draw_text(
+                fg_mutable,
+                "API Latency Graph - Powered by Beacon",
+                f"{font_family_title} Bold",
+                24 * scale_factor,
+                [255, 255, 255, 255],
+                width / 2,
+                70,
+                anchor="mt"
+            )
+
+            y_label_colour = [115, 115, 115, 255]
+            for i in range(num_y_labels + 1):
+                val = target_step * i
+                y = (height - pad_bot) - (val / y_limit) * graph_height
+                fg_mutable = draw_text(fg_mutable, f"{int(val)}ms", font_family_labels, 10 * scale_factor,
+                                       y_label_colour,
+                                       pad_left - 15, y, anchor="rm")
+
+            num_x_labels = 5
+            tick_colour = [110, 110, 110, 255]
+            for i in range(num_x_labels):
+                sample_idx = int((i / (num_x_labels - 1)) * (num_samples - 1))
+                x = pad_left + (i / (num_x_labels - 1)) * graph_width
+                mins_ago = num_samples - 1 - sample_idx
+
+                label = "Now" if mins_ago == 0 else (
+                    f"{round(mins_ago / 60, 1)}h" if mins_ago >= 60 else f"{mins_ago}m")
+
+                fg_mutable = fg_mutable.draw_rect(tick_colour, int(x - 1), int(height - pad_bot), 2, 10, fill=True)
+                fg_mutable = draw_text(fg_mutable, label, font_family_labels, 12 * scale_factor, tick_colour, x,
+                                       height - pad_bot + 25,
+                                       anchor="mt")
+
+            accent_rgba = accent_rgb + [255]
+            line_thickness = 3 * scale_factor
+            for i in range(len(points) - 1):
+                fg_mutable = draw_thick_line(fg_mutable, accent_rgba, points[i][0], points[i][1], points[i + 1][0],
+                                             points[i + 1][1],
+                                             line_thickness)
+
+            final_graph = composited_base.composite(fg_mutable.copy(interpretation="srgb"), "over")
+
+            final_graph = final_graph.resize(0.5, kernel="lanczos3")
+
+            buffer_data = final_graph.write_to_buffer(".png")
+            return io.BytesIO(buffer_data)
+
         except Exception as e:
-            self.bot.logger.error(f"Beacon: Custom font not found at {BOLDFONT_PATH}. Using default.\n{e}")
-            title_font = ImageFont.load_default()
-
-        draw.text(
-            (width / 2, 70),
-            "API Latency Graph - Powered by Beacon",
-            fill=(255, 255, 255, 255),
-            font=title_font,
-            anchor="mt"
-        )
-
-        data = list(self.latency_cache)
-        num_samples = len(data)
-
-        if num_samples < 2:
+            import traceback
+            self.bot.logger.error(f"Graph generation error: {e}\n{traceback.format_exc()}")
             return None
-
-        max_val = max(data) if data else 100
-        steps = [10, 25, 50, 100, 250, 500, 1000]
-        target_step = next((s for s in steps if s > max_val / 4), max_val / 4)
-        y_limit = target_step * 4
-
-        grid_color = (60, 62, 68, 255)
-        num_y_labels = 4
-        graph_height = height - pad_top - pad_bot
-        for i in range(num_y_labels + 1):
-            val = target_step * i
-            y = (height - pad_bot) - (val / y_limit) * graph_height
-            draw.line([(pad_left, y), (width - pad_right, y)], fill=grid_color, width=1 * scale_factor)
-            draw.text((pad_left - 15, y), f"{int(val)}ms", fill=(180, 180, 180), anchor="rm",
-                      font_size=12 * scale_factor)
-
-        graph_width = width - pad_left - pad_right
-
-        num_x_labels = 5
-        for i in range(num_x_labels):
-            sample_idx = int((i / (num_x_labels - 1)) * (num_samples - 1))
-
-            x = pad_left + (i / (num_x_labels - 1)) * graph_width
-
-            mins_ago = num_samples - 1 - sample_idx
-
-            if mins_ago == 0:
-                label = "Now"
-            elif mins_ago >= 60:
-                label = f"{round(mins_ago / 60, 1)}h"
-            else:
-                label = f"{mins_ago}m"
-
-            draw.line([(x, height - pad_bot), (x, height - pad_bot + 10)], fill=(150, 150, 150), width=2)
-            draw.text((x, height - pad_bot + 25), label, fill=(150, 150, 150), anchor="mt", font_size=12 * scale_factor)
-
-        points = []
-        for i, val in enumerate(data):
-            x = pad_left + (i / (num_samples - 1)) * graph_width
-            y = (height - pad_bot) - (val / y_limit) * graph_height
-            points.append((x, y))
-
-        fill_points = [(pad_left, height - pad_bot)] + points + [(width - pad_right, height - pad_bot)]
-        overlay = Image.new("RGBA", (width, height), (0, 0, 0, 0))
-        overlay_draw = ImageDraw.Draw(overlay)
-        secondary_colour = get_secondary_colour(self.bot.accent_colour)
-        overlay_draw.polygon(fill_points, fill=secondary_colour)
-        img = Image.alpha_composite(img, overlay)
-
-        draw = ImageDraw.Draw(img)
-        draw.line(points, fill=self.bot.accent_colour, width=3 * scale_factor, joint="round")
-
-        img = img.resize((600, 300), resample=Image.LANCZOS)
-        buffer = io.BytesIO()
-        img.save(buffer, format="PNG")
-        buffer.seek(0)
-        return buffer
 
     @app_commands.command(name="ping", description="Get detailed latency and bot information")
 

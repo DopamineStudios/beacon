@@ -155,7 +155,7 @@ bot.run("YOUR_BOT_TOKEN_HERE")
 * `discord.py`
 * `aiosqlite`
 * `psutil`
-* `Pillow`
+* `pyvips`
 * `geocoder`
 
 ---
