@@ -141,6 +141,7 @@ class OwnerDashboard(PrivateLayoutView):
 
         sync_btn = discord.ui.Button(label="Sync Slash Global", style=discord.ButtonStyle.primary)
         sync_local_btn = discord.ui.Button(label="Sync Slash Guild", style=discord.ButtonStyle.primary)
+        force_sync_btn = discord.ui.Button(label="Force Sync", style=discord.ButtonStyle.secondary)
         reload_btn = discord.ui.Button(label="Reload All Cogs", style=discord.ButtonStyle.primary)
         upload_btn = discord.ui.Button(label="Upload Cog", style=discord.ButtonStyle.success, disabled=True if self.ephemeral else False)
         shutdown_btn = discord.ui.Button(label="Shutdown", style=discord.ButtonStyle.danger)
@@ -149,6 +150,7 @@ class OwnerDashboard(PrivateLayoutView):
 
         sync_btn.callback = self.sync_callback
         sync_local_btn.callback = self.sync_local_callback
+        force_sync_btn.callback = self.force_sync_callback
         reload_btn.callback = self.reload_all_callback
         upload_btn.callback = self.upload_cog_callback
         shutdown_btn.callback = self.shutdown_callback
@@ -158,6 +160,7 @@ class OwnerDashboard(PrivateLayoutView):
         action_row = discord.ui.ActionRow()
         action_row.add_item(sync_btn)
         action_row.add_item(sync_local_btn)
+        action_row.add_item(force_sync_btn)
         if not self.secure_mode:
             action_row.add_item(log_btn)
         container.add_item(action_row)
@@ -362,7 +365,7 @@ class OwnerDashboard(PrivateLayoutView):
         Returns:
             Any: Result produced by this function.
         """
-        await interaction.response.send_message(f"[`{self.bot.instance_id}`] Beacon: Syncing Slash commands. Please wait. This may take a while if you already synced recently due to Discord rate-limiting the bot.", ephemeral=True)
+        await interaction.response.send_message(f"[`{self.bot.instance_id}`] Beacon: Syncing Slash commands, Please wait. This may take a while if you already synced recently due to Discord rate-limiting the bot.", ephemeral=True)
         response = await self.registry.smart_sync(guild=None)
         try:
             await interaction.edit_original_response(content=response)
@@ -378,13 +381,22 @@ class OwnerDashboard(PrivateLayoutView):
         Returns:
             Any: Result produced by this function.
         """
-        await interaction.response.send_message(f"[`{self.bot.instance_id}`] Beacon: Syncing Slash commands. Please wait. This may take a while if you already synced recently due to Discord rate-limiting the bot.", ephemeral=True)
-        response = await self.registry.smart_sync(guild=interaction.guild)
+        await interaction.response.send_message(f"[`{self.bot.instance_id}`] Beacon: Syncing Slash commands, Please wait. This may take a while if you already synced recently due to Discord rate-limiting the bot.", ephemeral=True)
+        response = await self.registry.smart_sync(guild=None)
         try:
             await interaction.edit_original_response(content=response)
         except discord.Forbidden or discord.NotFound:
             pass
 
+    async def force_sync_callback(self, interaction: discord.Interaction):
+        await interaction.response.send_message(
+            f"[`{self.bot.instance_id}`] Beacon: Syncing Slash commands using Beacon Framework's `force_sync` method which forces a sync regardless of whether there is a change detected or not, Please wait. This may take a while if you already synced recently due to Discord rate-limiting the bot.",
+            ephemeral=True)
+        response = await self.registry.force_sync(guild=interaction.guild)
+        try:
+            await interaction.edit_original_response(content=response)
+        except discord.Forbidden or discord.NotFound:
+            pass
 
     async def shutdown_callback(self, interaction: discord.Interaction):
         """Acknowledge and trigger a graceful bot shutdown.
