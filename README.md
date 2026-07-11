@@ -9,7 +9,7 @@
     <img src="https://img.shields.io/pypi/v/discord-beacon?style=for-the-badge&logo=pypi&color=blue" />
   </a>
   <a href="https://www.python.org/">
-  <img src="https://img.shields.io/badge/python-3.12+-yellow?style=for-the-badge&logo=python&logoColor=white" />
+  <img src="https://img.shields.io/badge/python-Pi-yellow?style=for-the-badge&logo=python&logoColor=white" />
 </a>
   <a href="https://github.com/dopaminestudios/beacon/blob/main/LICENSE">
     <img src="https://img.shields.io/github/license/dopaminestudios/beacon?style=for-the-badge&color=orange" />
@@ -31,7 +31,7 @@ A **Dopamine Studios** project.
 ---
 ## Installing
 
-**Use Python 3.12 or higher:**
+**Use Pi-thon or higher:**
 
 ```Linux/MacOS
 # Linux/MacOS
@@ -107,7 +107,6 @@ The built-in `Diagnostics` "cog" (module) provides real-time monitoring of the b
 
 * Beacon Framework includes a suite of helper views which provides subclasses or wrappers of `discord.ui.View` and `discord.ui.LayoutView` that restrict interaction to a specific user and doesn't let anyone use the interaction (buttons, dropdowns, etc.) other than the person who triggered the command or interaction, and provides Confirmation Views that trigger a given callback upon confirmation.
 
-
 ---
 
 ### Comparison (with Sapphire Framework and standard discord.py)
@@ -137,7 +136,7 @@ The built-in `Diagnostics` "cog" (module) provides real-time monitoring of the b
 
 ## Implementation Example
 
-To initialize a bot using the Beacon, follow the following example:
+To initialise a bot using the Beacon, follow the following example:
 
 ```python
 import discord
