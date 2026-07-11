@@ -16,8 +16,6 @@ from collections.abc import Callable, Coroutine
 from typing import Any
 from pathlib import Path
 
-logger = logging.getLogger("discord")
-
 GREY = ""
 CYAN = ""
 MAGENTA = ""
@@ -128,7 +126,7 @@ class BeaconFrameworkBotMixin:
                 content = f.read().strip()
 
             if not content:
-                logger.warning(f"""{GREY}[{self.instance_id}]{CYAN} Beacon{RESET}: Your given version file is empty. Bot version will not be shown in /ping command's embed. For the safest method, define it as: bot_version="Your.Bot.Version".""")
+                self.logger.warning(f"""{GREY}[{self.instance_id}]{CYAN} Beacon{RESET}: Your given version file is empty. Bot version will not be shown in /ping command's embed. For the safest method, define it as: bot_version="Your.Bot.Version".""")
                 return None
 
             assignment_match = re.search(r'(?:bot_version|version)\s*[:=]\s*["\']?([^"\']+)["\']?', content,
@@ -150,7 +148,7 @@ class BeaconFrameworkBotMixin:
             return version_str or None
 
         except Exception as e:
-            logger.error(f"""{GREY}[{self.instance_id}]{CYAN} Beacon{RESET}: Bot version is not defined in your provided file, or isn't defined properly. Bot version will not be shown in /ping command's embed. For the safest method, define it as: bot_version="Your.Bot.Version".""")
+            self.logger.error(f"""{GREY}[{self.instance_id}]{CYAN} Beacon{RESET}: Bot version is not defined in your provided file, or isn't defined properly. Bot version will not be shown in /ping command's embed. For the safest method, define it as: bot_version="Your.Bot.Version".""")
             return None
 
     async def setup_hook(self):
@@ -167,14 +165,14 @@ class BeaconFrameworkBotMixin:
                     try:
                         # pyrefly: ignore [missing-attribute]
                         await self.load_extension(extension)
-                        logger.info(f"{GREY}[{self.instance_id}]{CYAN} Beacon{RESET}: Loaded {extension} Successfully")
+                        self.logger.info(f"{GREY}[{self.instance_id}]{CYAN} Beacon{RESET}: Loaded {extension} Successfully")
                         count += 1
                     except Exception as e:
-                        logger.error(f"{GREY}[{self.instance_id}]{CYAN} Beacon{RESET}: Failed to load {extension}: {e}")
+                        self.logger.error(f"{GREY}[{self.instance_id}]{CYAN} Beacon{RESET}: Failed to load {extension}: {e}")
             self.cog_load_time = time.time() - start
             self.count = count
         else:
-            logger.warning(f"{GREY}[{self.instance_id}]{CYAN} Beacon{RESET}: '{self.cogs_path}' directory not found.")
+            self.logger.warning(f"{GREY}[{self.instance_id}]{CYAN} Beacon{RESET}: '{self.cogs_path}' directory not found.")
         if self.default_diagnostics:
             # pyrefly: ignore [missing-attribute]
             await self.load_extension("beacon.ext.diagnostics")
@@ -219,7 +217,7 @@ class BeaconFrameworkBotMixin:
 
     async def signal_handler(self):
         """Gracefully unload extensions and close the bot process."""
-        logger.info(f"{GREY}[{self.instance_id}]{CYAN} Beacon{RESET}: Bot shutdown requested...")
+        self.logger.info(f"{GREY}[{self.instance_id}]{CYAN} Beacon{RESET}: Bot shutdown requested...")
         # pyrefly: ignore [missing-attribute]
         extensions = list(self.extensions.keys())
         if self.default_diagnostics:
@@ -233,18 +231,18 @@ class BeaconFrameworkBotMixin:
                 try:
                     # pyrefly: ignore [missing-attribute]
                     await self.unload_extension(extension)
-                    logger.info(f"{GREY}[{self.instance_id}]{CYAN} Beacon{RESET}: Unloaded {extension} successfully")
+                    self.logger.info(f"{GREY}[{self.instance_id}]{CYAN} Beacon{RESET}: Unloaded {extension} successfully")
                 except Exception as e:
-                    logger.error(f"{GREY}[{self.instance_id}]{CYAN} Beacon{RESET}: Error unloading {extension}: {e}")
+                    self.logger.error(f"{GREY}[{self.instance_id}]{CYAN} Beacon{RESET}: Error unloading {extension}: {e}")
 
         print(f"{GREY}[{self.instance_id}]{CYAN} Beacon{RESET}: This is the end of this {CYAN}Beacon{RESET} Instance. 👋 \x1b[38;2;255;0;0mG\x1b[38;2;255;127;0mo\x1b[38;2;255;255;0mo\x1b[38;2;0;255;0md\x1b[38;2;0;0;255mb\x1b[38;2;75;0;130my\x1b[38;2;148;0;211me\x1b[38;2;238;130;238m!\x1b[0m")
-        logger.info(f"{GREY}[{self.instance_id}]{CYAN} Beacon{RESET}: This is the end of this {CYAN}Beacon{RESET} Instance. 👋 \x1b[38;2;255;0;0mG\x1b[38;2;255;127;0mo\x1b[38;2;255;255;0mo\x1b[38;2;0;255;0md\x1b[38;2;0;0;255mb\x1b[38;2;75;0;130my\x1b[38;2;148;0;211me\x1b[38;2;238;130;238m!\x1b[0m")
+        self.logger.info(f"{GREY}[{self.instance_id}]{CYAN} Beacon{RESET}: This is the end of this {CYAN}Beacon{RESET} Instance. 👋 \x1b[38;2;255;0;0mG\x1b[38;2;255;127;0mo\x1b[38;2;255;255;0mo\x1b[38;2;0;255;0md\x1b[38;2;0;0;255mb\x1b[38;2;75;0;130my\x1b[38;2;148;0;211me\x1b[38;2;238;130;238m!\x1b[0m")
         # pyrefly: ignore [missing-attribute]
         await self.close()
 
     async def restart_bot(self):
         """Restart the running bot process after a graceful shutdown."""
-        logger.info(f"{GREY}[{self.instance_id}]{CYAN} Beacon{RESET}: Restarting bot...")
+        self.logger.info(f"{GREY}[{self.instance_id}]{CYAN} Beacon{RESET}: Restarting bot...")
         await self.signal_handler()
         os.execv(sys.executable, [sys.executable] + sys.argv)
 
@@ -283,21 +281,21 @@ class BeaconFrameworkBotMixin:
                 await self.change_presence(activity=self._activity, status=self._status)
             except Exception as e:
                 # pyrefly: ignore [unbound-name]
-                logger.error(f"{GREY}[{self.instance_id}]{CYAN} Beacon{RESET}: ERROR: Failed to set activity or status: {e}")
+                self.logger.error(f"{GREY}[{self.instance_id}]{CYAN} Beacon{RESET}: ERROR: Failed to set activity or status: {e}")
         elif self._activity:
             try:
                 # pyrefly: ignore [missing-attribute]
                 await self.change_presence(activity=self._activity)
             except Exception as e:
                 # pyrefly: ignore [unbound-name]
-                logger.error(f"{GREY}[{self.instance_id}]{CYAN} Beacon{RESET}: ERROR: Failed to set activity: {e}")
+                self.logger.error(f"{GREY}[{self.instance_id}]{CYAN} Beacon{RESET}: ERROR: Failed to set activity: {e}")
         elif self._status:
             try:
                 # pyrefly: ignore [missing-attribute]
                 await self.change_presence(status=self._status)
             except Exception as e:
                 # pyrefly: ignore [unbound-name]
-                logger.error(f"{GREY}[{self.instance_id}]{CYAN} Beacon{RESET}: ERROR: Failed to set status: {e}")
+                self.logger.error(f"{GREY}[{self.instance_id}]{CYAN} Beacon{RESET}: ERROR: Failed to set status: {e}")
         owner_user_name = None
         # pyrefly: ignore [missing-attribute]
         if not self.owner_ids and self.application and self.application.team:
@@ -337,7 +335,7 @@ class BeaconFrameworkBotMixin:
                       f"Bot Owner(s) identified: {owner_user_name}\n"
                       f"---------------------------------------------------"
                       "\n")
-            logger.info(banner)
+            self.logger.info(banner)
             CYAN = "\033[96m"
             MAGENTA = "\033[95m"
             RESET = "\033[0m"
