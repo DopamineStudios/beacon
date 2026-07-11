@@ -14,10 +14,8 @@
             { "type": "docs", "section": "Documentation Changes", "hidden": false },
             { "type": "perf", "section": "Performance Improvements" },
             { "type": "refactor", "section": "Code Refactoring", "hidden": false }
-          ]
-        },
-        "writerOpts": {
-          "headerPartial": "## [v{{version}}]({{host}}/{{owner}}/{{repository}}/compare/v{{previousTag}}...v{{currentTag}}) ({{date}})"
+          ],
+          "compareUrlFormat": "{{host}}/{{owner}}/{{repository}}/compare/{{previousTag}}...{{currentTag}}"
         }
       }
     ],
