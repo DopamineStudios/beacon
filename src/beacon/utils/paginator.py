@@ -1,6 +1,7 @@
 import discord
 from discord.ui import View, LayoutView, Container, ActionRow, Button, TextDisplay, Section, Separator, Modal, TextInput
 from typing import List, Any, Callable
+from .views import PrivateView, PrivateLayoutView
 
 
 class GoToPageModal(Modal):
@@ -46,32 +47,34 @@ class GoToPageModal(Modal):
             await interaction.response.send_message("Invalid number entered.", ephemeral=True)
 
 
-class ViewPaginator(discord.ui.View):
+class ViewPaginator(PrivateView):
     """Button-driven embed paginator for simple list-style page navigation.
 
     """
     def __init__(
             self,
+            user: discord.User | discord.Member,
             title: str,
             data: List[str],
             per_page: int = 10,
-            color: discord.Color = discord.Color.blue(),
+            colour: discord.Colour = discord.Colour.blue(),
             timeout: int = 120
     ):
         """Initialize paginator state, paging limits, and button states.
 
         Args:
+            user: User that is allowed to interaction with this View.
             title: Embed title shown on each page.
             data: Collection of items that will be paginated.
             per_page: Number of entries shown per page.
-            color: Embed color used for the paginator output.
+            colour: Embed colour used for the paginator output.
             timeout: View timeout in seconds.
         """
-        super().__init__(timeout=timeout)
+        super().__init__(user, timeout=timeout)
         self.title = title
         self.data = data
         self.per_page = per_page
-        self.color = color
+        self.colour = colour
 
         self.page = 1
         self.total_pages = (len(self.data) - 1) // per_page + 1 if data else 1
@@ -103,7 +106,7 @@ class ViewPaginator(discord.ui.View):
         embed = discord.Embed(
             title=self.title,
             description=description,
-            color=self.color
+            color=self.colour
         )
         embed.set_footer(text=f"Page {self.page} of {self.total_pages}")
         return embed
@@ -164,24 +167,27 @@ class ViewPaginator(discord.ui.View):
             await self.update_view(interaction)
 
 
-class LayoutViewPaginator(LayoutView):
-    """Layout-based paginator scaffold for richer, custom paged interfaces.
+class LayoutViewPaginator(PrivateLayoutView):
+    """Components V2-based paginator scaffold for richer, custom paged interfaces.
 
     """
-    def __init__(self, user: discord.User, data: List[Any], per_page: int = 5):
-        """Initialize pagination state and user ownership for interactions.
+    def __init__(self, user: discord.User | discord.Member, title: str, data: List[Any], per_page: int = 5, timeout: int = 120):
+        """Initialise pagination state and user ownership for interactions.
 
         Args:
             user: User that is allowed to interact with this flow.
             data: Collection of items that will be paginated.
             per_page: Number of entries shown per page.
+            timeout: View timeout in seconds.
         """
-        super().__init__(timeout=None)
+        super().__init__(user, timeout=timeout)
         self.user = user
+        self.title = title
         self.data = data
         self.page = 1
         self.per_page = per_page
         self.total_pages = (len(data) - 1) // per_page + 1 if data else 1
+        self.build_layout()
 
     def get_current_page_data(self):
         """Return the data subset that should be shown on the current page.
@@ -191,6 +197,44 @@ class LayoutViewPaginator(LayoutView):
         """
         start = (self.page - 1) * self.per_page
         return self.data[start: start + self.per_page]
+
+    def build_layout(self):
+        """Clears the view and builds the entire layout structure including data and controls."""
+        self.clear_items()
+
+        container = Container()
+
+        container.add_item(discord.ui.TextDisplay(f"## {self.title}"))
+        container.add_item(discord.ui.Separator())
+        current_data = self.get_current_page_data()
+
+        if current_data:
+            for item in current_data:
+                container.add_item(TextDisplay(str(item)))
+        else:
+            container.add_item(TextDisplay("*No data available.*"))
+
+        container.add_item(Separator())
+
+        container.add_item(TextDisplay(f"-# Page {self.page} of {self.total_pages}"))
+
+        control_row = ActionRow()
+
+        left_btn = Button(emoji="◀️", style=discord.ButtonStyle.primary, disabled=self.page == 1)
+        left_btn.callback = self.prev_callback
+
+        go_btn = Button(label="Go to Page", style=discord.ButtonStyle.secondary, disabled=self.total_pages <= 1)
+        go_btn.callback = self.goto_callback
+
+        right_btn = Button(emoji="▶️", style=discord.ButtonStyle.primary, disabled=self.page == self.total_pages)
+        right_btn.callback = self.next_callback
+
+        control_row.add_item(left_btn)
+        control_row.add_item(go_btn)
+        control_row.add_item(right_btn)
+
+        container.add_item(control_row)
+        self.add_item(container)
 
     async def update_view(self, interaction: discord.Interaction):
         """Rebuild the layout and edit the message with updated controls.
