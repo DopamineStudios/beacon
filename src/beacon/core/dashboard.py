@@ -83,7 +83,7 @@ class OwnerDashboard(PrivateLayoutView):
         """
         self.clear_items()
         container = discord.ui.Container()
-        container.add_item((discord.ui.TextDisplay("## Beacon Owner Dashboard")))
+        container.add_item((discord.ui.TextDisplay(f"## Beacon Owner Dashboard (Beacon Instance ID: `{self.bot.instance_id}`)")))
         container.add_item(discord.ui.Separator())
 
         cogs_dir = os.path.join(os.getcwd(), "cogs")
@@ -256,7 +256,7 @@ class OwnerDashboard(PrivateLayoutView):
         """
         if self._upload_in_progress:
             await interaction.response.send_message(
-                "Beacon: An upload is already in progress.",
+                f"[`{self.bot.instance_id}`] Beacon: An upload is already in progress.",
                 ephemeral=True,
             )
             return
@@ -284,7 +284,7 @@ class OwnerDashboard(PrivateLayoutView):
                     "message", check=upload_check, timeout=60.0
                 )
             except asyncio.TimeoutError:
-                await upload_message.edit(content="Beacon: Upload timed out. No file received within 60 seconds.")
+                await upload_message.edit(content=f"[`{self.bot.instance_id}`] Beacon: Upload timed out. No file received within 60 seconds.")
                 if not self.ephemeral:
                     await asyncio.sleep(5.0)
                     try:
@@ -295,15 +295,15 @@ class OwnerDashboard(PrivateLayoutView):
 
             filename = owner_message.content.strip()
             if not filename:
-                await upload_message.edit(content="Beacon: ERROR: Enter a filename (e.g. `moderation.py`) in your message.")
+                await upload_message.edit(content=f"[`{self.bot.instance_id}`] Beacon: ERROR: Enter a filename (e.g. `moderation.py`) in your message.")
                 return
 
             if os.path.basename(filename) != filename or ".." in filename:
-                await upload_message.edit(content="Beacon: ERROR: Invalid filename.")
+                await upload_message.edit(content=f"[`{self.bot.instance_id}`] Beacon: ERROR: Invalid filename.")
                 return
 
             if not filename.endswith(".py") or filename.startswith("__"):
-                await upload_message.edit(content="Beacon: ERROR: Filename must end with `.py` and cannot start with `__`.")
+                await upload_message.edit(content=f"[`{self.bot.instance_id}`] Beacon: ERROR: Filename must end with `.py` and cannot start with `__`.")
                 return
 
             cogs_path = getattr(self.bot, "cogs_path", "cogs")
@@ -323,9 +323,9 @@ class OwnerDashboard(PrivateLayoutView):
                 await upload_message.delete()
         except Exception as e:
             if interaction.response.is_done():
-                await interaction.followup.send(f"Beacon: ERROR: {e}", ephemeral=True)
+                await interaction.followup.send(f"[`{self.bot.instance_id}`] Beacon: ERROR: {e}", ephemeral=True)
             else:
-                await interaction.response.send_message(f"Beacon: ERROR: {e}", ephemeral=True)
+                await interaction.response.send_message(f"[`{self.bot.instance_id}`] Beacon: ERROR: {e}", ephemeral=True)
         finally:
             self._upload_in_progress = False
 
@@ -349,7 +349,7 @@ class OwnerDashboard(PrivateLayoutView):
                     reloaded.append(ext)
                 except Exception as e:
                     failed.append(f"{ext} ({e})")
-        status = f"Beacon: Reloaded {len(reloaded)} cogs."
+        status = f"[`{self.bot.instance_id}`] Beacon: Reloaded {len(reloaded)} cogs."
         if failed: status += f"\n**Failed:** {', '.join(failed)}"
         await interaction.followup.send(status, ephemeral=True)
 
@@ -362,7 +362,7 @@ class OwnerDashboard(PrivateLayoutView):
         Returns:
             Any: Result produced by this function.
         """
-        await interaction.response.send_message("Beacon: Syncing Slash commands. Please wait. This may take a while if you already synced recently due to Discord rate-limiting the bot.", ephemeral=True)
+        await interaction.response.send_message(f"[`{self.bot.instance_id}`] Beacon: Syncing Slash commands. Please wait. This may take a while if you already synced recently due to Discord rate-limiting the bot.", ephemeral=True)
         response = await self.registry.smart_sync(guild=None)
         try:
             await interaction.edit_original_response(content=response)
@@ -378,7 +378,7 @@ class OwnerDashboard(PrivateLayoutView):
         Returns:
             Any: Result produced by this function.
         """
-        await interaction.response.send_message("Beacon: Syncing Slash commands. Please wait. This may take a while if you already synced recently due to Discord rate-limiting the bot.", ephemeral=True)
+        await interaction.response.send_message(f"[`{self.bot.instance_id}`] Beacon: Syncing Slash commands. Please wait. This may take a while if you already synced recently due to Discord rate-limiting the bot.", ephemeral=True)
         response = await self.registry.smart_sync(guild=interaction.guild)
         try:
             await interaction.edit_original_response(content=response)
@@ -426,7 +426,7 @@ class OwnerDashboard(PrivateLayoutView):
 
         if not os.path.exists(log_path):
             return await interaction.response.send_message(
-                "Beacon: ERROR: Log file not found.",
+                f"[`{self.bot.instance_id}`] Beacon: ERROR: Log file not found.",
                 ephemeral=True
             )
 
@@ -447,7 +447,7 @@ class OwnerDashboard(PrivateLayoutView):
                         filename="tail_discord.log"
                     )
                     await interaction.followup.send(
-                        "Beacon: Last 70 lines exceed 1900 chars, sending snippet file:",
+                        f"[`{self.bot.instance_id}`] Beacon: Last 70 lines exceed 1900 chars, sending snippet file:",
                         file=log_file,
                         ephemeral=True
                     )
@@ -456,7 +456,7 @@ class OwnerDashboard(PrivateLayoutView):
 
         except Exception as e:
             await interaction.followup.send(
-                f"Beacon: ERROR: Failed to read log: {e}",
+                f"[`{self.bot.instance_id}`] Beacon: ERROR: Failed to read log: {e}",
                 ephemeral=True
             )
 
@@ -498,6 +498,6 @@ class OwnerGoToPageModal(discord.ui.Modal):
                 self.parent_view.build_layout()
                 await interaction.response.edit_message(view=self.parent_view)
             else:
-                await interaction.response.send_message(f"Enter a number between 1-{self.total_pages}.", ephemeral=True)
+                await interaction.response.send_message(f"[`{self.bot.instance_id}`] Beacon: Enter a number between 1-{self.total_pages}.", ephemeral=True)
         except ValueError:
-            await interaction.response.send_message("Invalid input.", ephemeral=True)
+            await interaction.response.send_message(f"[`{self.bot.instance_id}`] Beacon: Invalid input.", ephemeral=True)

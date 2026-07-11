@@ -19,7 +19,7 @@ class MissingBeaconPermissions(PreconditionFailed):
         """
         self.missing_permissions = missing_permissions
         formatted = [perm.replace('_', ' ').title() for perm in missing_permissions]
-        self.message = f"You can't use this command because you don't have the following permissions: **{', '.join(formatted)}**"
+        self.message = f"Beacon: You can't use this command because you don't have the following permissions: **{', '.join(formatted)}**"
         super().__init__(self.message)
 
 class RateLimited(PreconditionFailed):
@@ -33,11 +33,11 @@ class RateLimited(PreconditionFailed):
             retry_after: Seconds until the command can be used again.
         """
         self.retry_after = retry_after
-        self.message = f"You are using commands too quickly! Please try again in **{retry_after:.0f}s**."
+        self.message = f"Beacon: You are using commands too quickly! Please try again in **{retry_after:.0f}s**."
         super().__init__(self.message)
 
 class NotBotOwner(PreconditionFailed):
     """Raised when a command restricted to the bot owner is used by someone else."""
     def __init__(self):
-        self.message = "This command is restricted to the bot owner."
+        self.message = "Beacon: This command is restricted to the bot owner."
         super().__init__(self.message)

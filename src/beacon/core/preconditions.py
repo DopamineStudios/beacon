@@ -83,7 +83,7 @@ def permissions_preset(preset_name: str):
 
         perms_to_check = PRESETS.get(preset_name.lower())
         if perms_to_check is None:
-            raise ValueError(f"Beacon: Permission preset '{preset_name}' not found.")
+            raise ValueError(f"[{bot.instance_id}] Beacon: Permission preset '{preset_name}' not found.")
 
         if not interaction.guild:
             raise PreconditionFailed("This command can only be used in a server.")

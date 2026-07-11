@@ -79,7 +79,7 @@ class Diagnostics(commands.Cog):
             except asyncio.TimeoutError:
                 total_latency = None
             except Exception as e:
-                self.bot.logger.error(f"Beacon: {e}")
+                self.bot.logger.error(f"[{self.bot.instance_id}] Beacon: {e}")
                 total_latency = None
 
             if isinstance(total_latency, (int, float)):
@@ -97,7 +97,7 @@ class Diagnostics(commands.Cog):
                     self.cached_graph_bytes = graph_buffer.getvalue()
 
         except Exception as e:
-            self.bot.logger.critical(f"Beacon: {e}")
+            self.bot.logger.critical(f"[{self.bot.instance_id}] Beacon: {e}")
 
     @cache_task.before_loop
     async def before_cache_task(self):
@@ -148,7 +148,7 @@ class Diagnostics(commands.Cog):
                 self.is_battery_idling = True
 
         except Exception as e:
-            self.bot.logger.error(f"Beacon: {e}")
+            self.bot.logger.error(f"[{self.bot.instance_id}] Beacon: {e}")
 
     @battery_task.before_loop
     async def before_battery_task(self):
@@ -252,7 +252,7 @@ class Diagnostics(commands.Cog):
                     mask = pyvips.Image.text(text, font=font_string, dpi=72)
                 except Exception as e:
                     mask = pyvips.Image.text(text, font=f"Sans {int(size)}", dpi=72)
-                    print("Error in font:\n", e)
+                    self.bot.logger.error(f"[{self.bot.instance_id}] Beacon: Error in font:\n", e)
 
                 if anchor == "mt":
                     x = target_x - mask.width // 2
@@ -327,7 +327,7 @@ class Diagnostics(commands.Cog):
 
         except Exception as e:
             import traceback
-            self.bot.logger.error(f"Graph generation error: {e}\n{traceback.format_exc()}")
+            self.bot.logger.error(f"[{self.bot.instance_id}] Beacon: Graph generation error: {e}\n{traceback.format_exc()}")
             return None
 
     @app_commands.command(name="ping", description="Get detailed latency and bot information")
@@ -467,7 +467,8 @@ class Diagnostics(commands.Cog):
             title="Pong!",
             description=(
                 f"{bot_version_line}"
-                f"> Powered by Beacon `v{framework_version}`\n\n"
+                f"> Powered by Beacon Framework `v{framework_version}` by Dopamine Studios\n"
+                f"> Beacon Instance ID: `{self.bot.instance_id}`\n\n"
                 f"> Connected to Discord Gateway: `{gateway_node}`\n"
                 f"{location_line}"
                 f"> API Latency: `{connection_latency}ms`\n"
@@ -498,7 +499,7 @@ class Diagnostics(commands.Cog):
         """
         if not self.cached_graph_bytes:
             return await interaction.response.send_message(
-                "Not enough data yet! The bot was restarted very recently. Please wait a few minutes.",
+                "Beacon: Not enough data yet! The bot was restarted very recently. Please wait a few minutes.",
                 ephemeral=True
             )
         try:
@@ -506,7 +507,7 @@ class Diagnostics(commands.Cog):
             file = discord.File(buffer, filename="graph.png")
             await interaction.response.send_message(content=None, attachments=file)
         except Exception as e:
-            return await interaction.response.send_message(content=f"ERROR: {e}", ephemeral=True)
+            return await interaction.response.send_message(content=f"Beacon: ERROR: {e}", ephemeral=True)
 
 async def setup(bot):
     """Attach the diagnostics cog to the running bot.

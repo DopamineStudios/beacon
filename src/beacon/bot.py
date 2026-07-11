@@ -4,14 +4,14 @@ import signal
 import asyncio
 import logging
 import discord
-import datetime
 import re
 import sys
-from discord import app_commands, Status, Activity
+from discord import app_commands
 from discord.ext import commands
 from .utils.log import LoggingManager
 from .core.commands_registry import CommandRegistry
 from .ext.path import framework_version
+import secrets
 
 logger = logging.getLogger("discord")
 
@@ -85,6 +85,11 @@ class Bot(commands.Bot):
         self.count = None
         self.cog_load_time = None
         self.booted = False
+        self.instance_id = self.generate_instance_id()
+
+    def generate_instance_id(self):
+        alphabet = "23456789abcdefghjklmnpqrstuvwxyz"
+        return "".join(secrets.choice(alphabet) for _ in range(5))
 
     def _parse_version_file(self, path: str) -> str:
         """Helper method to dynamically parse the version file and normalise its format."""
@@ -96,7 +101,7 @@ class Bot(commands.Bot):
                 content = f.read().strip()
 
             if not content:
-                logger.warning("""Beacon: Your given version file is empty. Bot version will not be shown in /ping command's embed. For the safest method, define it as: bot_version="Your.Bot.Version".""")
+                logger.warning(f"""[{self.instance_id}] Beacon: Your given version file is empty. Bot version will not be shown in /ping command's embed. For the safest method, define it as: bot_version="Your.Bot.Version".""")
                 return None
 
             assignment_match = re.search(r'(?:bot_version|version)\s*[:=]\s*["\']?([^"\']+)["\']?', content,
@@ -118,7 +123,7 @@ class Bot(commands.Bot):
             return version_str or None
 
         except Exception as e:
-            logger.error(f"""Beacon: Bot version is not defined in your provided file, or isn't defined properly. Bot version will not be shown in /ping command's embed. For the safest method, define it as: bot_version="Your.Bot.Version".""")
+            logger.error(f"""[{self.instance_id}] Beacon: Bot version is not defined in your provided file, or isn't defined properly. Bot version will not be shown in /ping command's embed. For the safest method, define it as: bot_version="Your.Bot.Version".""")
             return None
 
     async def setup_hook(self):
@@ -127,7 +132,10 @@ class Bot(commands.Bot):
             try:
                 self.logger = LoggingManager(self.log_path)
             except Exception as e:
-                logger.error(f"Beacon: Failed to initialize logging manager: {e}")
+                logger.error(f"[{self.instance_id}] Beacon: Failed to initialise logging manager: {e}")
+
+        self.logger.info(f"This is the beginning of the Discord bot instance powered by Beacon Framework, with the Beacon Instance ID: {self.instance_id}.")
+        print(f"This is the beginning of the Discord bot instance powered by Beacon Framework, with the Beacon Instance ID: {self.instance_id}.")
 
         count = 0
 
@@ -139,14 +147,14 @@ class Bot(commands.Bot):
                     extension = f"{base_module}.{filename[:-3]}"
                     try:
                         await self.load_extension(extension)
-                        logger.info(f"> Beacon: Loaded {extension} Successfully")
+                        logger.info(f"> [{self.instance_id}] Beacon: Loaded {extension} Successfully")
                         count += 1
                     except Exception as e:
-                        logger.error(f"Beacon: Failed to load {extension}: {e}")
+                        logger.error(f"[{self.instance_id}] Beacon: Failed to load {extension}: {e}")
             self.cog_load_time = time.time() - start
             self.count = count
         else:
-            logger.warning(f"Beacon: '{self.cogs_path}' directory not found.")
+            logger.warning(f"[{self.instance_id}] Beacon: '{self.cogs_path}' directory not found.")
         if self.default_diagnostics:
             await self.load_extension("beacon.ext.diagnostics")
         await self.load_extension("beacon.ext.pic")
@@ -158,7 +166,7 @@ class Bot(commands.Bot):
             )
 
         async def on_tree_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
-            """Handle slash-command errors and convert framework exceptions to user responses."""
+            """Handle slash-command errors and convert framework (or any other) exceptions to user responses."""
             if isinstance(error, app_commands.CommandInvokeError):
                 error = error.original
 
@@ -172,13 +180,13 @@ class Bot(commands.Bot):
 
             if isinstance(error, app_commands.CheckFailure):
                 if not interaction.response.is_done():
-                    await interaction.response.send_message("You do not meet the requirements to run this command.",
+                    await interaction.response.send_message("Beacon: You do not meet the requirements to run this command.",
                                                             ephemeral=True)
                 return
 
-            self.logger.error(f"Ignoring exception in command {interaction.command.name}: {error}")
+            self.logger.error(f"[{self.instance_id}] Beacon: Ignoring exception in command {interaction.command.name}: {error}")
             if not interaction.response.is_done():
-                await interaction.response.send_message("⚠An unexpected error occurred.", ephemeral=True)
+                await interaction.response.send_message(content=f"""An unexpected error occurred :(\nPlease contact the developers or the support team of this Discord bot.\nThis unhandled error was caught by [Beacon Framework](https://beacon.dopaminestudios.in/). If you are a developer, please check the logs where it says: "[{self.instance_id}] Beacon: Ignoring exception in command {interaction.command.name}".""", suppress_embeds=True, ephemeral=True)
 
         self.tree.on_error = on_tree_error
 
@@ -194,12 +202,12 @@ class Bot(commands.Bot):
             if extension not in internal_extensions:
                 try:
                     await self.unload_extension(extension)
-                    logger.info(f"> Beacon: Unloaded {extension} successfully")
+                    logger.info(f"> [{self.instance_id}] Beacon: Unloaded {extension} successfully")
                 except Exception as e:
-                    logger.error(f"Beacon: Error unloading {extension}: {e}")
+                    logger.error(f"[{self.instance_id}] Beacon: Error unloading {extension}: {e}")
 
-        print("👋 Goodbye!")
-        logger.info("👋 Goodbye!\n")
+        print(f"This is the end of the Discord bot instance powered by Beacon Framework, with the Beacon Instance ID: {self.instance_id}. 👋 Goodbye!")
+        logger.info(f"This is the end of the Discord bot instance powered by Beacon Framework, with the Beacon Instance ID: {self.instance_id}. 👋 Goodbye!\n")
         await self.close()
 
     async def restart_bot(self):
@@ -224,17 +232,17 @@ class Bot(commands.Bot):
             try:
                 await self.change_presence(activity=self._activity, status=self._status)
             except Exception as e:
-                logger.error(f"Beacon: ERROR: Failed to set activity or status: {e}")
+                logger.error(f"[{self.instance_id}] Beacon: ERROR: Failed to set activity or status: {e}")
         elif self._activity:
             try:
                 await self.change_presence(activity=self._activity)
             except Exception as e:
-                logger.error(f"Beacon: ERROR: Failed to set activity: {e}")
+                logger.error(f"[{self.instance_id}] Beacon: ERROR: Failed to set activity: {e}")
         elif self._status:
             try:
                 await self.change_presence(status=self._status)
             except Exception as e:
-                logger.error(f"Beacon: ERROR: Failed to set status: {e}")
+                logger.error(f"[{self.instance_id}] Beacon: ERROR: Failed to set status: {e}")
         if not self.owner_ids and self.application and self.application.team:
             self.owner_ids = {m.id for m in self.application.team.members}
         if not self.booted:
@@ -242,6 +250,7 @@ class Bot(commands.Bot):
             bot_version_line = f"Bot Version: {self.version}\n" if self.version else ""
             banner = ("\n"
                       f"---------------------------------------------------\n"
+                      f"Beacon Instance ID: {self.instance_id}\n"
                       f"{bot_version_line}"
                       f"Powered by Beacon v{framework_version}\n"
                       "\n"

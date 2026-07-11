@@ -152,11 +152,11 @@ class CommandRegistry:
 
         if current_hash == stored_hash:
             logger.info(
-                f"Beacon: Compared stored local hash to current local hash. {scope_name} commands are up to date. Skipping sync API call.")
+                f"[{self.bot.instance_id}] Beacon: Compared stored local hash to current local hash. {scope_name} commands are up to date. Skipping sync API call.")
             return f"Beacon: Compared stored local hash to current local hash. {scope_name} commands are up to date. Skipping sync API call."
 
         async with self.sync_lock:
-            logger.info(f"Beacon: Detected changes. Syncing {scope_name} commands...")
+            logger.info(f"[{self.bot.instance_id}] Beacon: Detected changes. Syncing {scope_name} commands...")
             backoff = 2.0
             max_backoff = 300.0
 
@@ -168,21 +168,21 @@ class CommandRegistry:
 
                 except discord.HTTPException as e:
                     if e.status == 429 or 500 <= e.status < 600:
-                        logger.warning(f"Beacon: Sync hit HTTP {e.status}. Retrying in {backoff} seconds...")
+                        logger.warning(f"[{self.bot.instance_id}] Beacon: Sync hit HTTP {e.status}. Retrying in {backoff} seconds...")
                         await asyncio.sleep(backoff)
 
                         if backoff >= max_backoff:
                             logger.error(
-                                f"Beacon: Sync aborted. Maximum backoff time of 5 minutes reached for {scope_name}.")
+                                f"[{self.bot.instance_id}] Beacon: Sync aborted. Maximum backoff time of 5 minutes reached for {scope_name}.")
                             return f"Beacon: Error syncing {scope_name}. The Discord API did not accept requests after maximum backoff configurations."
 
                         backoff = min(backoff * 2, max_backoff)
                     else:
-                        logger.error(f"Beacon: Sync failed with unretriable error: {e}")
+                        logger.error(f"[{self.bot.instance_id}] Beacon: Sync failed with unretriable error: {e}")
                         return f"Beacon: Error syncing {scope_name}: HTTP status {e.status} encountered."
 
                 except Exception as e:
-                    logger.error(f"Beacon: Unexpected error during sync execution: {e}")
+                    logger.error(f"[{self.bot.instance_id}] Beacon: Unexpected error during sync execution: {e}")
                     return f"Beacon: Error syncing {scope_name}: {e}"
 
     async def force_sync(self, guild: discord.Guild = None):
