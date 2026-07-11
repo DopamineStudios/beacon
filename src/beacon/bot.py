@@ -21,7 +21,7 @@ class Bot(commands.Bot):
 
     def __init__(self, cogs_path: str = "cogs", log_path: str = None, default_diagnostics: bool = True,
                  status: discord.Status = None, activity: discord.Activity = None, global_cooldown_rate: int = 10,
-                 global_cooldown_per: float = 60.0, minimal_cacheing: bool = False,
+                 global_cooldown_per: float = 60.0, minimal_caching: bool = False,
                  accent_colour: discord.Colour = discord.Colour(0x2C817C),
                  bot_logger: logging.Logger = logging.getLogger("discord"),
                  version_file: str = None,
@@ -37,7 +37,7 @@ class Bot(commands.Bot):
             activity: Discord activity to apply when the bot is ready.
             global_cooldown_rate: Default global cooldown rate limit for slash commands.
             global_cooldown_per: Default global cooldown window in seconds.
-            minimal_cacheing: Whether to minimize member caching for lower memory usage.
+            minimal_caching: Whether to minimize member caching for lower memory usage.
             accent_colour: The colour to be used for accents (and more) in the `/ping` embed, and the `/latency info` graph.
             bot_logger: The logger for the bot process.
             version_file: Optional path to a file containing the bot's deployment version.
@@ -50,16 +50,16 @@ class Bot(commands.Bot):
 
         cache_flags = (
             discord.MemberCacheFlags(voice=False, joined=False)
-            if minimal_cacheing else discord.MemberCacheFlags.all()
+            if minimal_caching else discord.MemberCacheFlags.all()
         )
-        chunk_at_startup = False if minimal_cacheing else True
+        chunk_at_startup = False if minimal_caching else True
 
         super().__init__(
             command_prefix=command_prefix,
             help_command=None,
             member_cache_flags=cache_flags,
             chunk_guilds_at_startup=chunk_at_startup,
-            guild_ready_timeout=0 if minimal_cacheing else 2.0,
+            guild_ready_timeout=0 if minimal_caching else 2.0,
             *args, **kwargs
         )
         self.cogs_path = cogs_path
@@ -74,7 +74,7 @@ class Bot(commands.Bot):
             self.global_cooldown_per,
             commands.BucketType.user
         )
-        self.minimal_cacheing = minimal_cacheing
+        self.minimal_caching = minimal_caching
         self.accent_colour = accent_colour.to_rgb()
         self.registry = CommandRegistry(self)
         self.logger = bot_logger
