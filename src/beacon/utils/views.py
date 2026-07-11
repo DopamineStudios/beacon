@@ -71,7 +71,7 @@ class PrivateLayoutView(discord.ui.LayoutView):
         return True
 
 class ConfirmationView(PrivateLayoutView):
-    def __init__(self, user: discord.User | discord.Member, timeout: float = 30.0, title_text: str = "Pending Confirmation", body_text: str = "Click Confirm to confirm the action.", on_confirmation_callback: Callable[[Any], Any | Coroutine[Any, Any, Any]] | None = None, *args, **kwargs):
+    def __init__(self, user: discord.User | discord.Member, timeout: float = 30.0, title_text: str = "Pending Confirmation", body_text: str = "Click Confirm to confirm the action.", on_confirmation_callback: Callable[[discord.Interaction], Any | Coroutine[Any, Any, Any]] | None = None, *args, **kwargs):
         """A custom Confirmation View that executes a custom callback that you define and passes the arguments you provide into it.
 
                 Args:
@@ -79,11 +79,11 @@ class ConfirmationView(PrivateLayoutView):
                     timeout: The timeout for the discord view.
                     title_text: The big title text shown at the top of the confirmation view.
                     body_text: The body text of the confirmation view.
-                    on_confirmation_callback: The callback function to be executed when the user clicks Confirm.
-                    *args: Positional arguments forwarded to the provided callback.
-                    **kwargs: Additional keyword arguments forwarded to the provided callback.
+                    on_confirmation_callback: A synchronous or asynchronous function to execute when "Confirm" is successfully pressed. Use functools.partial if it requires any custom arguments other than interaction.
+                    *args: Positional arguments forwarded to the underlying implementation.
+                    **kwargs: Additional keyword arguments forwarded to the underlying implementation.
                 """
-        super().__init__(user, timeout=timeout)
+        super().__init__(user, timeout=timeout, *args, **kwargs)
         self.value = None
         self.colour = None
         self.title_text = title_text
@@ -143,10 +143,11 @@ class ConfirmationView(PrivateLayoutView):
         self.value = True
         await self.update_view(interaction, "Action Confirmed", discord.Color.green())
         if self.on_confirmation_callback:
-            if inspect.iscoroutinefunction(self.on_confirmation_callback):
-                await self.on_confirmation_callback(*self.args, **self.kwargs)
-            else:
-                self.on_confirmation_callback(*self.args, **self.kwargs)
+            if self.on_confirmation_callback:
+                if inspect.iscoroutinefunction(self.on_confirmation_callback):
+                    await self.on_confirmation_callback(interaction)
+                else:
+                    self.on_confirmation_callback(interaction)
 
     async def on_timeout(self) -> None:
         if self.value is None:
@@ -154,7 +155,7 @@ class ConfirmationView(PrivateLayoutView):
             await self.update_view(None, "Timed Out", discord.Color(0xdf5046))
 
 class DestructiveConfirmationView(PrivateLayoutView):
-    def __init__(self, user: discord.User | discord.Member, timeout: float = 30.0, title_text: str = "Pending Confirmation", body_text: str = "Click Confirm to confirm the action.", on_confirmation_callback: Callable[[Any], Any | Coroutine[Any, Any, Any]] | None = None, *args, **kwargs):
+    def __init__(self, user: discord.User | discord.Member, timeout: float = 30.0, title_text: str = "Pending Confirmation", body_text: str = "Click Confirm to confirm the action.", on_confirmation_callback: Callable[[discord.Interaction], Any | Coroutine[Any, Any, Any]] | None = None, *args, **kwargs):
         """Like Beacon's normal Confirmation View, but the button is red. A custom Confirmation View that executes a custom callback that you define and passes the arguments you provide into it.
 
                 Args:
@@ -162,9 +163,9 @@ class DestructiveConfirmationView(PrivateLayoutView):
                     timeout: The timeout for the discord view.
                     title_text: The big title text shown at the top of the confirmation view.
                     body_text: The body text of the confirmation view.
-                    on_confirmation_callback: The callback function to be executed when the user clicks Confirm.
-                    *args: Positional arguments forwarded to the provided callback.
-                    **kwargs: Additional keyword arguments forwarded to the provided callback.
+                    on_confirmation_callback: A synchronous or asynchronous function to execute when "Confirm" is successfully pressed. Use functools.partial if it requires any custom arguments other than interaction.
+                    *args: Positional arguments forwarded to the underlying implementation.
+                    **kwargs: Additional keyword arguments forwarded to the underlying implementation.
                 """
         super().__init__(user, timeout=timeout)
         self.value = None
@@ -226,10 +227,11 @@ class DestructiveConfirmationView(PrivateLayoutView):
         self.value = True
         await self.update_view(interaction, "Action Confirmed", discord.Color.green())
         if self.on_confirmation_callback:
-            if inspect.iscoroutinefunction(self.on_confirmation_callback):
-                await self.on_confirmation_callback(*self.args, **self.kwargs)
-            else:
-                self.on_confirmation_callback(*self.args, **self.kwargs)
+            if self.on_confirmation_callback:
+                if inspect.iscoroutinefunction(self.on_confirmation_callback):
+                    await self.on_confirmation_callback(interaction)
+                else:
+                    self.on_confirmation_callback(interaction)
 
     async def on_timeout(self) -> None:
         if self.value is None:

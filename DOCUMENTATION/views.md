@@ -144,11 +144,11 @@ async def wipe_profile(interaction: discord.Interaction):
 
 Both `ConfirmationView` and `DestructiveConfirmationView` accept the following additional parameters:
 
-|          Parameter          |    Type     |                  Default                  |                                               Description                                               |
-|:---------------------------:|:-----------:|:-----------------------------------------:|:-------------------------------------------------------------------------------------------------------:|
-|          `timeout`          |   `float`   |                  `30.0`                   |              Time in seconds before the confirmation interaction automatically times out.               |
-|        `title_text`         |    `str`    |         `"Pending Confirmation"`          |                        Header title text displayed at the top of the interface.                         |
-|         `body_text`         |    `str`    | `"Click Confirm to confirm the action."`  |                               Main body description detailing the choice.                               |
-| `on_confirmation_callback`  | `Callable`  |                  `None`                   |                                                 `None`                                                  | A synchronous or asynchronous function to execute when "Confirm" is successfully pressed. |
-|    `*args` / `**kwargs`     |      -      |                     -                     | Extra positional and keyword arguments forwarded directly into your custom `on_confirmation_callback`.  |
+|          Parameter          |    Type     |                  Default                  |                                                                                 Description                                                                                 |
+|:---------------------------:|:-----------:|:-----------------------------------------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
+|          `timeout`          |   `float`   |                  `30.0`                   |                                                Time in seconds before the confirmation interaction automatically times out.                                                 |
+|        `title_text`         |    `str`    |         `"Pending Confirmation"`          |                                                          Header title text displayed at the top of the interface.                                                           |
+|         `body_text`         |    `str`    | `"Click Confirm to confirm the action."`  |                                                                 Main body description detailing the choice.                                                                 |
+| `on_confirmation_callback`  | `Callable`  |                  `None`                   | A synchronous or asynchronous function to execute when "Confirm" is successfully pressed. Use functools.partial if it requires any custom arguments other than interaction. |
+|    `*args` / `**kwargs`     |      -      |                     -                     |                                   Extra positional and keyword arguments forwarded directly into your custom `on_confirmation_callback`.                                    |
 
