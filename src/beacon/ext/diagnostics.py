@@ -31,6 +31,7 @@ class Diagnostics(commands.Cog):
         self.process = psutil.Process(os.getpid())
         self.process.cpu_percent(interval=None)
         self.current_cpu = 0.0
+        self.cached_graph_bytes = None
         self.cache_task.start()
 
         self.battery_cache = []
@@ -88,6 +89,12 @@ class Diagnostics(commands.Cog):
                 avg_latency = sum(self.temp_samples) / len(self.temp_samples)
                 self.latency_cache.append(avg_latency)
                 self.temp_samples.clear()
+
+                loop = asyncio.get_running_loop()
+                graph_buffer = await loop.run_in_executor(None, self.generate_latency_graph)
+                if graph_buffer:
+
+                    self.cached_graph_bytes = graph_buffer.getvalue()
 
         except Exception as e:
             self.bot.logger.critical(f"Beacon: {e}")
@@ -489,16 +496,17 @@ class Diagnostics(commands.Cog):
         Returns:
             Any: Result produced by this function.
         """
-        await interaction.response.defer()
+        if not self.cached_graph_bytes:
+            return await interaction.response.send_message(
+                "Not enough data yet! The bot was restarted very recently. Please wait a few minutes.",
+                ephemeral=True
+            )
         try:
-            graph_buffer = self.generate_latency_graph()
+            buffer = io.BytesIO(self.cached_graph_bytes)
+            file = discord.File(buffer, filename="graph.png")
+            await interaction.response.send_message(content=None, attachments=file)
         except Exception as e:
-            return await interaction.edit_original_response(content=f"ERROR: {e}")
-        if graph_buffer:
-            file = discord.File(graph_buffer, filename="graph.png")
-            await interaction.edit_original_response(content=None, attachments=[file])
-        else:
-            await interaction.edit_original_response(content="Not enough data yet! The bot or cog was restarted very recently. Please wait a few minutes.")
+            return await interaction.response.send_message(content=f"ERROR: {e}", ephemeral=True)
 
 async def setup(bot):
     """Attach the diagnostics cog to the running bot.
