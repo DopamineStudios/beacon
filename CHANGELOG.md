@@ -1,3 +1,10 @@
+## [4.1.8](https://github.com/DopamineStudios/beacon/compare/v4.1.7...v4.1.8) (2026-07-12)
+
+
+### Bug Fixes
+
+* Fix shard connection gateway ([9cc3548](https://github.com/DopamineStudios/beacon/commit/9cc35489d451696d5b5dd1477896ec34e02db4da))
+
 ## [4.1.7](https://github.com/DopamineStudios/beacon/compare/v4.1.6...v4.1.7) (2026-07-12)
 
 
