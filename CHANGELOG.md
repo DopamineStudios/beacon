@@ -1,3 +1,10 @@
+## [4.1.12](https://github.com/DopamineStudios/beacon/compare/v4.1.11...v4.1.12) (2026-07-12)
+
+
+### Bug Fixes
+
+* Fix error caused by trying to set pyvips to single thread ([cafcd86](https://github.com/DopamineStudios/beacon/commit/cafcd86938726e7616fdda0378b73dd23f451815))
+
 ## [4.1.11](https://github.com/DopamineStudios/beacon/compare/v4.1.10...v4.1.11) (2026-07-12)
 
 
