@@ -1,3 +1,11 @@
+## [4.1.7](https://github.com/DopamineStudios/beacon/compare/v4.1.6...v4.1.7) (2026-07-12)
+
+
+### Bug Fixes
+
+* Fix on_beacon_ready never being called ([db2ce94](https://github.com/DopamineStudios/beacon/commit/db2ce941ff95e9afd9d727cee68a9953c42e8075))
+* Move command registry smart sync call to on_ready from setup_hook to fix problems when using sharding ([ad36b9e](https://github.com/DopamineStudios/beacon/commit/ad36b9eb7ed8579645533ef657da26e2ec6311db))
+
 ## [4.1.6](https://github.com/DopamineStudios/beacon/compare/v4.1.5...v4.1.6) (2026-07-12)
 
 
