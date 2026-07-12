@@ -1,3 +1,11 @@
+## [4.1.6](https://github.com/DopamineStudios/beacon/compare/v4.1.5...v4.1.6) (2026-07-12)
+
+
+### Bug Fixes
+
+* Fix broken graph text ([248214a](https://github.com/DopamineStudios/beacon/commit/248214a19a215908ddd867c7faa50ef7b08f4339))
+* Fix cache directory ([cf9ef9c](https://github.com/DopamineStudios/beacon/commit/cf9ef9c6d75044879b9a2f03a095d29ec9118453))
+
 ## [4.1.5](https://github.com/DopamineStudios/beacon/compare/v4.1.4...v4.1.5) (2026-07-12)
 
 
