@@ -1,3 +1,5 @@
+## [4.1.2](https://github.com/DopamineStudios/beacon/compare/v4.1.1...v4.1.2) (2026-07-12)
+
 ## [v4.1.1](https://github.com/DopamineStudios/beacon/compare/vv4.1.0...vv4.1.1) (2026-07-11)
 * Hotfix: Remove ANSI escape codes from .log file because they aren't being rendered properly ([daddebaa](https://www.google.com/search?q=https://github.com/DopamineStudios/beacon/commit/daddebaa))
 * Remove code that creates new logging processes, now everything uses self.bot.logger ([8827fd5b](https://github.com/DopamineStudios/beacon/commit/8827fd5b))
