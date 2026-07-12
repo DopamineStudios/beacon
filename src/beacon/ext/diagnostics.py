@@ -442,7 +442,7 @@ class Diagnostics(commands.Cog):
         location = None
         if not self.bot.secure_mode:
             location = await self.get_location()
-        location_line = f"> Bot Host Location: `{location}`\n" if location else "\n"
+        location_line = f"> Bot Host Location: `{location}`\n" if location else "\n" if final_shard_id_line != "\n" else ""
         try:
             start = time.perf_counter()
             await self.bot.http.request(discord.http.Route("GET", "/gateway"))
