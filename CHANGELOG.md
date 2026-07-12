@@ -24,10 +24,28 @@
 
 ## [4.1.3](https://github.com/DopamineStudios/beacon/compare/v4.1.2...v4.1.3) (2026-07-12)
 
+### Bug Fixes
+* Remove double call of generate_instance_id ([7ec5a72](https://github.com/DopamineStudios/beacon/commit/7ec5a72))
+* Fix grey colour in terminal ([b7dfc02](https://github.com/DopamineStudios/beacon/commit/b7dfc02))
+* Remove useless print statement ([2137684](https://github.com/DopamineStudios/beacon/commit/2137684))
+* Make labels brighter ([0735915](https://github.com/DopamineStudios/beacon/commit/0735915))
+
+### Documentation Changes
+* Update .releaserc.json [skip ci] ([5ec499e](https://github.com/DopamineStudios/beacon/commit/5ec499e))
+
 ## [4.1.2](https://github.com/DopamineStudios/beacon/compare/v4.1.1...v4.1.2) (2026-07-12)
 
+### Bug Fixes
+* Remove ANSI escape codes from all non-print statements ([1a6f690](https://github.com/DopamineStudios/beacon/commit/1a6f690))
+* Fix shard ID line display ([388a6ad](https://github.com/DopamineStudios/beacon/commit/388a6ad))
+* Add check to ensure that stored cache isn't using old incompatible structure before accessing it ([86611e8](https://github.com/DopamineStudios/beacon/commit/86611e8))
+
+### Documentation Changes
+* Update changelog [skip ci] ([f30fa85](https://github.com/DopamineStudios/beacon/commit/f30fa85))
+* Update .releaserc.json ([4af8ac9](https://github.com/DopamineStudios/beacon/commit/4af8ac9))
+
 ## [v4.1.1](https://github.com/DopamineStudios/beacon/compare/vv4.1.0...vv4.1.1) (2026-07-11)
-* Hotfix: Remove ANSI escape codes from .log file because they aren't being rendered properly ([daddebaa](https://www.google.com/search?q=https://github.com/DopamineStudios/beacon/commit/daddebaa))
+* Hotfix: Remove ANSI escape codes from .log file because they aren't being rendered properly ([daddebaa](https://github.com/DopamineStudios/beacon/commit/daddebaa))
 * Remove code that creates new logging processes, now everything uses self.bot.logger ([8827fd5b](https://github.com/DopamineStudios/beacon/commit/8827fd5b))
 ## [v4.1.0](https://github.com/DopamineStudios/beacon/compare/vv4.0.0...vv4.1.0) (2026-07-11)
 
