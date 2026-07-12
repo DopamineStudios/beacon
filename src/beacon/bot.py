@@ -108,7 +108,6 @@ class BeaconFrameworkBotMixin:
         self.count = None
         self.cog_load_time = None
         self.booted = False
-        self.instance_id = self.generate_instance_id()
         self.on_shard_ready_callback = on_shard_ready_callback
         self.on_beacon_ready_callback = on_beacon_ready_callback
 
