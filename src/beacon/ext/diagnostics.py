@@ -7,20 +7,25 @@ import asyncio
 import os
 import io
 from pathlib import Path
+
 fonts_dir = Path(__file__).parent.resolve()
 fonts_conf_file = fonts_dir / "fonts.conf"
 
 os.environ["FONTCONFIG_FILE"] = str(fonts_conf_file)
+
 import pyvips
+
+pyvips.cache_set_max(0)
+pyvips.concurrency_set(1)
+
 from collections import deque
 from .path import framework_version, BOLDFONT_PATH
 from ..core import beacon_commands
 
 
 class Diagnostics(commands.Cog):
-    """Diagnostics cog that reports latency, uptime, and host health metrics.
+    """Diagnostics cog that reports latency, uptime, and host health metrics."""
 
-    """
     def __init__(self, bot):
         """Initialize sampling state and start periodic latency collection.
 
@@ -33,10 +38,12 @@ class Diagnostics(commands.Cog):
         self.process = psutil.Process(os.getpid())
         self.process.cpu_percent(interval=None)
         self.current_cpu = 0.0
+
         self.cached_api_graph_bytes = None
+        self.cached_heartbeat_graph_bytes = None
+
         self.heartbeat_latency_cache = deque(maxlen=1440)
         self.heartbeat_temp_samples = []
-        self.cached_heartbeat_graph_bytes = None
         self.cache_task.start()
 
         self.battery_cache = []
@@ -48,7 +55,6 @@ class Diagnostics(commands.Cog):
         self.battery_task.start()
 
         self.font_family_title = "Montserrat"
-
 
     async def cog_unload(self):
         """Stop background sampling when the cog is unloaded.
@@ -94,25 +100,17 @@ class Diagnostics(commands.Cog):
 
             self.heartbeat_temp_samples.append(min(hb_latency, 999))
 
-            loop = asyncio.get_running_loop()
-
             if len(self.api_temp_samples) >= 12:
                 avg_latency = sum(self.api_temp_samples) / len(self.api_temp_samples)
                 self.api_latency_cache.append(avg_latency)
                 self.api_temp_samples.clear()
-
-                graph_buffer = await loop.run_in_executor(None, self.generate_latency_graph, "API")
-                if graph_buffer:
-                    self.cached_api_graph_bytes = graph_buffer.getvalue()
+                self.cached_api_graph_bytes = None
 
             if len(self.heartbeat_temp_samples) >= 12:
                 avg_hb = sum(self.heartbeat_temp_samples) / len(self.heartbeat_temp_samples)
                 self.heartbeat_latency_cache.append(avg_hb)
                 self.heartbeat_temp_samples.clear()
-
-                hb_graph_buffer = await loop.run_in_executor(None, self.generate_latency_graph, "Heartbeat")
-                if hb_graph_buffer:
-                    self.cached_heartbeat_graph_bytes = hb_graph_buffer.getvalue()
+                self.cached_heartbeat_graph_bytes = None
 
         except Exception as e:
             self.bot.logger.critical(f"[{self.bot.instance_id}] Beacon: {e}")
@@ -347,7 +345,8 @@ class Diagnostics(commands.Cog):
 
         except Exception as e:
             import traceback
-            self.bot.logger.error(f"[{self.bot.instance_id}] Beacon: Graph generation error: {e}\n{traceback.format_exc()}")
+            self.bot.logger.error(
+                f"[{self.bot.instance_id}] Beacon: Graph generation error: {e}\n{traceback.format_exc()}")
             return None
 
     @beacon_commands.command(name="ping", description="Get detailed latency and bot information")
@@ -360,6 +359,7 @@ class Diagnostics(commands.Cog):
         Returns:
             Any: Result produced by this function.
         """
+
         def format_uptime(seconds):
             """Convert elapsed seconds into a compact human-readable duration.
 
@@ -403,10 +403,8 @@ class Diagnostics(commands.Cog):
 
         if self.api_latency_cache:
             avg_api_latency = f"{round(sum(self.api_latency_cache) / len(self.api_latency_cache))}ms"
-            sample_count = len(self.api_latency_cache)
         else:
             avg_api_latency = "Calculating..."
-            sample_count = 0
         if self.heartbeat_latency_cache:
             avg_heartbeat_latency = f"{round(sum(self.heartbeat_latency_cache) / len(self.heartbeat_latency_cache))}ms"
         else:
@@ -416,8 +414,7 @@ class Diagnostics(commands.Cog):
         end_time = time.time()
         shard_id_line = None
         if hasattr(self.bot, 'shards'):
-            shard_id = interaction.guild.shard_id if interaction.guild else (
-                                                                                        interaction.user.id >> 22) % self.bot.shard_count or 0
+            shard_id = interaction.guild.shard_id if interaction.guild else (interaction.user.id >> 22) % self.bot.shard_count or 0
             shard_id_line = f"> Running on Shard `{shard_id}` of `{self.bot.shard_count}` Shards\n\n"
 
             shard = self.bot.get_shard(shard_id)
@@ -532,12 +529,14 @@ class Diagnostics(commands.Cog):
         await message.edit(content=None, embed=embed)
 
     latency = beacon_commands.Group(name="latency", description="Shows latency information about the bot")
+
     @latency.command(name="graph", description="Shows a graph of the average latency in the last 24 hours")
     @app_commands.choices(graph_type=[
         app_commands.Choice(name="API Latency Graph", value="api"),
         app_commands.Choice(name="Heartbeat Latency Graph", value="heartbeat")
     ])
-    @app_commands.describe(graph_type="The type of latency graph you want to see, either for API latency or for Heartbeat latency. Defaults to API latency graph.")
+    @app_commands.describe(
+        graph_type="The type of latency graph you want to see, either for API latency or for Heartbeat latency. Defaults to API latency graph.")
     async def graph(self, interaction: discord.Interaction, graph_type: app_commands.Choice[str] | None = None):
         """Return a generated latency trend graph when enough samples exist.
 
@@ -549,25 +548,40 @@ class Diagnostics(commands.Cog):
             Any: Result produced by this function.
         """
         graph_type_value = graph_type.value if graph_type is not None else "api"
+        loop = asyncio.get_running_loop()
+
         if graph_type_value == "api":
-            if not self.cached_api_graph_bytes:
+            if len(self.api_latency_cache) < 2:
                 return await interaction.response.send_message(
                     "Beacon: Not enough data yet! The bot was restarted very recently. Please wait a few minutes.",
                     ephemeral=True
                 )
+
             try:
+                if not self.cached_api_graph_bytes:
+                    graph_buffer = await loop.run_in_executor(None, self.generate_latency_graph, "API")
+                    if graph_buffer:
+                        self.cached_api_graph_bytes = graph_buffer.getvalue()
+
                 buffer = io.BytesIO(self.cached_api_graph_bytes)
                 file = discord.File(buffer, filename="beacon_api_graph.png")
                 await interaction.response.send_message(content=None, file=file)
             except Exception as e:
                 return await interaction.response.send_message(content=f"Beacon: ERROR: {e}", ephemeral=True)
+
         elif graph_type_value == "heartbeat":
-            if not self.cached_heartbeat_graph_bytes:
+            if len(self.heartbeat_latency_cache) < 2:
                 return await interaction.response.send_message(
                     "Beacon: Not enough data yet! The bot was restarted very recently. Please wait a few minutes.",
                     ephemeral=True
                 )
+
             try:
+                if not self.cached_heartbeat_graph_bytes:
+                    hb_graph_buffer = await loop.run_in_executor(None, self.generate_latency_graph, "Heartbeat")
+                    if hb_graph_buffer:
+                        self.cached_heartbeat_graph_bytes = hb_graph_buffer.getvalue()
+
                 buffer = io.BytesIO(self.cached_heartbeat_graph_bytes)
                 file = discord.File(buffer, filename="beacon_heartbeat_graph.png")
                 await interaction.response.send_message(content=None, file=file)
@@ -575,6 +589,7 @@ class Diagnostics(commands.Cog):
                 return await interaction.response.send_message(content=f"Beacon: ERROR: {e}", ephemeral=True)
         else:
             return await interaction.response.send_message(content="That's not a valid Graph Type!")
+
 
 async def setup(bot):
     """Attach the diagnostics cog to the running bot.
