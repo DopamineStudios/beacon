@@ -418,7 +418,7 @@ class Diagnostics(commands.Cog):
         if hasattr(self.bot, 'shards'):
             shard_id = interaction.guild.shard_id if interaction.guild else (
                                                                                         interaction.user.id >> 22) % self.bot.shard_count or 0
-            shard_id_line = f"> Running on Shard `{shard_id}` of `{self.bot.shard_count}` Shards\n"
+            shard_id_line = f"> Running on Shard `{shard_id}` of `{self.bot.shard_count}` Shards\n\n"
 
             shard = self.bot.get_shard(shard_id)
 
@@ -442,7 +442,7 @@ class Diagnostics(commands.Cog):
         location = None
         if not self.bot.secure_mode:
             location = await self.get_location()
-        location_line = f"> Bot Host Location: `{location}`\n\n" if location else "\n"
+        location_line = f"> Bot Host Location: `{location}`\n" if location else "\n"
         try:
             start = time.perf_counter()
             await self.bot.http.request(discord.http.Route("GET", "/gateway"))
