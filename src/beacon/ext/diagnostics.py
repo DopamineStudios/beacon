@@ -7,8 +7,10 @@ import asyncio
 import os
 import io
 from pathlib import Path
-fonts_dir = Path(__file__).parent
-os.environ["FONTCONFIG_PATH"] = str(fonts_dir.resolve())
+fonts_dir = Path(__file__).parent.resolve()
+fonts_conf_file = fonts_dir / "fonts.conf"
+
+os.environ["FONTCONFIG_FILE"] = str(fonts_conf_file)
 import pyvips
 from collections import deque
 from .path import framework_version, BOLDFONT_PATH
