@@ -1,3 +1,10 @@
+## [4.1.9](https://github.com/DopamineStudios/beacon/compare/v4.1.8...v4.1.9) (2026-07-12)
+
+
+### Bug Fixes
+
+* Fix formatting in ping embed ([ba000b5](https://github.com/DopamineStudios/beacon/commit/ba000b5978520103c3334d0f17ca13da69670cb4))
+
 ## [4.1.8](https://github.com/DopamineStudios/beacon/compare/v4.1.7...v4.1.8) (2026-07-12)
 
 
