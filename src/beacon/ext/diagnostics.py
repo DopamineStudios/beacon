@@ -15,9 +15,6 @@ os.environ["FONTCONFIG_FILE"] = str(fonts_conf_file)
 
 import pyvips
 
-pyvips.cache_set_max(0)
-pyvips.concurrency_set(1)
-
 from collections import deque
 from .path import framework_version, BOLDFONT_PATH
 from ..core import beacon_commands
