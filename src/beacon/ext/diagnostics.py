@@ -414,11 +414,17 @@ class Diagnostics(commands.Cog):
             shard_id = interaction.guild.shard_id if interaction.guild else (interaction.user.id >> 22) % self.bot.shard_count or 0
             shard_id_line = f"> Running on Shard `{shard_id}` of `{self.bot.shard_count}` Shards\n"
             shard = self.bot.get_shard(shard_id)
-            gateway_raw = str(shard.ws.gateway) if shard and shard.ws else "Global/Unknown"
+            shard_ws = getattr(shard, '_ws', None)
+            if shard_ws and hasattr(shard_ws, 'gateway'):
+                gateway_raw = str(shard_ws.gateway)
+            elif hasattr(self.bot, 'gateway_url') and self.bot.gateway_url:
+                gateway_raw = self.bot.gateway_url
+            else:
+                gateway_raw = "Global/Unknown"
 
         else:
             gateway_raw = str(self.bot.ws.gateway) if self.bot.ws else "Global/Unknown"
-
+        final_shard_id_line = shard_id_line or ""
         gateway_node = gateway_raw.split('gateway-')[-1].split('.')[
             0] if 'gateway-' in gateway_raw else "Global/Unknown"
         round_latency = round((end_time - start_time) * 1000)
@@ -497,7 +503,7 @@ class Diagnostics(commands.Cog):
                 f"> Powered by Beacon Framework `v{framework_version}` by Dopamine Studios\n"
                 f"> Beacon Instance ID: `{self.bot.instance_id}`\n\n"
                 f"> Connected to Discord Gateway: `{gateway_node}`\n"
-                f"{shard_id_line}"
+                f"{final_shard_id_line}"
                 f"{location_line}"
                 f"> API Latency: `{connection_latency}ms`\n"
                 f"> Round-trip Latency: `{round_latency}ms`\n"
