@@ -313,7 +313,7 @@ class BeaconFrameworkBotMixin:
             owner_user_name = user.display_name
         else:
             owner_user_name = "Unknown"
-
+        await self.on_beacon_ready()
         if not self.booted:
             total_startup_time = time.time() - self.process_start_time
             bot_version_line = f"Bot Version: {self.version}\n" if self.version else ""
