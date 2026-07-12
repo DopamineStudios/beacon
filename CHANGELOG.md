@@ -1,3 +1,11 @@
+## [4.1.4](https://github.com/DopamineStudios/beacon/compare/v4.1.3...v4.1.4) (2026-07-12)
+
+
+### Bug Fixes
+
+* Fix font not loading for graphs ([867cefd](https://github.com/DopamineStudios/beacon/commit/867cefd74c99385adbe66e6f3c2795d3bf319a96))
+* Update .releaserc.json [skip ci] ([64f247a](https://github.com/DopamineStudios/beacon/commit/64f247a67c9f0b2e36761b1e1209475acaa203ad))
+
 ## [4.1.3](https://github.com/DopamineStudios/beacon/compare/v4.1.2...v4.1.3) (2026-07-12)
 
 ## [4.1.2](https://github.com/DopamineStudios/beacon/compare/v4.1.1...v4.1.2) (2026-07-12)
