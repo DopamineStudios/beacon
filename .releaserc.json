@@ -1,18 +1,23 @@
 {
   "branches": ["main"],
   "plugins": [
-    "@semantic-release/commit-analyzer",
+    [
+      "@semantic-release/commit-analyzer",
+      {
+        "preset": "conventionalcommits"
+      }
+    ],
     [
       "@semantic-release/release-notes-generator",
       {
         "preset": "conventionalcommits",
         "presetConfig": {
           "types": [
-            { "type": "feat", "section": "Features & Minor Updates and Changes" },
-            { "type": "fix", "section": "Bug Fixes" },
+            { "type": "feat", "section": "Features & Minor Updates and Changes", "hidden": false },
+            { "type": "fix", "section": "Bug Fixes", "hidden": false },
             { "type": "style", "section": "Styling, UI, Code Cleanup, and Linting Fixes", "hidden": false },
             { "type": "docs", "section": "Documentation Changes", "hidden": false },
-            { "type": "perf", "section": "Performance Improvements" },
+            { "type": "perf", "section": "Performance Improvements", "hidden": false },
             { "type": "refactor", "section": "Code Refactoring", "hidden": false }
           ],
           "compareUrlFormat": "{{host}}/{{owner}}/{{repository}}/compare/{{previousTag}}...{{currentTag}}"
