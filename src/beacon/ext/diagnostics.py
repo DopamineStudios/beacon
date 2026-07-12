@@ -263,11 +263,10 @@ class Diagnostics(commands.Cog):
             def draw_text(mutable_img, text, font_family, size, colour, target_x, target_y, anchor="mt"):
                 try:
                     font_string = f"{font_family} {int(size)}"
-                    print(font_string)
                     mask = pyvips.Image.text(text, font=font_string, dpi=72)
                 except Exception as e:
                     mask = pyvips.Image.text(text, font=f"Sans {int(size)}", dpi=72)
-                    self.bot.logger.error(f"[{self.bot.instance_id}] Beacon: Error in font:\n{e}")
+                    self.bot.logger.critical(f"[{self.bot.instance_id}] Beacon: Error in font:\n{e}")
 
                 if anchor == "mt":
                     x = target_x - mask.width // 2
