@@ -177,7 +177,6 @@ class BeaconFrameworkBotMixin:
             await self.load_extension("beacon.ext.diagnostics")
         # pyrefly: ignore [missing-attribute]
         await self.load_extension("beacon.ext.pic")
-        status = await self.registry.smart_sync()
 
         for s in (signal.SIGINT, signal.SIGTERM):
             # pyrefly: ignore [missing-attribute]
@@ -263,6 +262,7 @@ class BeaconFrameworkBotMixin:
 
     async def on_ready(self):
         """Finalise startup presence and emit readiness diagnostics once connected."""
+        await self.registry.smart_sync()
         if self.owner_id is None:
             # pyrefly: ignore [missing-attribute]
             app_info = await self.application_info()
