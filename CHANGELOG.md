@@ -1,3 +1,10 @@
+## [4.1.11](https://github.com/DopamineStudios/beacon/compare/v4.1.10...v4.1.11) (2026-07-12)
+
+
+### Bug Fixes
+
+* Switch to lazy evaluation and TTL cache instead of wasting resources generating a graph every minute and to reduce memory usage of bots. If we generate one every minute regardless of whether the command is actually being used, resources are wasted. If we do completely on-demand like before, then we won't get the benefit of caching. Therefore, this middle ground approach, which gives best of both worlds. ([4ad9dc4](https://github.com/DopamineStudios/beacon/commit/4ad9dc453de8e01543de8f1e3261552f6c9941ef))
+
 ## [4.1.10](https://github.com/DopamineStudios/beacon/compare/v4.1.9...v4.1.10) (2026-07-12)
 
 
