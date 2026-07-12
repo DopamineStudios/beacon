@@ -1,3 +1,11 @@
+## [4.1.5](https://github.com/DopamineStudios/beacon/compare/v4.1.4...v4.1.5) (2026-07-12)
+
+
+### Bug Fixes
+
+* Add handling for when heartbeat latency is infinite due to dropping of connection, and instead replacing the latency with 999ms so that in the graph it is visible that something went wrong at that moment. ([b322f3a](https://github.com/DopamineStudios/beacon/commit/b322f3aee837fea88fafa3262340e01a514ce3c6))
+* Fix fontconfig warning ([3bfa021](https://github.com/DopamineStudios/beacon/commit/3bfa021a4195c25ba880bbdd6748c2aa52b44691))
+
 ## [4.1.4](https://github.com/DopamineStudios/beacon/compare/v4.1.3...v4.1.4) (2026-07-12)
 
 
