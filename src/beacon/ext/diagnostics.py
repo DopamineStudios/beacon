@@ -75,18 +75,22 @@ class Diagnostics(commands.Cog):
                 )
                 end = time.perf_counter()
                 total_latency = round((end - start) * 1000)
-            except asyncio.TimeoutError:
-                total_latency = None
-            except Exception as e:
-                self.bot.logger.error(f"[{self.bot.instance_id}] Beacon: {e}")
-                total_latency = None
+            except (asyncio.TimeoutError, Exception):
+                total_latency = 999
 
-            if isinstance(total_latency, (int, float)):
-                self.api_temp_samples.append(total_latency)
+            import math
+            if isinstance(total_latency, (int, float)) and not math.isnan(total_latency):
+                if math.isinf(total_latency) or total_latency >= 999:
+                    self.api_temp_samples.append(999)
+                else:
+                    self.api_temp_samples.append(total_latency)
 
-            hb_latency = round(self.bot.latency * 1000) if self.bot.latency is not None else None
-            if isinstance(hb_latency, (int, float)):
-                self.heartbeat_temp_samples.append(hb_latency)
+            if self.bot.latency is None or math.isinf(self.bot.latency) or math.isnan(self.bot.latency):
+                hb_latency = 999
+            else:
+                hb_latency = round(self.bot.latency * 1000)
+
+            self.heartbeat_temp_samples.append(min(hb_latency, 999))
 
             loop = asyncio.get_running_loop()
 
