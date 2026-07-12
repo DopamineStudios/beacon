@@ -146,7 +146,7 @@ class CommandRegistry:
         current_bot_id = self.bot.user.id if self.bot.user else None
 
         if (
-                stored_state
+                isinstance(stored_state, dict)
                 and stored_state.get("hash") == current_hash
                 and stored_state.get("bot_id") == current_bot_id
         ):
