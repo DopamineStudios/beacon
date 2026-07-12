@@ -14,10 +14,6 @@ from collections import deque
 from .path import framework_version, BOLDFONT_PATH
 from ..core import beacon_commands
 
-GREY = ""
-CYAN = ""
-RESET = ""
-
 
 class Diagnostics(commands.Cog):
     """Diagnostics cog that reports latency, uptime, and host health metrics.
@@ -82,7 +78,7 @@ class Diagnostics(commands.Cog):
             except asyncio.TimeoutError:
                 total_latency = None
             except Exception as e:
-                self.bot.logger.error(f"{GREY}[{self.bot.instance_id}]{CYAN} Beacon{RESET}: {e}")
+                self.bot.logger.error(f"[{self.bot.instance_id}] Beacon: {e}")
                 total_latency = None
 
             if isinstance(total_latency, (int, float)):
@@ -113,7 +109,7 @@ class Diagnostics(commands.Cog):
                     self.cached_heartbeat_graph_bytes = hb_graph_buffer.getvalue()
 
         except Exception as e:
-            self.bot.logger.critical(f"{GREY}[{self.bot.instance_id}]{CYAN} Beacon{RESET}: {e}")
+            self.bot.logger.critical(f"[{self.bot.instance_id}] Beacon: {e}")
 
     @cache_task.before_loop
     async def before_cache_task(self):
@@ -164,7 +160,7 @@ class Diagnostics(commands.Cog):
                 self.is_battery_idling = True
 
         except Exception as e:
-            self.bot.logger.error(f"{GREY}[{self.bot.instance_id}]{CYAN} Beacon{RESET}: {e}")
+            self.bot.logger.error(f"[{self.bot.instance_id}] Beacon: {e}")
 
     @battery_task.before_loop
     async def before_battery_task(self):
@@ -271,7 +267,7 @@ class Diagnostics(commands.Cog):
                     mask = pyvips.Image.text(text, font=font_string, dpi=72)
                 except Exception as e:
                     mask = pyvips.Image.text(text, font=f"Sans {int(size)}", dpi=72)
-                    self.bot.logger.error(f"{GREY}[{self.bot.instance_id}]{CYAN} Beacon{RESET}: Error in font:\n{e}")
+                    self.bot.logger.error(f"[{self.bot.instance_id}] Beacon: Error in font:\n{e}")
 
                 if anchor == "mt":
                     x = target_x - mask.width // 2
@@ -346,7 +342,7 @@ class Diagnostics(commands.Cog):
 
         except Exception as e:
             import traceback
-            self.bot.logger.error(f"{GREY}[{self.bot.instance_id}]{CYAN} Beacon{RESET}: Graph generation error: {e}\n{traceback.format_exc()}")
+            self.bot.logger.error(f"[{self.bot.instance_id}] Beacon: Graph generation error: {e}\n{traceback.format_exc()}")
             return None
 
     @beacon_commands.command(name="ping", description="Get detailed latency and bot information")
