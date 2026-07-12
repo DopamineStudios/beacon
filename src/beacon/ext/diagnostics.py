@@ -302,7 +302,7 @@ class Diagnostics(commands.Cog):
                 anchor="mt"
             )
 
-            y_label_colour = [115, 115, 115, 255]
+            y_label_colour = [140, 140, 140, 255]
             for i in range(num_y_labels + 1):
                 val = target_step * i
                 y = (height - pad_bot) - (val / y_limit) * graph_height
@@ -311,7 +311,7 @@ class Diagnostics(commands.Cog):
                                        pad_left - 15, y, anchor="rm")
 
             num_x_labels = 5
-            tick_colour = [110, 110, 110, 255]
+            tick_colour = [130, 130, 130, 255]
             for i in range(num_x_labels):
                 sample_idx = int((i / (num_x_labels - 1)) * (num_samples - 1))
                 x = pad_left + (i / (num_x_labels - 1)) * graph_width
