@@ -16,7 +16,7 @@ from collections.abc import Callable, Coroutine
 from typing import Any
 from pathlib import Path
 
-GREY = ""
+GREY = "\033[90m"
 CYAN = "\033[96m"
 MAGENTA = "\033[95m"
 RESET = "\033[0m"
