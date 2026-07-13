@@ -1,3 +1,10 @@
+## [4.1.15](https://github.com/DopamineStudios/beacon/compare/v4.1.14...v4.1.15) (2026-07-13)
+
+
+### Bug Fixes
+
+* Fix error caused by interaction.response.defer() being nested inside if not self.cached...[] check so if the graph is in cache then response isnt deferred but it still leads up to edit_original_response which wont work cuz no deffer ([d6dad1c](https://github.com/DopamineStudios/beacon/commit/d6dad1c9a099b65a64142a14f7ac68d5c33e138d))
+
 ## [4.1.14](https://github.com/DopamineStudios/beacon/compare/v4.1.13...v4.1.14) (2026-07-13)
 
 
