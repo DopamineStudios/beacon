@@ -555,8 +555,8 @@ class Diagnostics(commands.Cog):
                 )
 
             try:
+                await interaction.response.defer()
                 if not self.cached_api_graph_bytes:
-                    await interaction.response.defer()
                     graph_buffer = await loop.run_in_executor(None, self.generate_latency_graph, "API")
                     if graph_buffer:
                         self.cached_api_graph_bytes = graph_buffer.getvalue()
@@ -575,8 +575,8 @@ class Diagnostics(commands.Cog):
                 )
 
             try:
+                await interaction.response.defer()
                 if not self.cached_heartbeat_graph_bytes:
-                    await interaction.response.defer()
                     hb_graph_buffer = await loop.run_in_executor(None, self.generate_latency_graph, "Heartbeat")
                     if hb_graph_buffer:
                         self.cached_heartbeat_graph_bytes = hb_graph_buffer.getvalue()
