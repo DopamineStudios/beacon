@@ -556,15 +556,16 @@ class Diagnostics(commands.Cog):
 
             try:
                 if not self.cached_api_graph_bytes:
+                    await interaction.response.defer()
                     graph_buffer = await loop.run_in_executor(None, self.generate_latency_graph, "API")
                     if graph_buffer:
                         self.cached_api_graph_bytes = graph_buffer.getvalue()
 
                 buffer = io.BytesIO(self.cached_api_graph_bytes)
                 file = discord.File(buffer, filename="beacon_api_graph.png")
-                await interaction.response.send_message(content=None, file=file)
+                await interaction.edit_original_response(content=None, attachments=[file])
             except Exception as e:
-                return await interaction.response.send_message(content=f"Beacon: ERROR: {e}", ephemeral=True)
+                return await interaction.edit_original_response(content=f"Beacon: ERROR: {e}")
 
         elif graph_type_value == "heartbeat":
             if len(self.heartbeat_latency_cache) < 2:
@@ -575,15 +576,16 @@ class Diagnostics(commands.Cog):
 
             try:
                 if not self.cached_heartbeat_graph_bytes:
+                    await interaction.response.defer()
                     hb_graph_buffer = await loop.run_in_executor(None, self.generate_latency_graph, "Heartbeat")
                     if hb_graph_buffer:
                         self.cached_heartbeat_graph_bytes = hb_graph_buffer.getvalue()
 
                 buffer = io.BytesIO(self.cached_heartbeat_graph_bytes)
                 file = discord.File(buffer, filename="beacon_heartbeat_graph.png")
-                await interaction.response.send_message(content=None, file=file)
+                await interaction.edit_original_response(content=None, attachments=[file])
             except Exception as e:
-                return await interaction.response.send_message(content=f"Beacon: ERROR: {e}", ephemeral=True)
+                return await interaction.edit_original_response(content=f"Beacon: ERROR: {e}")
         else:
             return await interaction.response.send_message(content="That's not a valid Graph Type!")
 
