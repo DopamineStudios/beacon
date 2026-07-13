@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "discord-beacon"
-version = "4.1.13"
+version = "4.1.14"
 authors = [{name = "ismite"}]
 description = "Initialise a production-ready Discord.py bot in just 4 lines of code using Beacon, the most advanced unonionated framework for discord.py. Smart and automated command syncing, preconditions (and its presets), customisable command rate limits, easy-to-use in-Discord dashboard, Helper Views, and more. A Dopamine Studios project."
 readme = "README.md"

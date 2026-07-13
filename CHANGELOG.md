@@ -1,3 +1,10 @@
+## [4.1.14](https://github.com/DopamineStudios/beacon/compare/v4.1.13...v4.1.14) (2026-07-13)
+
+
+### Bug Fixes
+
+* Fix interaction being timed out while generating graph by using deferring (it used it before v4, but it was removed due to the aggressive caching and pre-generation but now with lazy caching, it's needed again) ([3792f34](https://github.com/DopamineStudios/beacon/commit/3792f34ad09eaf04f20c78b55a14d5b6938fd65d))
+
 ## [4.1.13](https://github.com/DopamineStudios/beacon/compare/v4.1.12...v4.1.13) (2026-07-13)
 
 
