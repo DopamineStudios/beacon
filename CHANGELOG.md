@@ -1,3 +1,10 @@
+## [4.1.13](https://github.com/DopamineStudios/beacon/compare/v4.1.12...v4.1.13) (2026-07-13)
+
+
+### Bug Fixes
+
+* Fix embed formatting (for the final time, i promise) ([e5ea486](https://github.com/DopamineStudios/beacon/commit/e5ea48611c7588d55ac2c4874029bfaf4eab8132))
+
 ## [4.1.12](https://github.com/DopamineStudios/beacon/compare/v4.1.11...v4.1.12) (2026-07-12)
 
 
