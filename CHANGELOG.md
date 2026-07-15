@@ -1,3 +1,11 @@
+## [4.1.16](https://github.com/DopamineStudios/beacon/compare/v4.1.15...v4.1.16) (2026-07-15)
+
+
+### Bug Fixes
+
+* Expose ViewPaginator through __init__.py (it got nuked before when i used tab autocomplete to add LayoutViewPaginator for some reason) ([0a12b41](https://github.com/DopamineStudios/beacon/commit/0a12b411236af48e573294c49a0ec5d140b19c89))
+* resolve TypeError in command wrapper by removing guild_only kwarg and using the native [@app](https://github.com/app)_commands.guild_only() decorator. ([b384267](https://github.com/DopamineStudios/beacon/commit/b384267057c85c9b973fe3687ff02b2833e2ec2f))
+
 ## [4.1.15](https://github.com/DopamineStudios/beacon/compare/v4.1.14...v4.1.15) (2026-07-13)
 
 
