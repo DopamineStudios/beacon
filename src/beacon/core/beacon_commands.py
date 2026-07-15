@@ -3,6 +3,7 @@ from functools import wraps
 from .preconditions import global_cooldown as g_cooldown, permissions_preset as preset, cooldown as local_cooldown
 import sys
 
+
 def command(
         name: str | None = None,
         description: str | None = None,
@@ -13,10 +14,14 @@ def command(
 ):
     """Build a slash-command decorator that applies framework defaults and checks."""
 
+    force_guild_only = False
     if permissions_preset and permissions_preset.lower() != "bot_owner":
-        kwargs['guild_only'] = True
+        force_guild_only = True
 
     def decorator(func):
+        if force_guild_only:
+            func = app_commands.guild_only()(func)
+
         cmd = app_commands.command(
             name=name or func.__name__,
             description=description or (func.__doc__ or "No description provided"),
