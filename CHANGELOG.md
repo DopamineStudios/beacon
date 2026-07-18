@@ -1,3 +1,10 @@
+## [4.1.19](https://github.com/DopamineStudios/beacon/compare/v4.1.18...v4.1.19) (2026-07-18)
+
+
+### Bug Fixes
+
+* (Hotfix) Fix error "images do not have same numbers of bands" ([1a22a5d](https://github.com/DopamineStudios/beacon/commit/1a22a5db98147002f3f65224dae1432fb34295a5))
+
 ## [4.1.18](https://github.com/DopamineStudios/beacon/compare/v4.1.17...v4.1.18) (2026-07-18)
 
 
