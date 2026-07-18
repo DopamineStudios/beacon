@@ -285,8 +285,11 @@ class Diagnostics(commands.Cog):
                 else:
                     x, y = target_x, target_y
 
-                text_colour = (pyvips.Image.black(mask.width, mask.height, bands=4) + colour).copy(interpretation="srgb")
-                return img.composite2(text_colour.bandjoin(mask), 'over', x=int(x), y=int(y))
+                text_colour = (pyvips.Image.black(mask.width, mask.height, bands=3) + colour[:3]).copy(
+                    interpretation="srgb")
+                text_layer = text_colour.bandjoin(mask)
+
+                return img.composite2(text_layer, 'over', x=int(x), y=int(y))
 
             fg = draw_text_fast(fg, f"{graph_type} Latency Graph - Powered by Beacon",
                                 self.font_family_title + " Bold", 24 * scale_factor,
