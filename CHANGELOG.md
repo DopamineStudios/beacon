@@ -1,3 +1,10 @@
+## [4.1.18](https://github.com/DopamineStudios/beacon/compare/v4.1.17...v4.1.18) (2026-07-18)
+
+
+### Bug Fixes
+
+* (Hotfix) Fix errors caused by previous re-rewrite of generate_latency_graph function ([32e3ca0](https://github.com/DopamineStudios/beacon/commit/32e3ca0e93638c6c6b9ab553836d18ffd9d0b885))
+
 ## [4.1.17](https://github.com/DopamineStudios/beacon/compare/v4.1.16...v4.1.17) (2026-07-18)
 
 
