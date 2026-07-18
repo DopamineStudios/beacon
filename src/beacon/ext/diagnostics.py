@@ -1,6 +1,5 @@
 import os
 import sys
-import ctypes
 import io
 import psutil
 import time
@@ -9,38 +8,12 @@ from pathlib import Path
 import discord
 from discord.ext import commands, tasks
 from discord import app_commands
+from collections import deque
 import gc
 
-fonts_dir = Path(__file__).parent.resolve()
+from PIL import Image, ImageDraw, ImageFont
 
-
-def _register_internal_library_fonts():
-    try:
-        if sys.platform.startswith("linux"):
-            lib_name = "libfontconfig.so.1"
-        elif sys.platform == "darwin":
-            lib_name = "libfontconfig.1.dylib"
-        else:
-            lib_name = "libfontconfig-1.dll"
-
-        fontconfig = ctypes.CDLL(lib_name)
-
-        for font_file in fonts_dir.glob("*.ttf"):
-            fontconfig.FcConfigAppFontAddFile(None, str(font_file).encode('utf-8'))
-
-    except Exception:
-        pass
-
-_register_internal_library_fonts()
-
-
-import pyvips
-pyvips.cache_set_max(0)
-pyvips.cache_set_max_mem(50 * 1024 * 1024)
-pyvips.cache_set_max_files(0)
-
-from collections import deque
-from .path import framework_version
+from .path import framework_version, BOLDFONT_PATH
 from ..core import beacon_commands
 
 
@@ -74,8 +47,6 @@ class Diagnostics(commands.Cog):
         self.battery_increment_mins = 20
         self.is_battery_idling = False
         self.battery_task.start()
-
-        self.font_family_title = "Montserrat"
 
     async def cog_unload(self):
         """Stop background sampling when the cog is unloaded.
@@ -202,6 +173,7 @@ class Diagnostics(commands.Cog):
         Returns:
             Any: Location.
         """
+
         def fetch():
             """Perform blocking IP geolocation lookup off the event loop.
 
@@ -220,7 +192,7 @@ class Diagnostics(commands.Cog):
         return await loop.run_in_executor(None, fetch)
 
     def generate_latency_graph(self, graph_type: str):
-        """Render the cached latency history into an in-memory PNG graph using pyvips."""
+        """Render the cached latency history into an in-memory PNG graph using Pillow."""
         try:
             if graph_type.strip().lower() == "heartbeat":
                 data = list(self.heartbeat_latency_cache)
@@ -231,17 +203,63 @@ class Diagnostics(commands.Cog):
             if num_samples < 2:
                 return None
 
+            def get_secondary_colour(main_rgb, darken_factor=0.925, alpha=40):
+                secondary_rgb = tuple(max(0, min(255, int(channel * darken_factor))) for channel in main_rgb)
+                return secondary_rgb + (alpha,)
+
             scale_factor = 2
             width, height = 600 * scale_factor, 300 * scale_factor
             pad_top, pad_bot, pad_left, pad_right = 175, 80, 100, 40
+
+            img = Image.new("RGBA", (width, height), color=(26, 26, 30, 255))
+            draw = ImageDraw.Draw(img)
+
+            try:
+                title_font = ImageFont.truetype(BOLDFONT_PATH, 24 * scale_factor)
+                label_font = ImageFont.truetype(BOLDFONT_PATH, 11 * scale_factor)
+            except Exception as e:
+                self.bot.logger.error(
+                    f"[{self.bot.instance_id}] Beacon: Custom font not found at {BOLDFONT_PATH}. Using default.\n{e}")
+                title_font = ImageFont.load_default()
+                label_font = ImageFont.load_default()
+
+            draw.text(
+                (width / 2, 70),
+                f"{graph_type} Latency Graph - Powered by Beacon",
+                fill=(255, 255, 255, 255),
+                font=title_font,
+                anchor="mt"
+            )
 
             max_val = max(data) if data else 100
             steps = [10, 25, 50, 100, 250, 500, 1000]
             target_step = next((s for s in steps if s > max_val / 4), max_val / 4)
             y_limit = target_step * 4
 
+            grid_color = (60, 62, 68, 255)
+            y_label_colour = (140, 140, 140, 255)
+            num_y_labels = 4
             graph_height = height - pad_top - pad_bot
             graph_width = width - pad_left - pad_right
+
+            for i in range(num_y_labels + 1):
+                val = target_step * i
+                y = (height - pad_bot) - (val / y_limit) * graph_height
+                draw.line([(pad_left, y), (width - pad_right, y)], fill=grid_color, width=1 * scale_factor)
+                draw.text((pad_left - 15, y), f"{int(val)}ms", fill=y_label_colour, anchor="rm", font=label_font)
+
+            tick_colour = (130, 130, 130, 255)
+            num_x_labels = 5
+            for i in range(num_x_labels):
+                sample_idx = int((i / (num_x_labels - 1)) * (num_samples - 1))
+                x = pad_left + (i / (num_x_labels - 1)) * graph_width
+                mins_ago = num_samples - 1 - sample_idx
+
+                label = "Now" if mins_ago == 0 else (
+                    f"{round(mins_ago / 60, 1)}h" if mins_ago >= 60 else f"{mins_ago}m")
+
+                draw.line([(x, height - pad_bot), (x, height - pad_bot + 10)], fill=tick_colour, width=1 * scale_factor)
+                draw.text((x, height - pad_bot + 25), label, fill=tick_colour, anchor="mt", font=label_font)
 
             points = []
             for i, val in enumerate(data):
@@ -249,84 +267,17 @@ class Diagnostics(commands.Cog):
                 y = (height - pad_bot) - (val / y_limit) * graph_height
                 points.append((x, y))
 
-            bg_color = [26, 26, 30, 255]
-            canvas = (pyvips.Image.black(width, height, bands=4) + bg_color).copy(interpretation="srgb")
-            canvas = canvas.copy_memory()
-
-            grid_colour = [60, 62, 68, 255]
-            for i in range(5):
-                val = target_step * i
-                y = (height - pad_bot) - (val / y_limit) * graph_height
-                canvas = canvas.draw_rect(grid_colour, int(pad_left), int(y - scale_factor // 2),
-                                          int(graph_width), int(1 * scale_factor), fill=True)
-
-            tick_colour = [130, 130, 130, 255]
-            for i in range(5):
-                x = pad_left + (i / 4) * graph_width
-                canvas = canvas.draw_rect(tick_colour, int(x - 1), int(height - pad_bot), 2, 10, fill=True)
-
             fill_points = [(pad_left, height - pad_bot)] + points + [(width - pad_right, height - pad_bot)]
-            fill_svg_str = f'<svg width="{width}" height="{height}"><polygon points="{" ".join(f"{int(x)},{int(y)}" for x, y in fill_points)}" fill="white" /></svg>'
-            fill_svg_img = pyvips.Image.svgload_buffer(fill_svg_str.encode('utf-8'))
-            poly_alpha = fill_svg_img[3] if fill_svg_img.bands == 4 else fill_svg_img[0]
-            poly_mask = (poly_alpha * (40 / 255)).cast("uchar")
+            secondary_colour = get_secondary_colour(self.bot.accent_colour)
+            draw.polygon(fill_points, fill=secondary_colour)
 
-            accent_rgb = list(self.bot.accent_colour[:3])
-            secondary_rgb = [max(0, min(255, int(channel * 0.925))) for channel in accent_rgb]
-            poly_colour = (pyvips.Image.black(width, height, bands=3) + secondary_rgb).cast("uchar")
-            fill_layer = poly_colour.bandjoin(poly_mask).copy(interpretation="srgb")
-            img = canvas.composite(fill_layer, "over")
+            draw.line(points, fill=tuple(self.bot.accent_colour), width=3 * scale_factor, joint="round")
 
-            path_data = f"M {points[0][0]} {points[0][1]} " + " ".join([f"L {p[0]} {p[1]}" for p in points[1:]])
-            line_svg_str = f'<svg width="{width}" height="{height}"><path d="{path_data}" fill="none" stroke="white" stroke-width="{4 * scale_factor}" stroke-linejoin="round" stroke-linecap="round" /></svg>'
-            line_svg_img = pyvips.Image.svgload_buffer(line_svg_str.encode('utf-8'))
-
-            line_color_block = (pyvips.Image.black(width, height, bands=3) + accent_rgb).cast("uchar")
-            line_mask = line_svg_img[3] if line_svg_img.bands == 4 else line_svg_img[0]
-            line_layer = line_color_block.bandjoin(line_mask).copy(interpretation="srgb")
-            img = img.composite(line_layer, "over")
-
-            def draw_text_fast(target_img, text, font_family, size, colour, target_x, target_y, anchor="mt"):
-                try:
-                    mask = pyvips.Image.text(text, font=f"{font_family} {int(size)}", dpi=72)
-                except:
-                    mask = pyvips.Image.text(text, font=f"Sans {int(size)}", dpi=72)
-
-                if anchor == "mt":
-                    x, y = target_x - mask.width // 2, target_y
-                elif anchor == "rm":
-                    x, y = target_x - mask.width, target_y - mask.height // 2
-                else:
-                    x, y = target_x, target_y
-
-                text_color = (pyvips.Image.black(mask.width, mask.height, bands=3) + colour[:3]).copy(
-                    interpretation="srgb")
-                return target_img.composite2(text_color.bandjoin(mask), 'over', x=int(x), y=int(y))
-
-            img = draw_text_fast(img, f"{graph_type} Latency Graph - Powered by Beacon",
-                                 self.font_family_title + " Bold", 24 * scale_factor,
-                                 [255, 255, 255, 255], width / 2, 70, "mt")
-
-            y_label_colour = [140, 140, 140, 255]
-            for i in range(5):
-                val = target_step * i
-                y = (height - pad_bot) - (val / y_limit) * graph_height
-                img = draw_text_fast(img, f"{int(val)}ms", "Sans", 10 * scale_factor, y_label_colour, pad_left - 15, y,
-                                     "rm")
-
-            for i in range(5):
-                idx = int((i / 4) * (num_samples - 1))
-                x = pad_left + (i / 4) * graph_width
-                mins = num_samples - 1 - idx
-                label = "Now" if mins == 0 else (f"{round(mins / 60, 1)}h" if mins >= 60 else f"{mins}m")
-                img = draw_text_fast(img, label, "Sans", 12 * scale_factor, tick_colour, x, height - pad_bot + 25, "mt")
-
-            img = img.resize(0.5, kernel="lanczos3")
-            buffer_data = img.write_to_buffer(".png")
-
-            del canvas
-            del img
-            return io.BytesIO(buffer_data)
+            img = img.resize((600, 300), resample=Image.LANCZOS)
+            buffer = io.BytesIO()
+            img.save(buffer, format="PNG")
+            buffer.seek(0)
+            return buffer
 
         except Exception as e:
             import traceback
@@ -335,24 +286,9 @@ class Diagnostics(commands.Cog):
 
     @beacon_commands.command(name="ping", description="Get detailed latency and bot information")
     async def ping(self, interaction: discord.Interaction):
-        """Send an embed with detailed latency, uptime, and system stats.
-
-        Args:
-            interaction: Interaction context received from Discord.
-
-        Returns:
-            Any: Result produced by this function.
-        """
+        """Send an embed with detailed latency, uptime, and system stats."""
 
         def format_uptime(seconds):
-            """Convert elapsed seconds into a compact human-readable duration.
-
-            Args:
-                seconds: Duration in seconds.
-
-            Returns:
-                Any: Formatted uptime value.
-            """
             weeks = seconds // (7 * 24 * 60 * 60)
             seconds %= (7 * 24 * 60 * 60)
             days = seconds // (24 * 60 * 60)
@@ -393,16 +329,17 @@ class Diagnostics(commands.Cog):
             avg_heartbeat_latency = f"{round(sum(self.heartbeat_latency_cache) / len(self.heartbeat_latency_cache))}ms"
         else:
             avg_heartbeat_latency = "Calculating..."
+
         start_time = time.time()
         await interaction.response.send_message(initial_message)
         end_time = time.time()
+
         shard_id_line = None
         if hasattr(self.bot, 'shards'):
             shard_id = interaction.guild.shard_id if interaction.guild else (interaction.user.id >> 22) % self.bot.shard_count or 0
             shard_id_line = f"> Running on Shard `{shard_id}` of `{self.bot.shard_count}` Shards\n\n"
 
             shard = self.bot.get_shard(shard_id)
-
             shard_runner = getattr(shard, '_parent', None)
             shard_ws = getattr(shard_runner, 'ws', None) if shard_runner else None
 
@@ -412,18 +349,20 @@ class Diagnostics(commands.Cog):
                 gateway_raw = self.bot.gateway_url
             else:
                 gateway_raw = "Global/Unknown"
-
         else:
             gateway_raw = str(self.bot.ws.gateway) if self.bot.ws else "Global/Unknown"
+
         final_shard_id_line = shard_id_line or "\n"
         gateway_node = gateway_raw.split('gateway-')[-1].split('.')[
             0] if 'gateway-' in gateway_raw else "Global/Unknown"
         round_latency = round((end_time - start_time) * 1000)
         discord_latency = round(self.bot.latency * 1000)
+
         location = None
         if not self.bot.secure_mode:
             location = await self.get_location()
         location_line = f"> Bot Host Location: `{location}`\n" if location else ""
+
         try:
             start = time.perf_counter()
             await self.bot.http.request(discord.http.Route("GET", "/gateway"))
@@ -432,24 +371,17 @@ class Diagnostics(commands.Cog):
         except Exception:
             connection_latency = "Error"
 
-        if hasattr(self.bot, 'start_time'):
-            uptime_seconds = int(time.time() - self.bot.start_time)
-        else:
-            uptime_seconds = 0
+        uptime_seconds = int(time.time() - self.bot.start_time) if hasattr(self.bot, 'start_time') else 0
         uptime_formatted = format_uptime(uptime_seconds)
 
         proc_seconds = int(time.time() - getattr(self.bot, 'process_start_time', time.time()))
         proc_uptime = format_uptime(proc_seconds)
 
         try:
-            process = psutil.Process(os.getpid())
-            memory_bytes = process.memory_info().rss
+            memory_bytes = self.process.memory_info().rss
             memory_mb = memory_bytes / (1024 * 1024)
-
             if memory_mb >= 1024:
-                memory_gb = int(memory_mb // 1024)
-                memory_remaining_mb = round(memory_mb % 1024, 2)
-                memory_usage = f"{memory_gb}GB {memory_remaining_mb}MB"
+                memory_usage = f"{int(memory_mb // 1024)}GB {round(memory_mb % 1024, 2)}MB"
             else:
                 memory_usage = f"{round(memory_mb, 2)}MB"
         except Exception:
@@ -461,17 +393,6 @@ class Diagnostics(commands.Cog):
                 percent = battery.percent
                 charging = battery.power_plugged
                 status_str = "(Charging)" if charging else "(Discharging)"
-                current_state = f"{percent}% {status_str}"
-
-                if self.battery_cache and current_state != self.battery_cache[-1]:
-                    self.is_battery_idling = False
-                    self.battery_cache.clear()
-                    if self.battery_duration_mins < self.battery_max_mins:
-                        self.battery_duration_mins = min(
-                            self.battery_max_mins,
-                            self.battery_duration_mins + self.battery_increment_mins
-                        )
-
                 if self.is_battery_idling:
                     battery_status = f"> Host Device Battery Status: `{percent}% (Idling/Bypass Charging)`"
                 else:
@@ -481,12 +402,9 @@ class Diagnostics(commands.Cog):
         except Exception:
             battery_status = "> Host Device Battery Status: `Unable to determine`"
 
-        cpu_usage = self.current_cpu
-        if cpu_usage == 0:
-            formatted_cpu_usage = "0"
-        else:
-            formatted_cpu_usage = f"{cpu_usage:.1f}"
+        formatted_cpu_usage = "0" if self.current_cpu == 0 else f"{self.current_cpu:.1f}"
         bot_version_line = f"> Bot Version: `{self.bot.version}`\n" if self.bot.version else ""
+
         embed = discord.Embed(
             title="Pong!",
             description=(
@@ -522,15 +440,7 @@ class Diagnostics(commands.Cog):
     @app_commands.describe(
         graph_type="The type of latency graph you want to see, either for API latency or for Heartbeat latency. Defaults to API latency graph.")
     async def graph(self, interaction: discord.Interaction, graph_type: app_commands.Choice[str] | None = None):
-        """Return a generated latency trend graph when enough samples exist.
-
-        Args:
-            interaction: Interaction context received from Discord.
-            graph_type: The type of latency graph you want to see, either for API latency or for Heartbeat latency. Defaults to API latency graph.
-
-        Returns:
-            Any: Result produced by this function.
-        """
+        """Return a generated latency trend graph when enough samples exist."""
         graph_type_value = graph_type.value if graph_type is not None else "api"
         loop = asyncio.get_running_loop()
 
@@ -578,12 +488,5 @@ class Diagnostics(commands.Cog):
 
 
 async def setup(bot):
-    """Attach the diagnostics cog to the running bot.
-
-    Args:
-        bot: Bot instance that owns this object or callback.
-
-    Returns:
-        Any: Result produced by this function.
-    """
+    """Attach the diagnostics cog to the running bot."""
     await bot.add_cog(Diagnostics(bot))

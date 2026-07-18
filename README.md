@@ -154,7 +154,7 @@ bot.run("YOUR_BOT_TOKEN_HERE")
 
 * `discord.py`
 * `psutil`
-* `pyvips`
+* `pillow`
 * `geocoder`
 
 ---

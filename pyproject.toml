@@ -12,7 +12,7 @@ requires-python = ">=3.14"
 dependencies = [
     "discord.py>=2.6.4",
     "psutil",
-    "pyvips",
+    "pillow",
     "geocoder"
 ]
 
