@@ -1,3 +1,10 @@
+## [4.1.21](https://github.com/DopamineStudios/beacon/compare/v4.1.20...v4.1.21) (2026-07-18)
+
+
+### Bug Fixes
+
+* Optimise line drawing ([0e0bedd](https://github.com/DopamineStudios/beacon/commit/0e0beddf8d7d006e012c8e3eba7d0b5793f20a5f))
+
 ## [4.1.20](https://github.com/DopamineStudios/beacon/compare/v4.1.19...v4.1.20) (2026-07-18)
 
 
