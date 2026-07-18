@@ -1,22 +1,42 @@
-import discord
-from discord import app_commands
-from discord.ext import commands, tasks
-import time
-import psutil
-import asyncio
 import os
+import sys
+import ctypes
 import io
+import psutil
+import time
+import asyncio
 from pathlib import Path
+import discord
+from discord.ext import commands, tasks
 
 fonts_dir = Path(__file__).parent.resolve()
-fonts_conf_file = fonts_dir / "fonts.conf"
 
-os.environ["FONTCONFIG_FILE"] = str(fonts_conf_file)
+
+def _register_internal_library_fonts():
+    try:
+        if sys.platform.startswith("linux"):
+            lib_name = "libfontconfig.so.1"
+        elif sys.platform == "darwin":  # macOS
+            lib_name = "libfontconfig.1.dylib"
+        else:
+            lib_name = "libfontconfig-1.dll"
+
+        fontconfig = ctypes.CDLL(lib_name)
+
+        current_config = fontconfig.FcConfigGetCurrent()
+        if current_config:
+            fontconfig.FcConfigAppFontAddDir(current_config, str(fonts_dir).encode('utf-8'))
+            fontconfig.FcConfigBuildFonts(current_config)
+    except Exception:
+        pass
+
+_register_internal_library_fonts()
+
 
 import pyvips
 
 from collections import deque
-from .path import framework_version, BOLDFONT_PATH
+from .path import framework_version
 from ..core import beacon_commands
 
 
