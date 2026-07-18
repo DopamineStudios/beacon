@@ -178,15 +178,19 @@ class OwnerDashboard(PrivateLayoutView):
             Returns:
                 Any: Result produced by this function.
             """
+            await interaction.response.defer()
             try:
                 if is_loaded:
                     await self.bot.unload_extension(ext_name)
                 else:
                     await self.bot.load_extension(ext_name)
                 self.build_layout()
-                await interaction.response.edit_message(view=self)
+
+                if interaction.message:
+                    await interaction.message.edit(view=self)
+
             except Exception as e:
-                await interaction.response.send_message(f"Error: {e}", ephemeral=True)
+                await interaction.followup.send(f"Error: {e}", ephemeral=True)
 
         return callback
 
