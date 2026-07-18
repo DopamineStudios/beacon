@@ -1,3 +1,10 @@
+# [4.2.0](https://github.com/DopamineStudios/beacon/compare/v4.1.25...v4.2.0) (2026-07-18)
+
+
+### Features
+
+* I give up, reverted back to pillow from pyvips. Pillow is home. ([fe94f86](https://github.com/DopamineStudios/beacon/commit/fe94f8680f77fa916772ea486f104df68c4839fb))
+
 ## [4.1.25](https://github.com/DopamineStudios/beacon/compare/v4.1.24...v4.1.25) (2026-07-18)
 
 
