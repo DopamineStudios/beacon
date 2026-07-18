@@ -246,9 +246,8 @@ class Diagnostics(commands.Cog):
                 points.append((x, y))
 
             bg_color = [26, 26, 30, 255]
-            base = pyvips.Image.black(width, height, bands=4) + bg_color
+            base = (pyvips.Image.black(width, height, bands=4) + bg_color).copy(interpretation="srgb")
 
-            # 3. Draw Grid Lines
             grid_colour = [60, 62, 68, 255]
             for i in range(5):
                 val = target_step * i
@@ -269,9 +268,9 @@ class Diagnostics(commands.Cog):
             poly_colour_block = (pyvips.Image.black(width, height, bands=3) + secondary_rgb).cast("uchar")
             fill_layer = poly_colour_block.bandjoin(poly_mask).copy(interpretation="srgb")
 
-            base = base.copy(interpretation="srgb").composite(fill_layer, "over")
+            base = base.composite(fill_layer, "over")
 
-            fg = pyvips.Image.black(width, height, bands=4)
+            fg = pyvips.Image.black(width, height, bands=4).copy(interpretation="srgb")
 
             def draw_text_fast(img, text, font_family, size, colour, target_x, target_y, anchor="mt"):
                 try:
@@ -286,7 +285,7 @@ class Diagnostics(commands.Cog):
                 else:
                     x, y = target_x, target_y
 
-                text_colour = pyvips.Image.black(mask.width, mask.height, bands=4) + colour
+                text_colour = (pyvips.Image.black(mask.width, mask.height, bands=4) + colour).copy(interpretation="srgb")
                 return img.composite2(text_colour.bandjoin(mask), 'over', x=int(x), y=int(y))
 
             fg = draw_text_fast(fg, f"{graph_type} Latency Graph - Powered by Beacon",
@@ -313,14 +312,13 @@ class Diagnostics(commands.Cog):
                 fg = draw_text_fast(fg, label, "Sans", 12 * scale_factor, tick_colour, x, height - pad_bot + 25, "mt")
 
             accent_rgba = accent_rgb + [255]
-            line_thickness = 3 * scale_factor
             offsets = [-1, 0, 1]
             for off in offsets:
                 for i in range(len(points) - 1):
                     fg = fg.draw_line(accent_rgba, int(points[i][0] + off), int(points[i][1] + off),
                                       int(points[i + 1][0] + off), int(points[i + 1][1] + off))
 
-            final_graph = base.composite(fg.copy(interpretation="srgb"), "over")
+            final_graph = base.composite(fg, "over")
             final_graph = final_graph.resize(0.5, kernel="lanczos3")
 
             return io.BytesIO(final_graph.write_to_buffer(".png"))
