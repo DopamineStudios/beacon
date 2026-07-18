@@ -1,3 +1,10 @@
+## [4.1.22](https://github.com/DopamineStudios/beacon/compare/v4.1.21...v4.1.22) (2026-07-18)
+
+
+### Bug Fixes
+
+* Fix memory bloat (again) ([8f7fa9a](https://github.com/DopamineStudios/beacon/commit/8f7fa9ab4b2f3197a0cbb86ba82f364ef3c1f07f))
+
 ## [4.1.21](https://github.com/DopamineStudios/beacon/compare/v4.1.20...v4.1.21) (2026-07-18)
 
 
