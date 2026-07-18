@@ -1,3 +1,12 @@
+## [4.1.17](https://github.com/DopamineStudios/beacon/compare/v4.1.16...v4.1.17) (2026-07-18)
+
+
+### Bug Fixes
+
+* Fix interaction expiring by using defer ([72e5e04](https://github.com/DopamineStudios/beacon/commit/72e5e0447fecc2105af88dd639e66fec85516992))
+* Performance improvements for graph generation ([cbf55b3](https://github.com/DopamineStudios/beacon/commit/cbf55b3ab30a1fa31509b21ccae1b94a52be8efb))
+* Switch to a less destructive way of registering fonts instead of overriding environment variables ([ad37476](https://github.com/DopamineStudios/beacon/commit/ad37476b9a3726764bf75e45162ec669472cca05))
+
 ## [4.1.16](https://github.com/DopamineStudios/beacon/compare/v4.1.15...v4.1.16) (2026-07-15)
 
 
