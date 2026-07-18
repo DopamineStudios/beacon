@@ -9,6 +9,7 @@ from pathlib import Path
 import discord
 from discord.ext import commands, tasks
 from discord import app_commands
+import gc
 
 fonts_dir = Path(__file__).parent.resolve()
 
@@ -220,6 +221,7 @@ class Diagnostics(commands.Cog):
 
     def generate_latency_graph(self, graph_type: str):
         """Render the cached latency history into an in-memory PNG graph using pyvips."""
+
         try:
             if graph_type.strip().lower() == "heartbeat":
                 data = list(self.heartbeat_latency_cache)
@@ -295,7 +297,9 @@ class Diagnostics(commands.Cog):
 
                 text_color = (pyvips.Image.black(mask.width, mask.height, bands=3) + colour[:3]).copy(
                     interpretation="srgb")
-                return target_img.composite2(text_color.bandjoin(mask), 'over', x=int(x), y=int(y))
+
+                result = target_img.composite2(text_color.bandjoin(mask), 'over', x=int(x), y=int(y))
+                return result
 
             img = draw_text_fast(img, f"{graph_type} Latency Graph - Powered by Beacon",
                                  self.font_family_title + " Bold", 24 * scale_factor,
@@ -317,10 +321,13 @@ class Diagnostics(commands.Cog):
                 img = img.draw_rect(tick_colour, int(x - 1), int(height - pad_bot), 2, 10, fill=True)
                 img = draw_text_fast(img, label, "Sans", 12 * scale_factor, tick_colour, x, height - pad_bot + 25, "mt")
 
-            img = img.resize(0.5, kernel="lanczos3")
-            buffer_data = img.write_to_buffer(".png")
+            final_img = img.resize(0.5, kernel="lanczos3")
+            buffer_data = final_img.write_to_buffer(".png")
 
             del img
+            del final_img
+            gc.collect()
+
             return io.BytesIO(buffer_data)
 
         except Exception as e:
