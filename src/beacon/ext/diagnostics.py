@@ -8,6 +8,7 @@ import asyncio
 from pathlib import Path
 import discord
 from discord.ext import commands, tasks
+from discord import app_commands
 
 fonts_dir = Path(__file__).parent.resolve()
 
@@ -16,17 +17,16 @@ def _register_internal_library_fonts():
     try:
         if sys.platform.startswith("linux"):
             lib_name = "libfontconfig.so.1"
-        elif sys.platform == "darwin":  # macOS
+        elif sys.platform == "darwin":
             lib_name = "libfontconfig.1.dylib"
         else:
             lib_name = "libfontconfig-1.dll"
 
         fontconfig = ctypes.CDLL(lib_name)
 
-        current_config = fontconfig.FcConfigGetCurrent()
-        if current_config:
-            fontconfig.FcConfigAppFontAddDir(current_config, str(fonts_dir).encode('utf-8'))
-            fontconfig.FcConfigBuildFonts(current_config)
+        for font_file in fonts_dir.glob("*.ttf"):
+            fontconfig.FcConfigAppFontAddFile(None, str(font_file).encode('utf-8'))
+
     except Exception:
         pass
 
@@ -216,11 +216,7 @@ class Diagnostics(commands.Cog):
         return await loop.run_in_executor(None, fetch)
 
     def generate_latency_graph(self, graph_type: str):
-        """Render the cached latency history into an in-memory PNG graph using pyvips.
-
-        Returns:
-            io.BytesIO | None: Generated latency graph result or None if insufficient samples.
-        """
+        """Render the cached latency history into an in-memory PNG graph using pyvips."""
         try:
             if graph_type.strip().lower() == "heartbeat":
                 data = list(self.heartbeat_latency_cache)
@@ -234,9 +230,6 @@ class Diagnostics(commands.Cog):
             scale_factor = 2
             width, height = 600 * scale_factor, 300 * scale_factor
             pad_top, pad_bot, pad_left, pad_right = 175, 80, 100, 40
-
-            font_family_title = self.font_family_title
-            font_family_labels = "Sans"
 
             max_val = max(data) if data else 100
             steps = [10, 25, 50, 100, 250, 500, 1000]
@@ -252,17 +245,16 @@ class Diagnostics(commands.Cog):
                 y = (height - pad_bot) - (val / y_limit) * graph_height
                 points.append((x, y))
 
-            bg = (pyvips.Image.black(width, height, bands=4) + [26, 26, 30, 255]).cast("uchar")
-            base_mutable = bg.copy_memory()
+            bg_color = [26, 26, 30, 255]
+            base = pyvips.Image.black(width, height, bands=4) + bg_color
 
+            # 3. Draw Grid Lines
             grid_colour = [60, 62, 68, 255]
-            num_y_labels = 4
-            for i in range(num_y_labels + 1):
+            for i in range(5):
                 val = target_step * i
                 y = (height - pad_bot) - (val / y_limit) * graph_height
-                base_mutable = base_mutable.draw_rect(grid_colour, int(pad_left), int(y - scale_factor // 2),
-                                                      int(graph_width),
-                                                      int(1 * scale_factor), fill=True)
+                base = base.draw_rect(grid_colour, int(pad_left), int(y - scale_factor // 2),
+                                      int(graph_width), int(1 * scale_factor), fill=True)
 
             fill_points = [(pad_left, height - pad_bot)] + points + [(width - pad_right, height - pad_bot)]
             svg_points_str = " ".join(f"{int(x)},{int(y)}" for x, y in fill_points)
@@ -277,93 +269,65 @@ class Diagnostics(commands.Cog):
             poly_colour_block = (pyvips.Image.black(width, height, bands=3) + secondary_rgb).cast("uchar")
             fill_layer = poly_colour_block.bandjoin(poly_mask).copy(interpretation="srgb")
 
-            composited_base = base_mutable.copy(interpretation="srgb").composite(fill_layer, "over")
+            base = base.copy(interpretation="srgb").composite(fill_layer, "over")
 
-            fg_mutable = pyvips.Image.black(width, height, bands=4).copy_memory()
+            fg = pyvips.Image.black(width, height, bands=4)
 
-            def draw_text(mutable_img, text, font_family, size, colour, target_x, target_y, anchor="mt"):
+            def draw_text_fast(img, text, font_family, size, colour, target_x, target_y, anchor="mt"):
                 try:
-                    font_string = f"{font_family} {int(size)}"
-                    mask = pyvips.Image.text(text, font=font_string, dpi=72)
-                except Exception as e:
+                    mask = pyvips.Image.text(text, font=f"{font_family} {int(size)}", dpi=72)
+                except:
                     mask = pyvips.Image.text(text, font=f"Sans {int(size)}", dpi=72)
-                    self.bot.logger.critical(f"[{self.bot.instance_id}] Beacon: Error in font:\n{e}")
 
                 if anchor == "mt":
-                    x = target_x - mask.width // 2
-                    y = target_y
+                    x, y = target_x - mask.width // 2, target_y
                 elif anchor == "rm":
-                    x = target_x - mask.width
-                    y = target_y - mask.height // 2
+                    x, y = target_x - mask.width, target_y - mask.height // 2
                 else:
-                    x = target_x
-                    y = target_y
+                    x, y = target_x, target_y
 
-                mask_buffer = mask.write_to_memory()
-                safe_mask = pyvips.Image.new_from_memory(mask_buffer, mask.width, mask.height, 1, "uchar")
-                return mutable_img.draw_mask(colour, safe_mask, int(x), int(y))
+                text_colour = pyvips.Image.black(mask.width, mask.height, bands=4) + colour
+                return img.composite2(text_colour.bandjoin(mask), 'over', x=int(x), y=int(y))
 
-            def draw_thick_line(mutable_img, colour, x1, y1, x2, y2, thickness):
-                half = thickness // 2
-                for d in range(-half, half + 1):
-                    if abs(x2 - x1) > abs(y2 - y1):
-                        mutable_img = mutable_img.draw_line(colour, int(x1), int(y1 + d), int(x2), int(y2 + d))
-                    else:
-                        mutable_img = mutable_img.draw_line(colour, int(x1 + d), int(y1), int(x2 + d), int(y2))
-                return mutable_img
-
-            fg_mutable = draw_text(
-                fg_mutable,
-                f"{graph_type} Latency Graph - Powered by Beacon",
-                f"{font_family_title} Bold",
-                24 * scale_factor,
-                [255, 255, 255, 255],
-                width / 2,
-                70,
-                anchor="mt"
-            )
+            fg = draw_text_fast(fg, f"{graph_type} Latency Graph - Powered by Beacon",
+                                self.font_family_title + " Bold", 24 * scale_factor,
+                                [255, 255, 255, 255], width / 2, 70, "mt")
 
             y_label_colour = [140, 140, 140, 255]
-            for i in range(num_y_labels + 1):
+            for i in range(5):
                 val = target_step * i
                 y = (height - pad_bot) - (val / y_limit) * graph_height
-                fg_mutable = draw_text(fg_mutable, f"{int(val)}ms", font_family_labels, 10 * scale_factor,
-                                       y_label_colour,
-                                       pad_left - 15, y, anchor="rm")
+                fg = draw_text_fast(fg, f"{int(val)}ms", "Sans", 10 * scale_factor,
+                                    y_label_colour, pad_left - 15, y, "rm")
 
-            num_x_labels = 5
             tick_colour = [130, 130, 130, 255]
+            num_x_labels = 5
             for i in range(num_x_labels):
                 sample_idx = int((i / (num_x_labels - 1)) * (num_samples - 1))
                 x = pad_left + (i / (num_x_labels - 1)) * graph_width
                 mins_ago = num_samples - 1 - sample_idx
-
                 label = "Now" if mins_ago == 0 else (
                     f"{round(mins_ago / 60, 1)}h" if mins_ago >= 60 else f"{mins_ago}m")
 
-                fg_mutable = fg_mutable.draw_rect(tick_colour, int(x - 1), int(height - pad_bot), 2, 10, fill=True)
-                fg_mutable = draw_text(fg_mutable, label, font_family_labels, 12 * scale_factor, tick_colour, x,
-                                       height - pad_bot + 25,
-                                       anchor="mt")
+                fg = fg.draw_rect(tick_colour, int(x - 1), int(height - pad_bot), 2, 10, fill=True)
+                fg = draw_text_fast(fg, label, "Sans", 12 * scale_factor, tick_colour, x, height - pad_bot + 25, "mt")
 
             accent_rgba = accent_rgb + [255]
             line_thickness = 3 * scale_factor
-            for i in range(len(points) - 1):
-                fg_mutable = draw_thick_line(fg_mutable, accent_rgba, points[i][0], points[i][1], points[i + 1][0],
-                                             points[i + 1][1],
-                                             line_thickness)
+            offsets = [-1, 0, 1]
+            for off in offsets:
+                for i in range(len(points) - 1):
+                    fg = fg.draw_line(accent_rgba, int(points[i][0] + off), int(points[i][1] + off),
+                                      int(points[i + 1][0] + off), int(points[i + 1][1] + off))
 
-            final_graph = composited_base.composite(fg_mutable.copy(interpretation="srgb"), "over")
-
+            final_graph = base.composite(fg.copy(interpretation="srgb"), "over")
             final_graph = final_graph.resize(0.5, kernel="lanczos3")
 
-            buffer_data = final_graph.write_to_buffer(".png")
-            return io.BytesIO(buffer_data)
+            return io.BytesIO(final_graph.write_to_buffer(".png"))
 
         except Exception as e:
             import traceback
-            self.bot.logger.error(
-                f"[{self.bot.instance_id}] Beacon: Graph generation error: {e}\n{traceback.format_exc()}")
+            self.bot.logger.error(f"[{self.bot.instance_id}] Beacon: Graph error: {e}\n{traceback.format_exc()}")
             return None
 
     @beacon_commands.command(name="ping", description="Get detailed latency and bot information")
