@@ -11,4 +11,4 @@ except Exception:
     # Fallback: Look for Bold.ttf in the same folder as this script
     BOLDFONT_PATH = str(BASE_PATH / "Bold.ttf")
 
-framework_version = "4.1.22"
+framework_version = "4.1.23"
