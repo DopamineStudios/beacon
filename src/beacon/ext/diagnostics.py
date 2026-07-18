@@ -221,7 +221,6 @@ class Diagnostics(commands.Cog):
 
     def generate_latency_graph(self, graph_type: str):
         """Render the cached latency history into an in-memory PNG graph using pyvips."""
-
         try:
             if graph_type.strip().lower() == "heartbeat":
                 data = list(self.heartbeat_latency_cache)
@@ -251,14 +250,20 @@ class Diagnostics(commands.Cog):
                 points.append((x, y))
 
             bg_color = [26, 26, 30, 255]
-            img = (pyvips.Image.black(width, height, bands=4) + bg_color).copy(interpretation="srgb")
+            canvas = (pyvips.Image.black(width, height, bands=4) + bg_color).copy(interpretation="srgb")
+            canvas = canvas.copy_memory()
 
             grid_colour = [60, 62, 68, 255]
             for i in range(5):
                 val = target_step * i
                 y = (height - pad_bot) - (val / y_limit) * graph_height
-                img = img.draw_rect(grid_colour, int(pad_left), int(y - scale_factor // 2),
-                                    int(graph_width), int(1 * scale_factor), fill=True)
+                canvas = canvas.draw_rect(grid_colour, int(pad_left), int(y - scale_factor // 2),
+                                          int(graph_width), int(1 * scale_factor), fill=True)
+
+            tick_colour = [130, 130, 130, 255]
+            for i in range(5):
+                x = pad_left + (i / 4) * graph_width
+                canvas = canvas.draw_rect(tick_colour, int(x - 1), int(height - pad_bot), 2, 10, fill=True)
 
             fill_points = [(pad_left, height - pad_bot)] + points + [(width - pad_right, height - pad_bot)]
             fill_svg_str = f'<svg width="{width}" height="{height}"><polygon points="{" ".join(f"{int(x)},{int(y)}" for x, y in fill_points)}" fill="white" /></svg>'
@@ -270,7 +275,7 @@ class Diagnostics(commands.Cog):
             secondary_rgb = [max(0, min(255, int(channel * 0.925))) for channel in accent_rgb]
             poly_colour = (pyvips.Image.black(width, height, bands=3) + secondary_rgb).cast("uchar")
             fill_layer = poly_colour.bandjoin(poly_mask).copy(interpretation="srgb")
-            img = img.composite(fill_layer, "over")
+            img = canvas.composite(fill_layer, "over")
 
             path_data = f"M {points[0][0]} {points[0][1]} " + " ".join([f"L {p[0]} {p[1]}" for p in points[1:]])
             line_svg_str = f'<svg width="{width}" height="{height}"><path d="{path_data}" fill="none" stroke="white" stroke-width="{4 * scale_factor}" stroke-linejoin="round" stroke-linecap="round" /></svg>'
@@ -279,7 +284,6 @@ class Diagnostics(commands.Cog):
             line_color_block = (pyvips.Image.black(width, height, bands=3) + accent_rgb).cast("uchar")
             line_mask = line_svg_img[3] if line_svg_img.bands == 4 else line_svg_img[0]
             line_layer = line_color_block.bandjoin(line_mask).copy(interpretation="srgb")
-
             img = img.composite(line_layer, "over")
 
             def draw_text_fast(target_img, text, font_family, size, colour, target_x, target_y, anchor="mt"):
@@ -297,9 +301,7 @@ class Diagnostics(commands.Cog):
 
                 text_color = (pyvips.Image.black(mask.width, mask.height, bands=3) + colour[:3]).copy(
                     interpretation="srgb")
-
-                result = target_img.composite2(text_color.bandjoin(mask), 'over', x=int(x), y=int(y))
-                return result
+                return target_img.composite2(text_color.bandjoin(mask), 'over', x=int(x), y=int(y))
 
             img = draw_text_fast(img, f"{graph_type} Latency Graph - Powered by Beacon",
                                  self.font_family_title + " Bold", 24 * scale_factor,
@@ -312,22 +314,18 @@ class Diagnostics(commands.Cog):
                 img = draw_text_fast(img, f"{int(val)}ms", "Sans", 10 * scale_factor, y_label_colour, pad_left - 15, y,
                                      "rm")
 
-            tick_colour = [130, 130, 130, 255]
             for i in range(5):
                 idx = int((i / 4) * (num_samples - 1))
                 x = pad_left + (i / 4) * graph_width
                 mins = num_samples - 1 - idx
                 label = "Now" if mins == 0 else (f"{round(mins / 60, 1)}h" if mins >= 60 else f"{mins}m")
-                img = img.draw_rect(tick_colour, int(x - 1), int(height - pad_bot), 2, 10, fill=True)
                 img = draw_text_fast(img, label, "Sans", 12 * scale_factor, tick_colour, x, height - pad_bot + 25, "mt")
 
-            final_img = img.resize(0.5, kernel="lanczos3")
-            buffer_data = final_img.write_to_buffer(".png")
+            img = img.resize(0.5, kernel="lanczos3")
+            buffer_data = img.write_to_buffer(".png")
 
+            del canvas
             del img
-            del final_img
-            gc.collect()
-
             return io.BytesIO(buffer_data)
 
         except Exception as e:
