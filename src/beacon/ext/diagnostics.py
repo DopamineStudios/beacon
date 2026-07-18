@@ -9,6 +9,7 @@ from pathlib import Path
 import discord
 from discord.ext import commands, tasks
 from discord import app_commands
+import gc
 
 fonts_dir = Path(__file__).parent.resolve()
 
@@ -246,14 +247,14 @@ class Diagnostics(commands.Cog):
                 points.append((x, y))
 
             bg_color = [26, 26, 30, 255]
-            base = (pyvips.Image.black(width, height, bands=4) + bg_color).copy(interpretation="srgb")
+            img = (pyvips.Image.black(width, height, bands=4) + bg_color).copy(interpretation="srgb")
 
             grid_colour = [60, 62, 68, 255]
             for i in range(5):
                 val = target_step * i
                 y = (height - pad_bot) - (val / y_limit) * graph_height
-                base = base.draw_rect(grid_colour, int(pad_left), int(y - scale_factor // 2),
-                                      int(graph_width), int(1 * scale_factor), fill=True)
+                img = img.draw_rect(grid_colour, int(pad_left), int(y - scale_factor // 2),
+                                    int(graph_width), int(1 * scale_factor), fill=True)
 
             fill_points = [(pad_left, height - pad_bot)] + points + [(width - pad_right, height - pad_bot)]
             svg_points_str = " ".join(f"{int(x)},{int(y)}" for x, y in fill_points)
@@ -268,11 +269,9 @@ class Diagnostics(commands.Cog):
             poly_colour_block = (pyvips.Image.black(width, height, bands=3) + secondary_rgb).cast("uchar")
             fill_layer = poly_colour_block.bandjoin(poly_mask).copy(interpretation="srgb")
 
-            base = base.composite(fill_layer, "over")
+            img = img.composite(fill_layer, "over")
 
-            fg = pyvips.Image.black(width, height, bands=4).copy(interpretation="srgb")
-
-            def draw_text_fast(img, text, font_family, size, colour, target_x, target_y, anchor="mt"):
+            def draw_text_directly(target_img, text, font_family, size, colour, target_x, target_y, anchor="mt"):
                 try:
                     mask = pyvips.Image.text(text, font=f"{font_family} {int(size)}", dpi=72)
                 except:
@@ -288,19 +287,18 @@ class Diagnostics(commands.Cog):
                 text_colour = (pyvips.Image.black(mask.width, mask.height, bands=3) + colour[:3]).copy(
                     interpretation="srgb")
                 text_layer = text_colour.bandjoin(mask)
+                return target_img.composite2(text_layer, 'over', x=int(x), y=int(y))
 
-                return img.composite2(text_layer, 'over', x=int(x), y=int(y))
-
-            fg = draw_text_fast(fg, f"{graph_type} Latency Graph - Powered by Beacon",
-                                self.font_family_title + " Bold", 24 * scale_factor,
-                                [255, 255, 255, 255], width / 2, 70, "mt")
+            img = draw_text_directly(img, f"{graph_type} Latency Graph - Powered by Beacon",
+                                     self.font_family_title + " Bold", 24 * scale_factor,
+                                     [255, 255, 255, 255], width / 2, 70, "mt")
 
             y_label_colour = [140, 140, 140, 255]
             for i in range(5):
                 val = target_step * i
                 y = (height - pad_bot) - (val / y_limit) * graph_height
-                fg = draw_text_fast(fg, f"{int(val)}ms", "Sans", 10 * scale_factor,
-                                    y_label_colour, pad_left - 15, y, "rm")
+                img = draw_text_directly(img, f"{int(val)}ms", "Sans", 10 * scale_factor,
+                                         y_label_colour, pad_left - 15, y, "rm")
 
             tick_colour = [130, 130, 130, 255]
             num_x_labels = 5
@@ -310,21 +308,25 @@ class Diagnostics(commands.Cog):
                 mins_ago = num_samples - 1 - sample_idx
                 label = "Now" if mins_ago == 0 else (
                     f"{round(mins_ago / 60, 1)}h" if mins_ago >= 60 else f"{mins_ago}m")
-
-                fg = fg.draw_rect(tick_colour, int(x - 1), int(height - pad_bot), 2, 10, fill=True)
-                fg = draw_text_fast(fg, label, "Sans", 12 * scale_factor, tick_colour, x, height - pad_bot + 25, "mt")
+                img = img.draw_rect(tick_colour, int(x - 1), int(height - pad_bot), 2, 10, fill=True)
+                img = draw_text_directly(img, label, "Sans", 12 * scale_factor, tick_colour, x, height - pad_bot + 25,
+                                         "mt")
 
             accent_rgba = accent_rgb + [255]
-            offsets = [-1, 0, 1]
-            for off in offsets:
-                for i in range(len(points) - 1):
-                    fg = fg.draw_line(accent_rgba, int(points[i][0] + off), int(points[i][1] + off),
-                                      int(points[i + 1][0] + off), int(points[i + 1][1] + off))
+            for i in range(len(points) - 1):
+                img = img.draw_line(accent_rgba, int(points[i][0]), int(points[i][1]),
+                                    int(points[i + 1][0]), int(points[i + 1][1]))
 
-            final_graph = base.composite(fg, "over")
-            final_graph = final_graph.resize(0.5, kernel="lanczos3")
+            img = img.gaussblur(0.8)
 
-            return io.BytesIO(final_graph.write_to_buffer(".png"))
+            # 6. Finalize
+            img = img.resize(0.5, kernel="lanczos3")
+            buffer_data = img.write_to_buffer(".png")
+
+            del img
+            gc.collect()
+
+            return io.BytesIO(buffer_data)
 
         except Exception as e:
             import traceback
