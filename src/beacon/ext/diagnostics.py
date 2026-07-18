@@ -9,7 +9,6 @@ from pathlib import Path
 import discord
 from discord.ext import commands, tasks
 from discord import app_commands
-import gc
 
 fonts_dir = Path(__file__).parent.resolve()
 
@@ -35,6 +34,8 @@ _register_internal_library_fonts()
 
 
 import pyvips
+pyvips.cache_set_max_mem(50 * 1024 * 1024)
+pyvips.cache_set_max_files(0)
 
 from collections import deque
 from .path import framework_version
