@@ -34,6 +34,7 @@ _register_internal_library_fonts()
 
 
 import pyvips
+pyvips.cache_set_max(0)
 pyvips.cache_set_max_mem(50 * 1024 * 1024)
 pyvips.cache_set_max_files(0)
 
