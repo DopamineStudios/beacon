@@ -20,4 +20,4 @@ dependencies = [
 where = ["src"]
 
 [tool.setuptools.package-data]
-"beacon.ext" = ["*.ttf", "*.conf"]
+"beacon.ext" = ["*.ttf"]

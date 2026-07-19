@@ -220,8 +220,8 @@ class Diagnostics(commands.Cog):
             except Exception as e:
                 self.bot.logger.error(
                     f"[{self.bot.instance_id}] Beacon: Custom font not found at {BOLDFONT_PATH}. Using default.\n{e}")
-                title_font = ImageFont.load_default()
-                label_font = ImageFont.load_default()
+                title_font = ImageFont.load_default(size=24 * scale_factor)
+                label_font = ImageFont.load_default(size=11 * scale_factor)
 
             draw.text(
                 (width / 2, 70),
