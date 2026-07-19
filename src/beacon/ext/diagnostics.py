@@ -222,7 +222,7 @@ class Diagnostics(commands.Cog):
                 label_font = ImageFont.truetype(BOLDFONT_PATH, 11 * scale_factor)
             except Exception as e:
                 self.bot.logger.error(f"[{self.bot.instance_id}] Beacon: Label font failed: {e}")
-                label_font = ImageFont.load_default()
+                return
 
             draw.text(
                 (width / 2, 70),
