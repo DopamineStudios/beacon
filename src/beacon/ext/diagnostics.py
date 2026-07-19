@@ -4,12 +4,10 @@ import io
 import psutil
 import time
 import asyncio
-from pathlib import Path
 import discord
 from discord.ext import commands, tasks
 from discord import app_commands
 from collections import deque
-import gc
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -216,12 +214,15 @@ class Diagnostics(commands.Cog):
 
             try:
                 title_font = ImageFont.truetype(BOLDFONT_PATH, 24 * scale_factor)
+            except Exception as e:
+                self.bot.logger.error(f"[{self.bot.instance_id}] Beacon: Title font failed: {e}")
+                title_font = ImageFont.load_default()
+
+            try:
                 label_font = ImageFont.truetype(BOLDFONT_PATH, 11 * scale_factor)
             except Exception as e:
-                self.bot.logger.error(
-                    f"[{self.bot.instance_id}] Beacon: Custom font not found at {BOLDFONT_PATH}. Using default.\n{e}")
-                title_font = ImageFont.load_default(size=24 * scale_factor)
-                label_font = ImageFont.load_default(size=11 * scale_factor)
+                self.bot.logger.error(f"[{self.bot.instance_id}] Beacon: Label font failed: {e}")
+                label_font = ImageFont.load_default()
 
             draw.text(
                 (width / 2, 70),
