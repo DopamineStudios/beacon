@@ -1,3 +1,10 @@
+## [4.2.4](https://github.com/DopamineStudios/beacon/compare/v4.2.3...v4.2.4) (2026-07-19)
+
+
+### Bug Fixes
+
+* Finally fix font errors ([b6cb2d1](https://github.com/DopamineStudios/beacon/commit/b6cb2d19ed0cb51776df2726ca2c3a125cff8c39))
+
 ## [4.2.3](https://github.com/DopamineStudios/beacon/compare/v4.2.2...v4.2.3) (2026-07-19)
 
 
