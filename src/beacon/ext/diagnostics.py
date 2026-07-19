@@ -14,6 +14,8 @@ from PIL import Image, ImageDraw, ImageFont
 from .path import framework_version, BOLDFONT_PATH
 from ..core import beacon_commands
 
+Image.MAX_IMAGE_PIXELS = None
+
 
 class Diagnostics(commands.Cog):
     """Diagnostics cog that reports latency, uptime, and host health metrics."""
