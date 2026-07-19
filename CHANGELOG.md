@@ -1,3 +1,10 @@
+## [4.2.2](https://github.com/DopamineStudios/beacon/compare/v4.2.1...v4.2.2) (2026-07-19)
+
+
+### Bug Fixes
+
+* I might lose it ([54a212b](https://github.com/DopamineStudios/beacon/commit/54a212b7a95ad072e73052cc9aa328809a923ddc))
+
 ## [4.2.1](https://github.com/DopamineStudios/beacon/compare/v4.2.0...v4.2.1) (2026-07-19)
 
 
