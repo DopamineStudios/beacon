@@ -230,11 +230,11 @@ class Diagnostics(commands.Cog):
                 title_font = ImageFont.load_default()
 
             draw.text(
-                (width / 2, 60),
+                (width / 2, 70),
                 f"{graph_type} Latency Graph - Powered by Beacon",
                 fill=(255, 255, 255, 255),
                 font=title_font,
-                anchor="mm"
+                anchor="mt"
             )
 
             max_val = max(data) if data else 100
