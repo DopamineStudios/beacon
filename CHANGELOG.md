@@ -1,3 +1,10 @@
+## [4.2.9](https://github.com/DopamineStudios/beacon/compare/v4.2.8...v4.2.9) (2026-07-20)
+
+
+### Bug Fixes
+
+* Change text anchor ([79f0a48](https://github.com/DopamineStudios/beacon/commit/79f0a481f0e1e5e819167da06833d2488cbeeafd))
+
 ## [4.2.8](https://github.com/DopamineStudios/beacon/compare/v4.2.7...v4.2.8) (2026-07-20)
 
 
