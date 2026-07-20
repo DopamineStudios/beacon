@@ -192,7 +192,14 @@ class Diagnostics(commands.Cog):
         return await loop.run_in_executor(None, fetch)
 
     def generate_latency_graph(self, graph_type: str):
-        """Render the cached latency history into an in-memory PNG graph using Pillow."""
+        """Render the cached latency history into an in-memory PNG graph.
+
+        Args:
+            graph_type (str): The type of latency graph (e.g., "API" or "Heartbeat").
+
+        Returns:
+            Any: Generated latency graph result or None if error/insufficient data.
+        """
         try:
             if graph_type.strip().lower() == "heartbeat":
                 data = list(self.heartbeat_latency_cache)
@@ -204,6 +211,7 @@ class Diagnostics(commands.Cog):
                 return None
 
             def get_secondary_colour(main_rgb, darken_factor=0.925, alpha=40):
+                """Calculates a semi-transparent filler colour from a main line colour."""
                 secondary_rgb = tuple(max(0, min(255, int(channel * darken_factor))) for channel in main_rgb)
                 return secondary_rgb + (alpha,)
 
@@ -217,21 +225,15 @@ class Diagnostics(commands.Cog):
             try:
                 title_font = ImageFont.truetype(BOLDFONT_PATH, 24 * scale_factor)
             except Exception as e:
-                self.bot.logger.error(f"[{self.bot.instance_id}] Beacon: Title font failed: {e}")
+                self.bot.logger.error(
+                    f"[{self.bot.instance_id}] Beacon: Custom font not found at {BOLDFONT_PATH}. Using default.\n{e}")
                 title_font = ImageFont.load_default()
 
-            try:
-                label_font = ImageFont.truetype(BOLDFONT_PATH, 11 * scale_factor)
-            except Exception as e:
-                self.bot.logger.error(f"[{self.bot.instance_id}] Beacon: Label font failed: {e}")
-                return
-
             draw.text(
-                (width / 2, 70),
+                (57, 60),
                 f"{graph_type} Latency Graph - Powered by Beacon",
                 fill=(255, 255, 255, 255),
-                font=title_font,
-                anchor="mt"
+                font=title_font
             )
 
             max_val = max(data) if data else 100
@@ -249,7 +251,8 @@ class Diagnostics(commands.Cog):
                 val = target_step * i
                 y = (height - pad_bot) - (val / y_limit) * graph_height
                 draw.line([(pad_left, y), (width - pad_right, y)], fill=grid_color, width=1 * scale_factor)
-                draw.text((pad_left - 15, y), f"{int(val)}ms", fill=y_label_colour, anchor="rm", font=label_font)
+                draw.text((pad_left - 15, y), f"{int(val)}ms", fill=y_label_colour, anchor="rm",
+                          font_size=12 * scale_factor)
 
             tick_colour = (130, 130, 130, 255)
             num_x_labels = 5
@@ -258,11 +261,15 @@ class Diagnostics(commands.Cog):
                 x = pad_left + (i / (num_x_labels - 1)) * graph_width
                 mins_ago = num_samples - 1 - sample_idx
 
-                label = "Now" if mins_ago == 0 else (
-                    f"{round(mins_ago / 60, 1)}h" if mins_ago >= 60 else f"{mins_ago}m")
+                if mins_ago == 0:
+                    label = "Now"
+                elif mins_ago >= 60:
+                    label = f"{round(mins_ago / 60, 1)}h"
+                else:
+                    label = f"{mins_ago}m"
 
                 draw.line([(x, height - pad_bot), (x, height - pad_bot + 10)], fill=tick_colour, width=1 * scale_factor)
-                draw.text((x, height - pad_bot + 25), label, fill=tick_colour, anchor="mt", font=label_font)
+                draw.text((x, height - pad_bot + 25), label, fill=tick_colour, anchor="mt", font_size=12 * scale_factor)
 
             points = []
             for i, val in enumerate(data):
@@ -271,9 +278,13 @@ class Diagnostics(commands.Cog):
                 points.append((x, y))
 
             fill_points = [(pad_left, height - pad_bot)] + points + [(width - pad_right, height - pad_bot)]
+            overlay = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+            overlay_draw = ImageDraw.Draw(overlay)
             secondary_colour = get_secondary_colour(self.bot.accent_colour)
-            draw.polygon(fill_points, fill=secondary_colour)
+            overlay_draw.polygon(fill_points, fill=secondary_colour)
+            img = Image.alpha_composite(img, overlay)
 
+            draw = ImageDraw.Draw(img)
             draw.line(points, fill=tuple(self.bot.accent_colour), width=3 * scale_factor, joint="round")
 
             img = img.resize((600, 300), resample=Image.LANCZOS)
