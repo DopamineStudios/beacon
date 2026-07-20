@@ -234,7 +234,7 @@ class Diagnostics(commands.Cog):
                 f"{graph_type} Latency Graph - Powered by Beacon",
                 fill=(255, 255, 255, 255),
                 font=title_font,
-                anchor="mt"
+                anchor="mm"
             )
 
             max_val = max(data) if data else 100
