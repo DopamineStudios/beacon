@@ -1,3 +1,10 @@
+## [4.2.6](https://github.com/DopamineStudios/beacon/compare/v4.2.5...v4.2.6) (2026-07-20)
+
+
+### Bug Fixes
+
+* Update text rendering syntax to old v3-like to fix errors (two steps forwards, one step back?) ([9d8092f](https://github.com/DopamineStudios/beacon/commit/9d8092f68418de4040a1346c4f116a30890bc44a))
+
 ## [4.2.5](https://github.com/DopamineStudios/beacon/compare/v4.2.4...v4.2.5) (2026-07-20)
 
 
