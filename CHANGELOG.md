@@ -1,3 +1,10 @@
+## [4.2.7](https://github.com/DopamineStudios/beacon/compare/v4.2.6...v4.2.7) (2026-07-20)
+
+
+### Bug Fixes
+
+* Fix title font only rendering one letter ([88293ac](https://github.com/DopamineStudios/beacon/commit/88293ac5af17a888889873b0df66c35f2f155b6f))
+
 ## [4.2.6](https://github.com/DopamineStudios/beacon/compare/v4.2.5...v4.2.6) (2026-07-20)
 
 
