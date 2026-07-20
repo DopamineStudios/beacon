@@ -1,3 +1,10 @@
+## [4.2.5](https://github.com/DopamineStudios/beacon/compare/v4.2.4...v4.2.5) (2026-07-20)
+
+
+### Bug Fixes
+
+* Downgrade to second newest pillow version to avoid problems ([24dd9fa](https://github.com/DopamineStudios/beacon/commit/24dd9fac386312169733d2e17974ca3a65a21dce))
+
 ## [4.2.4](https://github.com/DopamineStudios/beacon/compare/v4.2.3...v4.2.4) (2026-07-19)
 
 
