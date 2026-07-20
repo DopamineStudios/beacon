@@ -1,3 +1,10 @@
+## [4.2.8](https://github.com/DopamineStudios/beacon/compare/v4.2.7...v4.2.8) (2026-07-20)
+
+
+### Bug Fixes
+
+* Fix alignment of title text ([151a4c9](https://github.com/DopamineStudios/beacon/commit/151a4c97d61c20449ffdbec02931e1398658ad27))
+
 ## [4.2.7](https://github.com/DopamineStudios/beacon/compare/v4.2.6...v4.2.7) (2026-07-20)
 
 
