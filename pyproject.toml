@@ -10,9 +10,9 @@ description = "Initialise a production-ready Discord.py bot in just 4 lines of c
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
-    "discord.py>=2.6.4",
+    "discord.py~=2.7.0",
     "psutil",
-    "pillow==12.2.0",
+    "pillow",
     "geocoder"
 ]
 
