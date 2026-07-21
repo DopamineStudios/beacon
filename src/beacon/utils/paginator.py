@@ -87,6 +87,7 @@ class ViewPaginator(PrivateView):
         Returns:
             Any: Result produced by this function.
         """
+        self.go_to_page.label = f"Page {self.page} of {self.total_pages}"
         self.prev_page.disabled = (self.page == 1)
         self.next_page.disabled = (self.page == self.total_pages)
         self.go_to_page.disabled = (self.total_pages <= 1)
@@ -108,7 +109,6 @@ class ViewPaginator(PrivateView):
             description=description,
             color=self.colour
         )
-        embed.set_footer(text=f"Page {self.page} of {self.total_pages}")
         return embed
 
     async def update_view(self, interaction: discord.Interaction):
@@ -138,7 +138,7 @@ class ViewPaginator(PrivateView):
             self.page -= 1
             await self.update_view(interaction)
 
-    @discord.ui.button(label="Go To Page", style=discord.ButtonStyle.gray)
+    @discord.ui.button(label=f"Page 0 of 0", style=discord.ButtonStyle.gray)
     async def go_to_page(self, interaction: discord.Interaction, button: discord.ui.Button):
         """Open the page-jump modal for direct navigation.
 
@@ -216,14 +216,13 @@ class LayoutViewPaginator(PrivateLayoutView):
 
         container.add_item(Separator())
 
-        container.add_item(TextDisplay(f"-# Page {self.page} of {self.total_pages}"))
 
         control_row = ActionRow()
 
         left_btn = Button(emoji="◀️", style=discord.ButtonStyle.primary, disabled=self.page == 1)
         left_btn.callback = self.prev_callback
 
-        go_btn = Button(label="Go to Page", style=discord.ButtonStyle.secondary, disabled=self.total_pages <= 1)
+        go_btn = Button(label=f"Page {self.page} of {self.total_pages}", style=discord.ButtonStyle.secondary, disabled=self.total_pages <= 1)
         go_btn.callback = self.goto_callback
 
         right_btn = Button(emoji="▶️", style=discord.ButtonStyle.primary, disabled=self.page == self.total_pages)
@@ -247,34 +246,6 @@ class LayoutViewPaginator(PrivateLayoutView):
         """
         self.build_layout()
         await interaction.response.edit_message(view=self)
-
-    def add_pagination_controls(self, container: Container):
-        """Attach page indicators and navigation controls to a container.
-
-        Args:
-            container: Layout container that receives pagination controls.
-
-        Returns:
-            Any: Result produced by this function.
-        """
-        container.add_item(TextDisplay(f"-# Page {self.page} of {self.total_pages}"))
-        container.add_item(Separator())
-
-        row = ActionRow()
-
-        left_btn = Button(emoji="◀️", style=discord.ButtonStyle.primary, disabled=self.page == 1)
-        left_btn.callback = self.prev_callback
-
-        go_btn = Button(label="Go to Page", style=discord.ButtonStyle.secondary, disabled=self.total_pages <= 1)
-        go_btn.callback = self.goto_callback
-
-        right_btn = Button(emoji="▶️", style=discord.ButtonStyle.primary, disabled=self.page == self.total_pages)
-        right_btn.callback = self.next_callback
-
-        row.add_item(left_btn)
-        row.add_item(go_btn)
-        row.add_item(right_btn)
-        container.add_item(row)
 
     async def prev_callback(self, interaction: discord.Interaction):
         """Go to the previous page and refresh the layout.

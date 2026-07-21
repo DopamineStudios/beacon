@@ -95,7 +95,6 @@ class OwnerDashboard(PrivateLayoutView):
                 container.add_item(
                     discord.ui.Section(discord.ui.TextDisplay(f"{idx}. `{filename}`"), accessory=cog_btn))
 
-            container.add_item(discord.ui.TextDisplay(f"-# Page {self.page} of {total_pages}"))
 
         if total_pages > 1:
             nav_row = discord.ui.ActionRow()
@@ -104,7 +103,7 @@ class OwnerDashboard(PrivateLayoutView):
             left_btn.callback = self.prev_page
             nav_row.add_item(left_btn)
 
-            go_btn = discord.ui.Button(label="Go To Page", style=discord.ButtonStyle.secondary)
+            go_btn = discord.ui.Button(label=f"Page {self.page} of {total_pages}", style=discord.ButtonStyle.secondary)
             go_btn.callback = self.go_to_page_callback
             nav_row.add_item(go_btn)
 
