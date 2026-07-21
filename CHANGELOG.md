@@ -1,3 +1,10 @@
+# [4.3.0](https://github.com/DopamineStudios/beacon/compare/v4.2.10...v4.3.0) (2026-07-21)
+
+
+### Features
+
+* Move page number display from an extra textdisplay or footer to the label of the go-to-page button so that the button to give it a dual-functionality and remove ugly extra display of page number across all UI, including owner dashboard and pagination views. ([27d53cd](https://github.com/DopamineStudios/beacon/commit/27d53cdb58fa58a5b1461aa87b06f6b65f81d165))
+
 ## [4.2.10](https://github.com/DopamineStudios/beacon/compare/v4.2.9...v4.2.10) (2026-07-20)
 
 
