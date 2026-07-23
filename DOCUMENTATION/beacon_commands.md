@@ -82,18 +82,18 @@ When a command is added to a `Group` using `.add_command()`, the group applies i
 
 ## Permission Presets
 
-|    Preset     |                   Required Permissions                    |
-|:-------------:|:---------------------------------------------------------:|
-| `"bot_owner"` |       Restricts usage to the bot owner/team owners.       |
-|  `moderator`  |        Manage Messages, Kick Members, Ban Members         |
-|    `admin`    |                       Administrator                       |
-|  `giveaways`  |               Manage Guild, Manage Messages               |
-| `automation`  |      Manage Guild, Manage Messages, Manage Channels       |
-|   `manager`   |        Manage Guild, Manage Roles, Manage Channels        |
-|   `support`   |           Manage Messages, Read Message History           |
-|  `security`   |             View Audit Log, Moderate Members              |
-|  `community`  | Manage Expressions, Manage Threads, Create Public Threads |
-|  `technical`  |               Manage Webhooks, Manage Guild               |
+|    Preset    |                    Required Permissions                     |
+|:------------:|:-----------------------------------------------------------:|
+| `bot_owner`  |        Restricts usage to the bot owner/team owners.        |
+| `moderator`  | Manage Messages, Kick Members, Timeout Members, Ban Members |
+|   `admin`    |                        Administrator                        |
+| `giveaways`  |                Manage Guild, Manage Messages                |
+| `automation` |       Manage Guild, Manage Messages, Manage Channels        |
+|  `manager`   |         Manage Guild, Manage Roles, Manage Channels         |
+|  `support`   |            Manage Messages, Read Message History            |
+|  `security`  |              View Audit Log, Moderate Members               |
+| `community`  |  Manage Expressions, Manage Threads, Create Public Threads  |
+| `technical`  |                Manage Webhooks, Manage Guild                |
 
 ---
 

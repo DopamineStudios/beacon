@@ -73,18 +73,18 @@ If you prefer using standard `app_commands`, you can use the standalone `@precon
 * **Advanced Logic:** Includes `has_permissions_any` (pass if user has one of many) and `has_permissions` (must have all).
 * **Smart Rate Limiting:** Easily implement command-specific or bot-wide global cooldowns to prevent spam.
 
-|    Preset     |                   Required Permissions                    |
-|:-------------:|:---------------------------------------------------------:|
-| `"bot_owner"` |       Restricts usage to the bot owner/team owners.       |
-|  `moderator`  |        Manage Messages, Kick Members, Ban Members         |
-|    `admin`    |                       Administrator                       |
-|  `giveaways`  |               Manage Guild, Manage Messages               |
-| `automation`  |      Manage Guild, Manage Messages, Manage Channels       |
-|   `manager`   |        Manage Guild, Manage Roles, Manage Channels        |
-|   `support`   |           Manage Messages, Read Message History           |
-|  `security`   |             View Audit Log, Moderate Members              |
-|  `community`  | Manage Expressions, Manage Threads, Create Public Threads |
-|  `technical`  |               Manage Webhooks, Manage Guild               |
+|    Preset    |                    Required Permissions                     |
+|:------------:|:-----------------------------------------------------------:|
+| `bot_owner`  |        Restricts usage to the bot owner/team owners.        |
+| `moderator`  | Manage Messages, Kick Members, Timeout Members, Ban Members |
+|   `admin`    |                        Administrator                        |
+| `giveaways`  |                Manage Guild, Manage Messages                |
+| `automation` |       Manage Guild, Manage Messages, Manage Channels        |
+|  `manager`   |         Manage Guild, Manage Roles, Manage Channels         |
+|  `support`   |            Manage Messages, Read Message History            |
+|  `security`  |              View Audit Log, Moderate Members               |
+| `community`  |  Manage Expressions, Manage Threads, Create Public Threads  |
+| `technical`  |                Manage Webhooks, Manage Guild                |
 
 ### 4. In-Discord Owner Dashboard
 

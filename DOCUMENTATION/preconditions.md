@@ -19,18 +19,18 @@ Instead of listing every required permission manually, you can use pre-defined p
 * **Usage:** `@preconditions.permissions_preset("moderator")`
 
 
-|    Preset     |                   Required Permissions                    |
-|:-------------:|:---------------------------------------------------------:|
-| `"bot_owner"` |       Restricts usage to the bot owner/team owners.       |
-|  `moderator`  |        Manage Messages, Kick Members, Ban Members         |
-|    `admin`    |                       Administrator                       |
-|  `giveaways`  |               Manage Guild, Manage Messages               |
-| `automation`  |      Manage Guild, Manage Messages, Manage Channels       |
-|   `manager`   |        Manage Guild, Manage Roles, Manage Channels        |
-|   `support`   |           Manage Messages, Read Message History           |
-|  `security`   |             View Audit Log, Moderate Members              |
-|  `community`  | Manage Expressions, Manage Threads, Create Public Threads |
-|  `technical`  |               Manage Webhooks, Manage Guild               |
+|    Preset    |                    Required Permissions                     |
+|:------------:|:-----------------------------------------------------------:|
+| `bot_owner`  |        Restricts usage to the bot owner/team owners.        |
+| `moderator`  | Manage Messages, Kick Members, Timeout Members, Ban Members |
+|   `admin`    |                        Administrator                        |
+| `giveaways`  |                Manage Guild, Manage Messages                |
+| `automation` |       Manage Guild, Manage Messages, Manage Channels        |
+|  `manager`   |         Manage Guild, Manage Roles, Manage Channels         |
+|  `support`   |            Manage Messages, Read Message History            |
+|  `security`  |              View Audit Log, Moderate Members               |
+| `community`  |  Manage Expressions, Manage Threads, Create Public Threads  |
+| `technical`  |                Manage Webhooks, Manage Guild                |
 
 ### Non-Preset Decorators
 

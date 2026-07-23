@@ -29,7 +29,7 @@ def global_cooldown():
 def permissions_preset(preset_name: str):
     """Create a check that enforces one of the framework permission presets."""
     PRESETS = {
-        "moderator": {"manage_messages": True, "kick_members": True, "ban_members": True},
+        "moderator": {"manage_messages": True, "kick_members": True, "ban_members": True, "timeout_members": True},
         "admin": {"administrator": True},
         "giveaways": {"manage_guild": True, "manage_messages": True},
         "automation": {"manage_guild": True, "manage_messages": True, "manage_channels": True},
