@@ -1,3 +1,10 @@
+## [4.3.1](https://github.com/DopamineStudios/beacon/compare/v4.3.0...v4.3.1) (2026-07-23)
+
+
+### Bug Fixes
+
+* Add timeout member permission moderator preset ([cf760db](https://github.com/DopamineStudios/beacon/commit/cf760db1c0c7285858b4b7e6a8878246666e45cc))
+
 # [4.3.0](https://github.com/DopamineStudios/beacon/compare/v4.2.10...v4.3.0) (2026-07-21)
 
 
