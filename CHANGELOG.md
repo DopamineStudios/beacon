@@ -1,3 +1,10 @@
+## [4.3.2](https://github.com/DopamineStudios/beacon/compare/v4.3.1...v4.3.2) (2026-07-23)
+
+
+### Bug Fixes
+
+* Fix error due to wrong permission name ([d6c5e9f](https://github.com/DopamineStudios/beacon/commit/d6c5e9f5bcc34bce13306c0a1932872ed1d093a9))
+
 ## [4.3.1](https://github.com/DopamineStudios/beacon/compare/v4.3.0...v4.3.1) (2026-07-23)
 
 
