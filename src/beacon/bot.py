@@ -208,7 +208,7 @@ class BeaconFrameworkBotMixin:
             if interaction.command is not None:
                 self.logger.error(f"[{self.instance_id}] Beacon: Ignoring exception in command {interaction.command.name}: {error}")
                 if not interaction.response.is_done():
-                    await interaction.response.send_message(content=f"""An unexpected error occurred :(\nPlease contact the developers or the support team of this Discord bot.\nThis unhandled error was caught by [Beacon Framework](https://beacon.dopaminestudios.in/). If you are a developer, please check the logs where it says: "[{self.instance_id}] Beacon: Ignoring exception in command {interaction.command.name}".""", suppress_embeds=True, ephemeral=True)
+                    await interaction.response.send_message(content=f"""An unexpected error occurred :( Please try again later.\nThis unhandled exception was caught by [Beacon Framework](https://beacon.dopaminestudios.in/). If you are a developer, please check the logs.""", suppress_embeds=True, ephemeral=True)
 
         # pyrefly: ignore [missing-attribute]
         self.tree.on_error = on_tree_error
