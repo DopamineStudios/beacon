@@ -1,3 +1,10 @@
+## [4.3.3](https://github.com/DopamineStudios/beacon/compare/v4.3.2...v4.3.3) (2026-07-24)
+
+
+### Bug Fixes
+
+* Simplified general error message ([912df3e](https://github.com/DopamineStudios/beacon/commit/912df3e07de8aef4394faba5723bd6a01a2025b3))
+
 ## [4.3.2](https://github.com/DopamineStudios/beacon/compare/v4.3.1...v4.3.2) (2026-07-23)
 
 
