@@ -120,6 +120,7 @@ class OwnerDashboard(PrivateLayoutView):
         sync_local_btn = discord.ui.Button(label="Sync Slash Guild", style=discord.ButtonStyle.primary)
         force_sync_btn = discord.ui.Button(label="Force Sync", style=discord.ButtonStyle.secondary)
         reload_btn = discord.ui.Button(label="Reload All Cogs", style=discord.ButtonStyle.primary)
+        reload_version_btn = discord.ui.Button(label="Reload Version File", style=discord.ButtonStyle.secondary)
         upload_btn = discord.ui.Button(label="Upload Cog", style=discord.ButtonStyle.success,
                                        disabled=True if self.ephemeral else False)
         shutdown_btn = discord.ui.Button(label="Shutdown", style=discord.ButtonStyle.danger)
@@ -130,6 +131,7 @@ class OwnerDashboard(PrivateLayoutView):
         sync_local_btn.callback = self.sync_local_callback
         force_sync_btn.callback = self.force_sync_callback
         reload_btn.callback = self.reload_all_callback
+        reload_version_btn.callback = self.reload_version_callback
         upload_btn.callback = self.upload_cog_callback
         shutdown_btn.callback = self.shutdown_callback
         restart_btn.callback = self.restart_callback
@@ -147,6 +149,7 @@ class OwnerDashboard(PrivateLayoutView):
         if not self.secure_mode:
             action_row.add_item(upload_btn)
         action_row.add_item(reload_btn)
+        action_row.add_item(reload_version_btn)
         if not self.secure_mode:
             action_row.add_item(shutdown_btn)
             action_row.add_item(restart_btn)
@@ -360,6 +363,31 @@ class OwnerDashboard(PrivateLayoutView):
         status = f"[`{self.bot.instance_id}`] Beacon: Reloaded {len(reloaded)} cogs."
         if failed: status += f"\n**Failed:** {', '.join(failed)}"
         await interaction.followup.send(status, ephemeral=True)
+
+    async def reload_version_callback(self, interaction: discord.Interaction):
+        """Reload the version file from disk and report the updated version."""
+        await interaction.response.defer(ephemeral=True)
+
+        if hasattr(self.bot, "reload_version_file"):
+            new_version = self.bot.reload_version_file()
+        else:
+            v_file = getattr(self.bot, "_version_file_path", None) or getattr(self.bot, "version_file", None)
+            if v_file and hasattr(self.bot, "_parse_version_file"):
+                self.bot.version = self.bot._parse_version_file(v_file)
+                new_version = self.bot.version
+            else:
+                new_version = None
+
+        if new_version:
+            await interaction.followup.send(
+                f"[`{self.bot.instance_id}`] Beacon: Reloaded version file successfully! Current version is `{new_version}`.",
+                ephemeral=True
+            )
+        else:
+            await interaction.followup.send(
+                f"[`{self.bot.instance_id}`] Beacon: Failed to reload version file or no version file path was configured.",
+                ephemeral=True
+            )
 
     async def sync_callback(self, interaction: discord.Interaction):
         """Run global smart sync for the app-command tree.

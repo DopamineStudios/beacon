@@ -150,6 +150,12 @@ class BeaconFrameworkBotMixin:
             self.logger.error(f"""[{self.instance_id}] Beacon: Bot version is not defined in your provided file, or isn't defined properly. Bot version will not be shown in /ping command's embed. For the safest method, define it as: bot_version="Your.Bot.Version".""")
             return None
 
+    def reload_version_file(self) -> str | None:
+        """Reloads the version file dynamically at runtime and updates `self.version`."""
+        if hasattr(self, "_version_file_path") and self._version_file_path:
+            self.version = self._parse_version_file(self._version_file_path)
+        return getattr(self, "version", None)
+
     async def setup_hook(self):
         """Load configured extensions, wire command error handling, and run smart sync."""
 
