@@ -36,6 +36,9 @@ class Diagnostics(commands.Cog):
         self.cpu_usage_cache = deque(maxlen=1440)
         self.cpu_temp_samples = []
 
+        self.memory_usage_cache = deque(maxlen=1440)
+        self.memory_temp_samples = []
+
         self.process = psutil.Process(os.getpid())
         self.process.cpu_percent(interval=None)
         self.current_cpu = 0.0
@@ -43,6 +46,7 @@ class Diagnostics(commands.Cog):
         self.cached_api_graph_bytes = None
         self.cached_heartbeat_graph_bytes = None
         self.cached_cpu_graph_bytes = None
+        self.cached_memory_graph_bytes = None
 
         self.cache_task.start()
 
@@ -65,13 +69,17 @@ class Diagnostics(commands.Cog):
 
     @tasks.loop(seconds=5.0)
     async def cache_task(self):
-        """Collect API, Heartbeat latency, and CPU usage samples to keep rolling metric averages."""
+        """Collect API, Heartbeat latency, CPU usage, and Memory usage samples to keep rolling metric averages."""
         if not self.bot.is_ready():
             return
 
         try:
             self.current_cpu = self.process.cpu_percent(interval=None)
             self.cpu_temp_samples.append(self.current_cpu)
+
+            # Collect process resident memory in MB
+            memory_mb = self.process.memory_info().rss / (1024 * 1024)
+            self.memory_temp_samples.append(memory_mb)
 
             total_latency = None
             try:
@@ -116,6 +124,12 @@ class Diagnostics(commands.Cog):
                 self.cpu_usage_cache.append(avg_cpu)
                 self.cpu_temp_samples.clear()
                 self.cached_cpu_graph_bytes = None
+
+            if len(self.memory_temp_samples) >= 12:
+                avg_mem = sum(self.memory_temp_samples) / len(self.memory_temp_samples)
+                self.memory_usage_cache.append(avg_mem)
+                self.memory_temp_samples.clear()
+                self.cached_memory_graph_bytes = None
 
         except Exception as e:
             self.bot.logger.critical(f"[{self.bot.instance_id}] Beacon: {e}")
@@ -208,7 +222,7 @@ class Diagnostics(commands.Cog):
         """Render the cached history into an in-memory PNG graph.
 
         Args:
-            graph_type (str): The type of graph (e.g., "API", "Heartbeat", or "CPU Usage").
+            graph_type (str): The type of graph (e.g., "API", "Heartbeat", "CPU Usage", or "Memory Usage").
 
         Returns:
             Any: Generated graph result or None if error/insufficient data.
@@ -216,11 +230,14 @@ class Diagnostics(commands.Cog):
         try:
             gt_lower = graph_type.strip().lower()
             is_cpu = "cpu" in gt_lower
+            is_memory = "memory" in gt_lower or "ram" in gt_lower
 
             if "heartbeat" in gt_lower:
                 data = list(self.heartbeat_latency_cache)
             elif is_cpu:
                 data = list(self.cpu_usage_cache)
+            elif is_memory:
+                data = list(self.memory_usage_cache)
             else:
                 data = list(self.api_latency_cache)
 
@@ -257,10 +274,21 @@ class Diagnostics(commands.Cog):
             )
 
             max_val = max(data) if data else 100
+            use_gb = False
 
             if is_cpu:
                 steps = [5, 10, 20, 25, 50, 75, 100]
                 unit = "%"
+            elif is_memory:
+                if max_val >= 999:
+                    use_gb = True
+                    data = [val / 1024.0 for val in data]
+                    max_val = max(data)
+                    steps = [0.25, 0.5, 1, 2, 4, 8, 16, 32, 64]
+                    unit = "GB"
+                else:
+                    steps = [50, 100, 250, 500, 1000]
+                    unit = "MB"
             else:
                 steps = [10, 25, 50, 100, 250, 500, 1000]
                 unit = "ms"
@@ -278,7 +306,14 @@ class Diagnostics(commands.Cog):
                 val = target_step * i
                 y = (height - pad_bot) - (val / y_limit) * graph_height
                 draw.line([(pad_left, y), (width - pad_right, y)], fill=grid_color, width=1 * scale_factor)
-                draw.text((pad_left - 15, y), f"{int(val)}{unit}", fill=y_label_colour, anchor="rm",
+
+                # Format floating point string if using GB scale, otherwise integer
+                if use_gb:
+                    val_str = f"{val:.2f}".rstrip('0').rstrip('.') if val % 1 != 0 else f"{int(val)}"
+                else:
+                    val_str = f"{int(val)}"
+
+                draw.text((pad_left - 15, y), f"{val_str}{unit}", fill=y_label_colour, anchor="rm",
                           font_size=12 * scale_factor)
 
             tick_colour = (130, 130, 130, 255)
@@ -475,14 +510,15 @@ class Diagnostics(commands.Cog):
     beacon = beacon_commands.Group(name="beacon", description="Shows metrics about the bot using Beacon Framework")
 
     @beacon.command(name="graph",
-                    description="Shows a graph using Beacon of bot metrics such as latency, CPU usage, etc. in the last 24 hours")
+                    description="Shows a graph using Beacon of bot metrics such as latency, CPU usage, memory usage, etc. in the last 24 hours")
     @app_commands.choices(graph_type=[
         app_commands.Choice(name="API Latency Graph", value="api"),
         app_commands.Choice(name="Heartbeat Latency Graph", value="heartbeat"),
-        app_commands.Choice(name="CPU Usage Graph", value="cpu")
+        app_commands.Choice(name="CPU Usage Graph", value="cpu"),
+        app_commands.Choice(name="Memory Usage Graph", value="memory")
     ])
     @app_commands.describe(
-        graph_type="The type of graph you want to see (API latency, Heartbeat latency, or CPU usage). Defaults to API latency graph.")
+        graph_type="The type of graph you want to see (API latency, Heartbeat latency, CPU usage, or Memory usage). Defaults to API latency graph.")
     async def graph(self, interaction: discord.Interaction, graph_type: app_commands.Choice[str]):
         """Return a generated metric trend graph when enough samples exist."""
         graph_type_value = graph_type.value
@@ -544,6 +580,26 @@ class Diagnostics(commands.Cog):
 
                 buffer = io.BytesIO(self.cached_cpu_graph_bytes)
                 file = discord.File(buffer, filename="beacon_cpu_graph.png")
+                await interaction.edit_original_response(content=None, attachments=[file])
+            except Exception as e:
+                return await interaction.edit_original_response(content=f"Beacon: ERROR: {e}")
+
+        elif graph_type_value == "memory":
+            if len(self.memory_usage_cache) < 2:
+                return await interaction.response.send_message(
+                    "Beacon: Not enough data yet! The bot was restarted very recently. Please wait a few minutes.",
+                    ephemeral=True
+                )
+
+            try:
+                await interaction.response.defer()
+                if not self.cached_memory_graph_bytes:
+                    memory_graph_buffer = await loop.run_in_executor(None, self.generate_graph, "Memory Usage")
+                    if memory_graph_buffer:
+                        self.cached_memory_graph_bytes = memory_graph_buffer.getvalue()
+
+                buffer = io.BytesIO(self.cached_memory_graph_bytes)
+                file = discord.File(buffer, filename="beacon_memory_graph.png")
                 await interaction.edit_original_response(content=None, attachments=[file])
             except Exception as e:
                 return await interaction.edit_original_response(content=f"Beacon: ERROR: {e}")
