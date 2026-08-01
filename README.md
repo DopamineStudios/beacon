@@ -100,7 +100,7 @@ The built-in `Diagnostics` "cog" (module) provides real-time monitoring of the b
 
 * **Latency:** High precision API, Heartbeat, and Round-trip latency monitoring.
 * **Resource Utilization:** CPU and RAM usage tracking via `psutil`.
-* **Graphs:** Generate graphs for the bot's latency and other metrics for visual performance auditing.
+* **Graphs:** Generate graphs for the bot's latency, CPU usage, or memory usage for visual performance auditing.
 * **Host Device Metrics:** Integration with system sensors to report host location and battery status, if available.
 
 ### 6. Helper Views
