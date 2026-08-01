@@ -101,6 +101,7 @@ class BeaconFrameworkBotMixin:
         print(
             f"{GREY}[{self.instance_id}]{CYAN} Beacon{RESET}: This is the beginning of this {CYAN}Beacon{RESET} Instance."
         )
+        self._version_file_path = version_file
         if version_file is not None:
             self.version = self._parse_version_file(version_file)
         self.secure_mode = secure_mode
