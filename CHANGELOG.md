@@ -1,3 +1,10 @@
+## [4.4.2](https://github.com/DopamineStudios/beacon/compare/v4.4.1...v4.4.2) (2026-08-01)
+
+
+### Bug Fixes
+
+* More steps! ([981048c](https://github.com/DopamineStudios/beacon/commit/981048c3fae4ad6c8221bb91345c308d43e60c10))
+
 ## [4.4.1](https://github.com/DopamineStudios/beacon/compare/v4.4.0...v4.4.1) (2026-08-01)
 
 
