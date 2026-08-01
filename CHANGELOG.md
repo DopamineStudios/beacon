@@ -1,3 +1,10 @@
+## [4.4.4](https://github.com/DopamineStudios/beacon/compare/v4.4.3...v4.4.4) (2026-08-01)
+
+
+### Bug Fixes
+
+* Fix order of lines in banner ([b242060](https://github.com/DopamineStudios/beacon/commit/b2420601157b81567b20162ce1ecd4148f00bfd7))
+
 ## [4.4.3](https://github.com/DopamineStudios/beacon/compare/v4.4.2...v4.4.3) (2026-08-01)
 
 
