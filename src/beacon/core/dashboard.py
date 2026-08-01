@@ -130,7 +130,7 @@ class OwnerDashboard(PrivateLayoutView):
 
         sync_btn = discord.ui.Button(label="Sync Slash Global", style=discord.ButtonStyle.primary)
         sync_local_btn = discord.ui.Button(label="Sync Slash Guild", style=discord.ButtonStyle.primary)
-        force_sync_btn = discord.ui.Button(label="Force Sync", style=discord.ButtonStyle.secondary)
+        force_sync_btn = discord.ui.Button(label="Force Sync Global", style=discord.ButtonStyle.secondary)
         reload_btn = discord.ui.Button(label="Reload All Cogs", style=discord.ButtonStyle.primary)
         reload_version_btn = discord.ui.Button(label="Reload Version File", style=discord.ButtonStyle.secondary)
         upload_btn = discord.ui.Button(label="Upload Cog", style=discord.ButtonStyle.success,
