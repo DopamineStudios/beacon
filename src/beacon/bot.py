@@ -345,9 +345,9 @@ class BeaconFrameworkBotMixin:
 
             banner = ("\n"
                       f"---------------------------------------------------\n"
-                      f"{CYAN}Beacon{RESET} Instance ID: {self.instance_id}\n"
                       f"{bot_version_line}"
                       f"Powered by {CYAN}Beacon Framework{RESET} v{framework_version} by {MAGENTA}Dopamine Studios{RESET}\n"
+                      f"{CYAN}Beacon{RESET} Instance ID: {self.instance_id}\n"
                       "\n"
                       f"Total Startup Time: {total_startup_time:.2f}s\n"
                       f"Total Cogs Loading Time: {self.cog_load_time:.2f}s\n"
