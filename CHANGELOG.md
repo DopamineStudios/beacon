@@ -1,3 +1,10 @@
+## [4.4.3](https://github.com/DopamineStudios/beacon/compare/v4.4.2...v4.4.3) (2026-08-01)
+
+
+### Bug Fixes
+
+* Fix label of force sync button ([184999c](https://github.com/DopamineStudios/beacon/commit/184999cc7358b4fd2fe61d68ed75aa34de37da28))
+
 ## [4.4.2](https://github.com/DopamineStudios/beacon/compare/v4.4.1...v4.4.2) (2026-08-01)
 
 
