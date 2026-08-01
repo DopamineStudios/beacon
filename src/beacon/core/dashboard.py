@@ -314,7 +314,10 @@ class OwnerDashboard(PrivateLayoutView):
             await owner_message.attachments[0].save(Path(file_path))
 
             await upload_message.edit(content="File successfully uploaded!")
-            await owner_message.delete()
+            try:
+                await owner_message.delete()
+            except (discord.Forbidden, discord.HTTPException):
+                pass
             self.build_layout()
             if not dashboard_message is None:
                 await dashboard_message.edit(view=self)
