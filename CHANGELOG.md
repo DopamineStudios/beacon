@@ -1,3 +1,12 @@
+## [4.4.1](https://github.com/DopamineStudios/beacon/compare/v4.4.0...v4.4.1) (2026-08-01)
+
+
+### Bug Fixes
+
+* Change force sync button to sync to global instead of only the interaction guild. ([fe94e72](https://github.com/DopamineStudios/beacon/commit/fe94e7281f6e054f7d43086cca2c45a9df2bb8c3))
+* Fix behaviour of load/unload button by implementing optimistic UI update philosophy ([78de0e9](https://github.com/DopamineStudios/beacon/commit/78de0e9337fc5cc6a47d312ebb3782e9d07b26a8))
+* Make command descriptions shorter ([5b28ffb](https://github.com/DopamineStudios/beacon/commit/5b28ffbe2a1e3ae6070cd5c2e5f61e3974298c5c))
+
 # [4.4.0](https://github.com/DopamineStudios/beacon/compare/v4.3.3...v4.4.0) (2026-08-01)
 
 
