@@ -434,7 +434,7 @@ class OwnerDashboard(PrivateLayoutView):
             # pyrefly: ignore [missing-attribute]
             f"[`{self.bot.instance_id}`] Beacon: Syncing Slash commands using Beacon Framework's `force_sync` method which forces a sync regardless of whether there is a change detected or not, Please wait. This may take a while if you already synced recently due to Discord rate-limiting the bot.",
             ephemeral=True)
-        response = await self.registry.force_sync(guild=interaction.guild)
+        response = await self.registry.force_sync()
         try:
             await interaction.edit_original_response(content=response)
         except discord.Forbidden or discord.NotFound:
