@@ -191,14 +191,14 @@ class Diagnostics(commands.Cog):
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(None, fetch)
 
-    def generate_latency_graph(self, graph_type: str):
-        """Render the cached latency history into an in-memory PNG graph.
+    def generate_graph(self, graph_type: str):
+        """Render the cached history into an in-memory PNG graph.
 
         Args:
-            graph_type (str): The type of latency graph (e.g., "API" or "Heartbeat").
+            graph_type (str): The type of graph (e.g., "API" or "Heartbeat").
 
         Returns:
-            Any: Generated latency graph result or None if error/insufficient data.
+            Any: Generated graph result or None if error/insufficient data.
         """
         try:
             if graph_type.strip().lower() == "heartbeat":
@@ -231,7 +231,7 @@ class Diagnostics(commands.Cog):
 
             draw.text(
                 (width / 2, 70),
-                f"{graph_type} Latency Graph - Powered by Beacon",
+                f"{graph_type} Graph - Powered by Beacon",
                 fill=(255, 255, 255, 255),
                 font=title_font,
                 anchor="mt"
@@ -445,9 +445,9 @@ class Diagnostics(commands.Cog):
         message = await interaction.original_response()
         await message.edit(content=None, embed=embed)
 
-    latency = beacon_commands.Group(name="latency", description="Shows latency information about the bot")
+    beacon = beacon_commands.Group(name="beacon", description="Shows metrics about the bot using Beacon Framework")
 
-    @latency.command(name="graph", description="Shows a graph of the average latency in the last 24 hours")
+    @beacon.command(name="graph", description="Shows a graph using Beacon of bot metrics such as latency, CPU usage, etc. in the last 24 hours")
     @app_commands.choices(graph_type=[
         app_commands.Choice(name="API Latency Graph", value="api"),
         app_commands.Choice(name="Heartbeat Latency Graph", value="heartbeat")
@@ -469,7 +469,7 @@ class Diagnostics(commands.Cog):
             try:
                 await interaction.response.defer()
                 if not self.cached_api_graph_bytes:
-                    graph_buffer = await loop.run_in_executor(None, self.generate_latency_graph, "API")
+                    graph_buffer = await loop.run_in_executor(None, self.generate_graph, "API Latency")
                     if graph_buffer:
                         self.cached_api_graph_bytes = graph_buffer.getvalue()
 
@@ -489,7 +489,7 @@ class Diagnostics(commands.Cog):
             try:
                 await interaction.response.defer()
                 if not self.cached_heartbeat_graph_bytes:
-                    hb_graph_buffer = await loop.run_in_executor(None, self.generate_latency_graph, "Heartbeat")
+                    hb_graph_buffer = await loop.run_in_executor(None, self.generate_graph, "Heartbeat Latency")
                     if hb_graph_buffer:
                         self.cached_heartbeat_graph_bytes = hb_graph_buffer.getvalue()
 
