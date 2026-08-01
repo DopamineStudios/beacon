@@ -1,3 +1,18 @@
+# [4.4.0](https://github.com/DopamineStudios/beacon/compare/v4.3.3...v4.4.0) (2026-08-01)
+
+
+### Bug Fixes
+
+* Fix error in DMs: 403 Forbidden (error code: 50003): Cannot execute action on a DM channel ([6c146ac](https://github.com/DopamineStudios/beacon/commit/6c146acf98b87102d3fc03345ea595e06b27cb5f))
+
+
+### Features
+
+* Add new "Reload Version File" button to owner dashboard ([8cade5e](https://github.com/DopamineStudios/beacon/commit/8cade5e4502b7d6eb93419d4dc16ab6c421449b0))
+* Add new CPU Usage graph. ([a2c1527](https://github.com/DopamineStudios/beacon/commit/a2c1527313fd431fd173db2063272925ce6cb8da))
+* Add new Memory Usage graph. ([79f51c0](https://github.com/DopamineStudios/beacon/commit/79f51c0a52e42243255e6a26c1f563e458217f5b))
+* Rename `/latency graph` command to `/beacon graph` and make other changes to make the code agnostic to the type of graph, laying the foundation for the next commit. ([addf67a](https://github.com/DopamineStudios/beacon/commit/addf67af9d98beaedc90e02ee88501a1a837e9ba))
+
 ## [4.3.3](https://github.com/DopamineStudios/beacon/compare/v4.3.2...v4.3.3) (2026-07-24)
 
 
