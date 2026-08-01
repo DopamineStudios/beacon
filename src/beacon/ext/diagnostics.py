@@ -77,7 +77,6 @@ class Diagnostics(commands.Cog):
             self.current_cpu = self.process.cpu_percent(interval=None)
             self.cpu_temp_samples.append(self.current_cpu)
 
-            # Collect process resident memory in MB
             memory_mb = self.process.memory_info().rss / (1024 * 1024)
             self.memory_temp_samples.append(memory_mb)
 
@@ -307,7 +306,6 @@ class Diagnostics(commands.Cog):
                 y = (height - pad_bot) - (val / y_limit) * graph_height
                 draw.line([(pad_left, y), (width - pad_right, y)], fill=grid_color, width=1 * scale_factor)
 
-                # Format floating point string if using GB scale, otherwise integer
                 if use_gb:
                     val_str = f"{val:.2f}".rstrip('0').rstrip('.') if val % 1 != 0 else f"{int(val)}"
                 else:
@@ -510,7 +508,7 @@ class Diagnostics(commands.Cog):
     beacon = beacon_commands.Group(name="beacon", description="Shows metrics about the bot using Beacon Framework")
 
     @beacon.command(name="graph",
-                    description="Shows a graph using Beacon of bot metrics such as latency, CPU usage, memory usage, etc. in the last 24 hours")
+                    description="Shows a graph using Beacon of bot metrics in the last 24 hours")
     @app_commands.choices(graph_type=[
         app_commands.Choice(name="API Latency Graph", value="api"),
         app_commands.Choice(name="Heartbeat Latency Graph", value="heartbeat"),
@@ -518,7 +516,7 @@ class Diagnostics(commands.Cog):
         app_commands.Choice(name="Memory Usage Graph", value="memory")
     ])
     @app_commands.describe(
-        graph_type="The type of graph you want to see (API latency, Heartbeat latency, CPU usage, or Memory usage). Defaults to API latency graph.")
+        graph_type="The type of graph you want to see. Defaults to API latency graph.")
     async def graph(self, interaction: discord.Interaction, graph_type: app_commands.Choice[str]):
         """Return a generated metric trend graph when enough samples exist."""
         graph_type_value = graph_type.value
