@@ -276,7 +276,7 @@ class Diagnostics(commands.Cog):
             use_gb = False
 
             if is_cpu:
-                steps = [5, 10, 20, 25, 50, 75, 100]
+                steps = [1, 5, 10, 20, 25, 50, 75, 100]
                 unit = "%"
             elif is_memory:
                 if max_val >= 999:
@@ -286,10 +286,10 @@ class Diagnostics(commands.Cog):
                     steps = [0.25, 0.5, 1, 2, 4, 8, 16, 32, 64]
                     unit = "GB"
                 else:
-                    steps = [50, 100, 250, 500, 1000]
+                    steps = [20, 25, 50, 75, 100, 250, 500, 1000]
                     unit = "MB"
             else:
-                steps = [10, 25, 50, 100, 250, 500, 1000]
+                steps = [10, 25, 50, 75, 100, 250, 500, 1000]
                 unit = "ms"
 
             target_step = next((s for s in steps if s > max_val / 4), max_val / 4)
