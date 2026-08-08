@@ -1,3 +1,15 @@
+# [4.5.0](https://github.com/DopamineStudios/beacon/compare/v4.4.4...v4.5.0) (2026-08-08)
+
+
+### Bug Fixes
+
+* Fix error when version file isn't set ([e07095e](https://github.com/DopamineStudios/beacon/commit/e07095edae9793766d9e9d4bdf2295b1a859048d))
+
+
+### Features
+
+* New total server count display in ping embed ([8122a74](https://github.com/DopamineStudios/beacon/commit/8122a74f3f58ccd3aef7c0deaa86785b860c7696))
+
 ## [4.4.4](https://github.com/DopamineStudios/beacon/compare/v4.4.3...v4.4.4) (2026-08-01)
 
 
