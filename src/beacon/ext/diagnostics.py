@@ -488,6 +488,7 @@ class Diagnostics(commands.Cog):
                 f"> Beacon Instance ID: `{self.bot.instance_id}`\n\n"
                 f"> Connected to Discord Gateway: `{gateway_node}`\n"
                 f"{location_line}"
+                f"> Total Server Count: `{len(self.bot.guilds)}`\n"
                 f"{final_shard_id_line}"
                 f"> API Latency: `{connection_latency}ms`\n"
                 f"> Round-trip Latency: `{round_latency}ms`\n"
