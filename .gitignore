@@ -229,3 +229,6 @@ __pycache__/
 package-lock.json
 package.json
 /node_modules
+
+plans
+AGENTS.md
