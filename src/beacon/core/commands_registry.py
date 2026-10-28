@@ -164,8 +164,9 @@ class CommandRegistry:
             while True:
                 try:
                     await self.bot.tree.sync(guild=guild)
-                    if hasattr(self.bot, "_beacon_command_cache"):
-                        self.bot._beacon_command_cache.pop(scope_id, None)
+                    if hasattr(self.bot, "_beacon_command_cache") and hasattr(self.bot, "_beacon_command_fetch_lock"):
+                        async with self.bot._beacon_command_fetch_lock:
+                            self.bot._beacon_command_cache.pop(scope_id, None)
                     self._save_state(scope_id, current_hash)
                     return f"[`{self.bot.instance_id}`] Beacon: Detected changes, and completed command sync for {scope_name} successfully."
 
@@ -201,8 +202,9 @@ class CommandRegistry:
             try:
                 await self.bot.tree.sync(guild=guild)
                 scope_id = f"guild_{guild.id}" if guild else "global"
-                if hasattr(self.bot, "_beacon_command_cache"):
-                    self.bot._beacon_command_cache.pop(scope_id, None)
+                if hasattr(self.bot, "_beacon_command_cache") and hasattr(self.bot, "_beacon_command_fetch_lock"):
+                    async with self.bot._beacon_command_fetch_lock:
+                        self.bot._beacon_command_cache.pop(scope_id, None)
                 self._save_state(scope_id, self._generate_tree_hash(guild))
                 return f"[`{self.bot.instance_id}`] Beacon: Synced slash commands to: {scope}."
             except discord.HTTPException as e:

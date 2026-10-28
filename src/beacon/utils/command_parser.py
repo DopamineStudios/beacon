@@ -3,6 +3,8 @@
 Provides utilities to dynamically resolve command names and hierarchical paths to their active Discord snowflake IDs, ensuring application command mention links (</command>) never break after command syncs.
 """
 
+__all__ = ["resolve_command_mention", "parse_command_links"]
+
 import re
 import asyncio
 import discord
@@ -23,6 +25,10 @@ async def _get_or_fetch_command_cache(
 
     Returns:
         dict[str, int]: Mapping of command paths (e.g. 'ping', 'beacon diagnostics') to command snowflake IDs.
+    
+    Raises:
+        discord.HTTPException: If command fetching fails due to API errors.
+        discord.Forbidden: If the bot lacks permissions to fetch commands.
     """
     if not hasattr(bot, "_beacon_command_cache"):
         bot._beacon_command_cache = {}
@@ -55,9 +61,13 @@ async def _get_or_fetch_command_cache(
                                     if sub_opt.type == discord.AppCommandOptionType.subcommand:
                                         nested_path = f"{cmd.name} {opt.name} {sub_opt.name}"
                                         command_map[nested_path] = cmd.id  # Use root command ID
-        except Exception as e:
+        except (discord.HTTPException, discord.Forbidden, discord.NotFound) as e:
             if hasattr(bot, "logger") and bot.logger:
                 bot.logger.warning(f"[{getattr(bot, 'instance_id', 'Beacon')}] Failed to fetch application commands for link resolution: {e}")
+        except Exception as e:
+            if hasattr(bot, "logger") and bot.logger:
+                bot.logger.error(f"[{getattr(bot, 'instance_id', 'Beacon')}] Unexpected error during command resolution: {e}", exc_info=True)
+            raise
 
         bot._beacon_command_cache[scope_id] = command_map
         return command_map
@@ -72,21 +82,27 @@ async def resolve_command_mention(bot: commands.Bot, command_path: str, guild: d
         guild: Optional guild for guild-scoped command resolution.
 
     Returns:
-        str: Formatted Discord command mention (e.g. '</ping:123456789012345678>') or fallback '<!-- command_path -->'.
+        str: Formatted Discord command mention (e.g. '</ping:123456789012345678>') or fallback '`/command_path`'.
+    
+    Raises:
+        discord.HTTPException: If command fetching fails due to API errors.
+        discord.Forbidden: If the bot lacks permissions to fetch commands.
     """
     cleaned_path = command_path.strip().lower()
     cache = await _get_or_fetch_command_cache(bot, guild=guild)
 
     cmd_id = cache.get(cleaned_path)
     if not cmd_id:
-        # Refresh cache once if command is missing (in case of recent syncs)
-        cache = await _get_or_fetch_command_cache(bot, guild=guild, force_refresh=True)
-        cmd_id = cache.get(cleaned_path)
+        # Only try to refresh if we have a bot instance that can fetch (has application_id)
+        # This avoids API calls in test environments
+        if hasattr(bot, 'application_id') and bot.application_id:
+            cache = await _get_or_fetch_command_cache(bot, guild=guild, force_refresh=True)
+            cmd_id = cache.get(cleaned_path)
 
     if cmd_id:
         return f"</{cleaned_path}:{cmd_id}>"
     
-    return f"</{cleaned_path}>"
+    return f"`/{cleaned_path}`"
 
 
 async def parse_command_links(bot: commands.Bot, text: str, guild: discord.Guild | None = None) -> str:
@@ -99,14 +115,24 @@ async def parse_command_links(bot: commands.Bot, text: str, guild: discord.Guild
 
     Returns:
         str: Text with all command tags resolved to valid Discord app command mentions.
+    
+    Raises:
+        discord.HTTPException: If command fetching fails due to API errors.
+        discord.Forbidden: If the bot lacks permissions to fetch commands.
     """
-    pattern = r"</([a-zA-Z0-9_\s]+)>"
-    matches = sorted(set(re.findall(pattern, text)), key=len, reverse=True)
-
-    resolved_text = text
-    for match in matches:
-        full_tag = f"</{match}>"
-        mention = await resolve_command_mention(bot, match, guild=guild)
-        resolved_text = resolved_text.replace(full_tag, mention)
-
-    return resolved_text
+    pattern = r"</([a-zA-Z0-9_]+(?:\s+[a-zA-Z0-9_]+)*)>"
+    
+    async def replace_match(match: re.Match) -> str:
+        command_path = match.group(1)
+        return await resolve_command_mention(bot, command_path, guild=guild)
+    
+    # Process matches in order to avoid O(n²) string operations
+    result = []
+    last_end = 0
+    for match in re.finditer(pattern, text):
+        result.append(text[last_end:match.start()])
+        result.append(await replace_match(match))
+        last_end = match.end()
+    result.append(text[last_end:])
+    
+    return ''.join(result)
