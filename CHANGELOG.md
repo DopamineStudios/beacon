@@ -362,7 +362,7 @@
 * **Shard ID Calculation:** Fix an algorithmic calculation error responsible for evaluating incorrect shard ID numbers inside the diagnostic extension tracking states. ([c22e510](https://github.com/DopamineStudios/beacon/commit/c22e510))
 * **Crash Prevention:** Remove an out-of-date, unused legacy import block inside `dashboard.py` that was triggering an explicit framework crash due to referencing an old name. ([9f558a7](https://github.com/DopamineStudios/beacon/commit/9f558a7))
 * **Syntax Polish:** Clean up and remove a useless `>` character output string evaluated during bot lifecycle loops. ([3c82d17](https://github.com/DopamineStudios/beacon/commit/3c82d17))
-* **Documentation Fixes:** Rectify a syntax typo present in the view example code snippets inside `DOCUMENTATION/views.md`. ([f599586](https://github.com/DopamineStudios/beacon/commit/f599586))
+* **Documentation Fixes:** Rectify a syntax typo present in the view example code snippets inside `docs/views.md`. ([f599586](https://github.com/DopamineStudios/beacon/commit/f599586))
 
 ### Documentation Changes
 
