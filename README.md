@@ -103,9 +103,10 @@ The built-in `Diagnostics` "cog" (module) provides real-time monitoring of the b
 * **Graphs:** Generate graphs for the bot's latency, CPU usage, or memory usage for visual performance auditing.
 * **Host Device Metrics:** Integration with system sensors to report host location and battery status, if available.
 
-### 6. Helper Views
+### 6. Helper Views & Dynamic Command Link Parser
 
-* Beacon Framework includes a suite of helper views which provides subclasses or wrappers of `discord.ui.View` and `discord.ui.LayoutView` that restrict interaction to a specific user and doesn't let anyone use the interaction (buttons, dropdowns, etc.) other than the person who triggered the command or interaction, and provides Confirmation Views that trigger a given callback upon confirmation.
+* **Helper Views:** Beacon Framework includes a suite of helper views which provides subclasses or wrappers of `discord.ui.View` and `discord.ui.LayoutView` that restrict interaction to a specific user and doesn't let anyone use the interaction (buttons, dropdowns, etc.) other than the person who triggered the command or interaction, and provides Confirmation Views that trigger a given callback upon confirmation.
+* **Dynamic Command Link Parser:** Automatically resolves command names and hierarchical paths (e.g. `</ping>` or `</beacon diagnostics>`) to their active Discord snowflake IDs, ensuring command mention links never break after command tree updates.
 
 ---
 
