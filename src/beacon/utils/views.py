@@ -1,6 +1,6 @@
 # Make classes inherent PrivateView or PrivateLayoutView to prevent accidental use of the view by other users.
 import discord
-from collections.abc import Callable, Coroutine
+from ..core.beacon_commands import FRAMEWORK_WATERMARK
 from typing import Any
 import inspect
 
@@ -30,7 +30,7 @@ class PrivateView(discord.ui.View):
         """
         if interaction.user.id != self.user.id:
             await interaction.response.send_message(
-                f"Beacon: This isn't for you! This menu was originally opened by {self.user.mention}. To use it, you will have to run the original command yourself, I don't make the rules.",
+                f"This isn't for you! This menu was originally opened by {self.user.mention}. To use it, you will have to run the original command yourself, I don't make the rules.{FRAMEWORK_WATERMARK}",
                 ephemeral=True
             )
             return False
@@ -64,7 +64,7 @@ class PrivateLayoutView(discord.ui.LayoutView):
         """
         if interaction.user.id != self.user.id:
             await interaction.response.send_message(
-                f"Beacon: This isn't for you! This menu was originally opened by {self.user.mention}. To use it, you will have to run the original command yourself, I don't make the rules.",
+                f"This isn't for you! This menu was originally opened by {self.user.mention}. To use it, you will have to run the original command yourself, I don't make the rules.{FRAMEWORK_WATERMARK}",
                 ephemeral=True
             )
             return False

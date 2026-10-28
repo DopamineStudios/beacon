@@ -8,7 +8,7 @@ import re
 import sys
 from discord import app_commands
 from discord.ext import commands
-from .core.commands_registry import CommandRegistry
+from .core.beacon_commands import FRAMEWORK_WATERMARK
 from .ext.path import framework_version
 import secrets
 import inspect
@@ -210,7 +210,7 @@ class BeaconFrameworkBotMixin:
 
             if isinstance(error, app_commands.CheckFailure):
                 if not interaction.response.is_done():
-                    await interaction.response.send_message("Beacon: You do not meet the requirements to run this command.",
+                    await interaction.response.send_message(f"You do not meet the requirements to run this command.{FRAMEWORK_WATERMARK}",
                                                             ephemeral=True)
                 return
             if interaction.command is not None:

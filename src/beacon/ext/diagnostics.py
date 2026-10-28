@@ -13,6 +13,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from .path import framework_version, BOLDFONT_PATH
 from ..core import beacon_commands
+from ..core.beacon_commands import FRAMEWORK_WATERMARK
 
 Image.MAX_IMAGE_PIXELS = None
 
@@ -526,7 +527,7 @@ class Diagnostics(commands.Cog):
         if graph_type_value == "api":
             if len(self.api_latency_cache) < 2:
                 return await interaction.response.send_message(
-                    "Beacon: Not enough data yet! The bot was restarted very recently. Please wait a few minutes.",
+                    "Not enough data yet! The bot was restarted very recently. Please wait a few minutes.",
                     ephemeral=True
                 )
 
@@ -541,12 +542,12 @@ class Diagnostics(commands.Cog):
                 file = discord.File(buffer, filename="beacon_api_graph.png")
                 await interaction.edit_original_response(content=None, attachments=[file])
             except Exception as e:
-                return await interaction.edit_original_response(content=f"Beacon: ERROR: {e}")
+                return await interaction.edit_original_response(content=f"ERROR: {e}")
 
         elif graph_type_value == "heartbeat":
             if len(self.heartbeat_latency_cache) < 2:
                 return await interaction.response.send_message(
-                    "Beacon: Not enough data yet! The bot was restarted very recently. Please wait a few minutes.",
+                    "Not enough data yet! The bot was restarted very recently. Please wait a few minutes.",
                     ephemeral=True
                 )
 
@@ -561,12 +562,12 @@ class Diagnostics(commands.Cog):
                 file = discord.File(buffer, filename="beacon_heartbeat_graph.png")
                 await interaction.edit_original_response(content=None, attachments=[file])
             except Exception as e:
-                return await interaction.edit_original_response(content=f"Beacon: ERROR: {e}")
+                return await interaction.edit_original_response(content=f"ERROR: {e}")
 
         elif graph_type_value == "cpu":
             if len(self.cpu_usage_cache) < 2:
                 return await interaction.response.send_message(
-                    "Beacon: Not enough data yet! The bot was restarted very recently. Please wait a few minutes.",
+                    "Not enough data yet! The bot was restarted very recently. Please wait a few minutes.",
                     ephemeral=True
                 )
 
@@ -581,12 +582,12 @@ class Diagnostics(commands.Cog):
                 file = discord.File(buffer, filename="beacon_cpu_graph.png")
                 await interaction.edit_original_response(content=None, attachments=[file])
             except Exception as e:
-                return await interaction.edit_original_response(content=f"Beacon: ERROR: {e}")
+                return await interaction.edit_original_response(content=f"ERROR: {e}")
 
         elif graph_type_value == "memory":
             if len(self.memory_usage_cache) < 2:
                 return await interaction.response.send_message(
-                    "Beacon: Not enough data yet! The bot was restarted very recently. Please wait a few minutes.",
+                    "Not enough data yet! The bot was restarted very recently. Please wait a few minutes.",
                     ephemeral=True
                 )
 
@@ -601,7 +602,7 @@ class Diagnostics(commands.Cog):
                 file = discord.File(buffer, filename="beacon_memory_graph.png")
                 await interaction.edit_original_response(content=None, attachments=[file])
             except Exception as e:
-                return await interaction.edit_original_response(content=f"Beacon: ERROR: {e}")
+                return await interaction.edit_original_response(content=f"ERROR: {e}")
 
         else:
             return await interaction.response.send_message(content="That's not a valid Graph Type!")
