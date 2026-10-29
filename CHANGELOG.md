@@ -1,3 +1,10 @@
+## [4.6.1](https://github.com/DopamineStudios/beacon/compare/v4.6.0...v4.6.1) (2026-10-29)
+
+
+### Bug Fixes
+
+* Fix missing import ([e389fef](https://github.com/DopamineStudios/beacon/commit/e389feff7128754ee713c335f2e9127a8cd12fb1))
+
 # [4.6.0](https://github.com/DopamineStudios/beacon/compare/v4.5.0...v4.6.0) (2026-10-29)
 
 
