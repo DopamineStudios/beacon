@@ -14,6 +14,7 @@ from PIL import Image, ImageDraw, ImageFont
 from .path import framework_version, BOLDFONT_PATH
 from ..core import beacon_commands
 from ..core.beacon_commands import FRAMEWORK_WATERMARK
+from ..utils import PrivateLayoutView
 
 Image.MAX_IMAGE_PIXELS = None
 
@@ -606,6 +607,169 @@ class Diagnostics(commands.Cog):
 
         else:
             return await interaction.response.send_message(content="That's not a valid Graph Type!")
+
+    @beacon.command(name="monitor", description="Start a persistent bot status monitor", permissions_preset="bot_owner")
+    async def monitor(self, interaction: discord.Interaction):
+        """Start persistent bot status monitor that updates every 60 seconds."""
+        view = MonitorView(self, self.bot, interaction.user)
+        view.build_layout()
+
+        await interaction.response.send_message(
+            f"[`{self.bot.instance_id}`] Beacon: Starting persistent bot status monitor...",
+            ephemeral=True
+        )
+        msg = await interaction.channel.send(view=view)
+        view.message = msg
+
+
+class MonitorView(PrivateLayoutView):
+    """Persistent monitor view that displays real-time bot status and updates every 60 seconds."""
+
+    def __init__(self, diagnostics_cog, bot, user: discord.User | discord.Member):
+        """Initialize monitor view state.
+
+        Args:
+            diagnostics_cog: Diagnostics cog instance.
+            bot: Bot instance.
+            user: Authorized user (bot owner).
+        """
+        super().__init__(user, timeout=None)
+        self.diagnostics_cog = diagnostics_cog
+        self.bot = bot
+        self.message: discord.Message | None = None
+        self.is_active = True
+        self.update_monitor.start()
+
+    def format_uptime(self, seconds: int) -> str:
+        """Format seconds into readable duration string.
+
+        Args:
+            seconds: Number of seconds.
+
+        Returns:
+            str: Formatted duration string.
+        """
+        weeks = seconds // (7 * 24 * 60 * 60)
+        seconds %= (7 * 24 * 60 * 60)
+        days = seconds // (24 * 60 * 60)
+        seconds %= (24 * 60 * 60)
+        hours = seconds // (60 * 60)
+        seconds %= (60 * 60)
+        minutes = seconds // 60
+        seconds %= 60
+
+        parts = []
+        if weeks > 0:
+            parts.append(f"{int(weeks)}w")
+        if days > 0:
+            parts.append(f"{int(days)}d")
+        if hours > 0:
+            parts.append(f"{int(hours)}h")
+        if minutes > 0:
+            parts.append(f"{int(minutes)}m")
+        if seconds > 0 or not parts:
+            parts.append(f"{int(seconds)}s")
+
+        return " ".join(parts)
+
+    def build_layout(self):
+        """(Re)build the layout containing live bot metrics and control buttons."""
+        self.clear_items()
+        container = discord.ui.Container()
+
+        stop_btn = discord.ui.Button(label="Stop", style=discord.ButtonStyle.grey)
+        stop_btn.callback = self.stop_callback
+
+        container.add_item(discord.ui.Section(discord.ui.TextDisplay("## Beacon Bot Status Monitor"), accessory=stop_btn))
+        container.add_item(discord.ui.Separator())
+
+        # Stats
+        server_count = len(self.bot.guilds)
+        container.add_item(discord.ui.TextDisplay(f"### Stats\n* Servers: `{server_count}`"))
+
+        # Latency
+        api_lat = (
+            f"{round(sum(self.diagnostics_cog.api_latency_cache) / len(self.diagnostics_cog.api_latency_cache))}ms"
+            if self.diagnostics_cog.api_latency_cache else "Calculating..."
+        )
+        hb_lat = (
+            f"{round(sum(self.diagnostics_cog.heartbeat_latency_cache) / len(self.diagnostics_cog.heartbeat_latency_cache))}ms"
+            if self.diagnostics_cog.heartbeat_latency_cache else "Calculating..."
+        )
+        container.add_item(discord.ui.TextDisplay(f"### Latency\n* API: `{api_lat}`\n* Heartbeat: `{hb_lat}`"))
+
+        # Resources
+        cpu_usage = f"{self.diagnostics_cog.current_cpu:.1f}" if self.diagnostics_cog.current_cpu != 0 else "0"
+        battery_str = ""
+        try:
+            try:
+                battery = psutil.sensors_battery()
+                battery_str = f"\n* Battery: `{battery.percent}%`" if battery else ""
+            except Exception:
+                battery_str = ""
+            memory_bytes = self.diagnostics_cog.process.memory_info().rss
+            memory_mb = memory_bytes / (1024 * 1024)
+            if memory_mb >= 1024:
+                memory_usage = f"{int(memory_mb // 1024)}GB {round(memory_mb % 1024, 2)}MB"
+            else:
+                memory_usage = f"{round(memory_mb, 2)}MB"
+        except Exception:
+            memory_usage = "Unknown"
+
+        container.add_item(discord.ui.TextDisplay(f"### Resources\n* CPU: `{cpu_usage}%`\n* Memory: `{memory_usage}`{battery_str}"))
+        # Uptime
+        uptime_seconds = int(time.time() - self.bot.start_time) if hasattr(self.bot, 'start_time') else 0
+        proc_seconds = int(time.time() - getattr(self.bot, 'process_start_time', time.time()))
+        uptime_formatted = self.format_uptime(uptime_seconds)
+        proc_uptime = self.format_uptime(proc_seconds)
+
+        container.add_item(discord.ui.TextDisplay(f"### Uptime\n* Connection: `{uptime_formatted}`\n* Process: `{proc_uptime}`"))
+
+        # Timestamp
+        now_ts = int(time.time())
+        container.add_item(discord.ui.TextDisplay(f"-# Last Updated: <t:{now_ts}:T> (<t:{now_ts}:R>)"))
+
+        self.add_item(container)
+
+    @tasks.loop(seconds=60.0)
+    async def update_monitor(self):
+        """Background task that updates the monitor message every 60 seconds."""
+        if not self.is_active or not self.message:
+            self.update_monitor.cancel()
+            return
+
+        try:
+            self.build_layout()
+            await self.message.edit(view=self)
+        except discord.NotFound:
+            self.bot.logger.warning(f"[`{self.bot.instance_id}`] Beacon: Monitor message deleted, stopping monitor.")
+            await self.stop_monitoring()
+        except discord.Forbidden:
+            self.bot.logger.warning(f"[`{self.bot.instance_id}`] Beacon: Lost permissions to edit monitor message.")
+            await self.stop_monitoring()
+        except discord.HTTPException as e:
+            self.bot.logger.error(f"[`{self.bot.instance_id}`] Beacon: Failed to update monitor: {e}")
+
+    async def stop_monitoring(self):
+        """Stop background task and disable view."""
+        self.is_active = False
+        if self.update_monitor.is_running():
+            self.update_monitor.cancel()
+        self.stop()
+
+    async def stop_callback(self, interaction: discord.Interaction):
+        """Handle stop monitoring button click.
+
+        Args:
+            interaction: Interaction context received from Discord.
+        """
+        await self.stop_monitoring()
+        self.clear_items()
+        container = discord.ui.Container(accent_colour=self.bot.accent_colour)
+        container.add_item(discord.ui.TextDisplay("## Monitoring Stopped"))
+        container.add_item(discord.ui.TextDisplay(f"-# [`{self.bot.instance_id}`] Beacon: Status monitoring has been stopped."))
+        self.add_item(container)
+        await interaction.response.edit_message(view=self)
 
 
 async def setup(bot):
