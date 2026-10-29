@@ -1,3 +1,5 @@
+"""Diagnostics extension for monitoring bot latency, CPU, RAM, and host metrics."""
+
 import os
 import sys
 import io
@@ -13,7 +15,6 @@ from PIL import Image, ImageDraw, ImageFont
 
 from .path import framework_version, BOLDFONT_PATH
 from ..core import beacon_commands
-from ..core.beacon_commands import FRAMEWORK_WATERMARK
 from ..utils import PrivateLayoutView
 
 Image.MAX_IMAGE_PIXELS = None

@@ -1,12 +1,11 @@
-__all__ = ["command", "Group", "FRAMEWORK_WATERMARK"]
+"""Core command registry and decorators for the Beacon framework."""
+
+__all__ = ["command", "Group"]
 
 from discord import app_commands
 from functools import wraps
 from .preconditions import global_cooldown as g_cooldown, permissions_preset as preset, cooldown as local_cooldown
 import sys
-
-
-FRAMEWORK_WATERMARK = "\n-# Powered by [Beacon Framework](<https://beacon.dopaminestudios.in/>)."
 
 
 def command(

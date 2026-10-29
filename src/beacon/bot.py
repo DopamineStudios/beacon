@@ -1,3 +1,5 @@
+"""Bot implementation and mixins for the Beacon framework."""
+
 import os
 import time
 import signal
@@ -8,7 +10,6 @@ import re
 import sys
 from discord import app_commands
 from discord.ext import commands
-from .core.beacon_commands import FRAMEWORK_WATERMARK
 from .ext.path import framework_version
 import secrets
 import inspect
@@ -25,6 +26,8 @@ class BeaconFrameworkBotMixin:
     """A mixin providing Beacon Framework features, ensuring compatibility with both
     commands.Bot and commands.AutoShardedBot base implementations.
     """
+
+    FRAMEWORK_WATERMARK: str = "\n-# Powered by [Beacon Framework](<https://beacon.dopaminestudios.in/>)."
 
     def __init__(self, cogs_path: str = "cogs", default_diagnostics: bool = True, default_help_command: commands.HelpCommand | None = None,
                  status: discord.Status | None = None, activity: discord.Activity | None = None, global_cooldown_rate: int = 10,
@@ -210,7 +213,7 @@ class BeaconFrameworkBotMixin:
 
             if isinstance(error, app_commands.CheckFailure):
                 if not interaction.response.is_done():
-                    await interaction.response.send_message(f"You do not meet the requirements to run this command.{FRAMEWORK_WATERMARK}",
+                    await interaction.response.send_message(f"You do not meet the requirements to run this command.{self.FRAMEWORK_WATERMARK}",
                                                             ephemeral=True)
                 return
             if interaction.command is not None:

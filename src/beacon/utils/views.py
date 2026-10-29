@@ -1,6 +1,6 @@
-# Make classes inherent PrivateView or PrivateLayoutView to prevent accidental use of the view by other users.
+"""Interaction views and components for the Beacon framework."""
+
 import discord
-from ..core.beacon_commands import FRAMEWORK_WATERMARK
 from typing import Any
 import inspect
 
@@ -29,8 +29,9 @@ class PrivateView(discord.ui.View):
             bool: True when the check passes.
         """
         if interaction.user.id != self.user.id:
+            watermark = getattr(interaction.client, "FRAMEWORK_WATERMARK", "\n-# Powered by [Beacon Framework](<https://beacon.dopaminestudios.in/>).")
             await interaction.response.send_message(
-                f"This isn't for you! This menu was originally opened by {self.user.mention}. To use it, you will have to run the original command yourself, I don't make the rules.{FRAMEWORK_WATERMARK}",
+                f"This isn't for you! This menu was originally opened by {self.user.mention}. To use it, you will have to run the original command yourself, I don't make the rules.{watermark}",
                 ephemeral=True
             )
             return False
@@ -63,8 +64,9 @@ class PrivateLayoutView(discord.ui.LayoutView):
             bool: True when the check passes.
         """
         if interaction.user.id != self.user.id:
+            watermark = getattr(interaction.client, "FRAMEWORK_WATERMARK", "\n-# Powered by [Beacon Framework](<https://beacon.dopaminestudios.in/>).")
             await interaction.response.send_message(
-                f"This isn't for you! This menu was originally opened by {self.user.mention}. To use it, you will have to run the original command yourself, I don't make the rules.{FRAMEWORK_WATERMARK}",
+                f"This isn't for you! This menu was originally opened by {self.user.mention}. To use it, you will have to run the original command yourself, I don't make the rules.{watermark}",
                 ephemeral=True
             )
             return False
