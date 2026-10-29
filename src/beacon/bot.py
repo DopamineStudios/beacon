@@ -16,6 +16,7 @@ import inspect
 from collections.abc import Callable, Coroutine
 from typing import Any
 from pathlib import Path
+from .core.commands_registry import CommandRegistry
 
 GREY = "\033[90m"
 CYAN = "\033[96m"
