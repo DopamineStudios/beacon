@@ -1,3 +1,18 @@
+# [4.6.0](https://github.com/DopamineStudios/beacon/compare/v4.5.0...v4.6.0) (2026-10-29)
+
+
+### Bug Fixes
+
+* Move FRAMEWORK_WATERMARK from beacon_commands.py to Bot class in bot.py ([4e92a2e](https://github.com/DopamineStudios/beacon/commit/4e92a2e003a037361b4b73188b0bdd91e219314f))
+* Update main.py example ([4e852b6](https://github.com/DopamineStudios/beacon/commit/4e852b61d18791bd1bfac9a7c6631d4ff80278dc))
+* Update user-facing Discord messages with new standard framework watermark and remove Beacon prefix ([f66ddd0](https://github.com/DopamineStudios/beacon/commit/f66ddd077715ef2d0e56a89142779bb09bf5b0f5))
+
+
+### Features
+
+* New Beacon Monitor feature ([0dcba9a](https://github.com/DopamineStudios/beacon/commit/0dcba9aab2b4a9b545b1728354dba197e699f769))
+* New dynamic command link parser and mention resolution feature ([6cf5d02](https://github.com/DopamineStudios/beacon/commit/6cf5d0296efeaeb3d6bbb228bf935cca195581d6))
+
 # [4.5.0](https://github.com/DopamineStudios/beacon/compare/v4.4.4...v4.5.0) (2026-08-08)
 
 
