@@ -98,6 +98,7 @@ No need for terminal access/SSH. This simple to use and feature-rich dashboard f
 
 The built-in `Diagnostics` "cog" (module) provides real-time monitoring of the bot's health, including:
 
+* **Persistent Status Monitor (`/monitor`):** Start a live, auto-updating persistent bot status monitor message (updating every 60 seconds) showcasing real-time server counts, latency, resource utilisation (CPU, RAM, Battery), and uptime.
 * **Latency:** High precision API, Heartbeat, and Round-trip latency monitoring.
 * **Resource Utilization:** CPU and RAM usage tracking via `psutil`.
 * **Graphs:** Generate graphs for the bot's latency, CPU usage, or memory usage for visual performance auditing.
