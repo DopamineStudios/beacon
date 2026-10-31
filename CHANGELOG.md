@@ -1,3 +1,10 @@
+## [4.6.5](https://github.com/DopamineStudios/beacon/compare/v4.6.4...v4.6.5) (2026-10-31)
+
+
+### Bug Fixes
+
+* Remove accent colour from container of persistent monitor ([fb61fb8](https://github.com/DopamineStudios/beacon/commit/fb61fb84d25e88169ed86161b698aa379f981676))
+
 ## [4.6.4](https://github.com/DopamineStudios/beacon/compare/v4.6.3...v4.6.4) (2026-10-31)
 
 
