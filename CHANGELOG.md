@@ -1,3 +1,10 @@
+## [4.6.2](https://github.com/DopamineStudios/beacon/compare/v4.6.1...v4.6.2) (2026-10-31)
+
+
+### Bug Fixes
+
+* Add command() method override to beacon_commands.Group supporting framework parameters ([1298ff2](https://github.com/DopamineStudios/beacon/commit/1298ff2db0e1e32c9b8904c8c9732091e4ebb468))
+
 ## [4.6.1](https://github.com/DopamineStudios/beacon/compare/v4.6.0...v4.6.1) (2026-10-29)
 
 
