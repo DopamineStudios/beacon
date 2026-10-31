@@ -806,16 +806,8 @@ class MonitorView(PrivateLayoutView):
         """
         await self.stop_monitoring()
         self.clear_items()
-        accent = (
-            discord.Colour.from_rgb(*self.bot.accent_colour)
-            if isinstance(self.bot.accent_colour, (tuple, list))
-            else self.bot.accent_colour
-        )
-        container = discord.ui.Container(accent_colour=accent)
-        container.add_item(discord.ui.TextDisplay("## Monitoring Stopped"))
-        container.add_item(discord.ui.TextDisplay(f"-# [`{self.bot.instance_id}`] Beacon: Status monitoring has been stopped."))
-        self.add_item(container)
-        await interaction.response.edit_message(view=self)
+        await interaction.response.defer()
+        await interaction.message.delete()
 
 
 async def setup(bot):
