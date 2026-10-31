@@ -67,6 +67,34 @@ class Group(app_commands.Group):
             'global_cooldown': global_cooldown
         }
 
+    def command(
+            self,
+            name: str | None = None,
+            description: str | None = None,
+            global_cooldown: bool | None = None,
+            permissions_preset: str | None = None,
+            cooldown: tuple[int, float] | None = None,
+            **kwargs
+    ):
+        """Build a slash-command decorator that applies framework defaults and checks, and add it to the group."""
+        def decorator(func):
+            effective_global_cd = global_cooldown if global_cooldown is not None else self._beacon_settings['global_cooldown']
+            effective_preset = permissions_preset if permissions_preset is not None else self._beacon_settings['permissions_preset']
+            effective_cooldown = cooldown if cooldown is not None else self._beacon_settings['cooldown']
+
+            cmd_dec = command(
+                name=name,
+                description=description,
+                global_cooldown=effective_global_cd,
+                permissions_preset=effective_preset,
+                cooldown=effective_cooldown,
+                **kwargs
+            )
+            cmd = cmd_dec(func)
+            super(Group, self).add_command(cmd)
+            return cmd
+        return decorator
+
     def add_command(self, command: app_commands.Command | app_commands.Group, /, *, override: bool = False) -> None:
         """Apply Beacon features to every command added to this group."""
         preset_val = self._beacon_settings['permissions_preset']
