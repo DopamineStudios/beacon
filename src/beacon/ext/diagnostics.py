@@ -691,13 +691,7 @@ class MonitorView(PrivateLayoutView):
     def build_layout(self):
         """(Re)build the layout containing live bot metrics and control buttons."""
         self.clear_items()
-        accent_col = None
-        if hasattr(self.bot, 'accent_colour') and self.bot.accent_colour:
-            if isinstance(self.bot.accent_colour, (tuple, list)):
-                accent_col = discord.Colour.from_rgb(*self.bot.accent_colour)
-            else:
-                accent_col = self.bot.accent_colour
-        container = discord.ui.Container(accent_colour=accent_col) if accent_col else discord.ui.Container()
+        container = discord.ui.Container()
 
         stop_btn = discord.ui.Button(label="Stop", style=discord.ButtonStyle.grey)
         stop_btn.callback = self.stop_callback

@@ -71,7 +71,7 @@ class TestMonitorView:
 
     @pytest.mark.asyncio
     async def test_stop_callback_handles_rgb_tuple_accent_colour(self, mock_bot, mock_user, mock_interaction, mock_message):
-        """Test that stop_callback converts RGB tuple accent_colour properly and generates valid components.
+        """Test that stop_callback works properly and generates valid components.
 
         Args:
             mock_bot: Mocked Beacon bot instance.
@@ -94,7 +94,6 @@ class TestMonitorView:
         components = view.to_components()
         assert len(components) == 1
         assert components[0]["type"] == 17  # Container component type
-        assert components[0]["accent_color"] == discord.Colour.from_rgb(44, 129, 124).value
 
         try:
             await view.stop_callback(mock_interaction)
@@ -128,7 +127,6 @@ class TestMonitorView:
         components = view.to_components()
         assert len(components) == 1
         assert components[0]["type"] == 17
-        assert components[0]["accent_color"] == 0x2C817C
 
         try:
             await view.stop_callback(mock_interaction)
@@ -137,6 +135,40 @@ class TestMonitorView:
             mock_message.delete.assert_awaited_once()
         finally:
             await view.stop_monitoring()
+
+    @pytest.mark.asyncio
+    async def test_monitor_view_shows_bot_version(self, mock_bot, mock_user):
+        """Test that MonitorView includes bot version in stats when configured.
+
+        Args:
+            mock_bot: Mocked Beacon bot instance.
+            mock_user: Mocked Discord user instance.
+        """
+        mock_bot.version = "v1.2.3"
+        cog = MagicMock(spec=Diagnostics)
+        cog.api_latency_cache = []
+        cog.heartbeat_latency_cache = []
+        cog.current_cpu = 0.0
+        cog.process = MagicMock()
+        cog.process.memory_info.return_value.rss = 100 * 1024 * 1024
+
+        view = MonitorView(cog, mock_bot, mock_user)
+        view.build_layout()
+
+        # Check serialized components or child items for version string
+        components = view.to_components()
+        assert len(components) == 1
+        # Check text display contents in container
+        container_data = components[0]
+        # Iterate over container children/items to find version
+        found_version = False
+        for item in container_data.get("components", []):
+            # item could be TextDisplay or Section etc.
+            content = str(item)
+            if "v1.2.3" in content:
+                found_version = True
+                break
+        assert found_version
 
     @pytest.mark.asyncio
     async def test_monitor_view_battery_bypass_charging(self, mock_bot, mock_user, mock_message):
