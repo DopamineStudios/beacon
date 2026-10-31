@@ -725,6 +725,7 @@ class MonitorView(PrivateLayoutView):
         proc_uptime = self.format_uptime(proc_seconds)
 
         container.add_item(discord.ui.TextDisplay(f"### Uptime\n* Connection: `{uptime_formatted}`\n* Process: `{proc_uptime}`"))
+        container.add_item(discord.ui.Separator())
 
         # Timestamp
         now_ts = int(time.time())
