@@ -714,13 +714,21 @@ class MonitorView(PrivateLayoutView):
 
         # Latency
         api_lat = (
-            f"{round(sum(self.diagnostics_cog.api_latency_cache) / len(self.diagnostics_cog.api_latency_cache))}ms"
+            f"{round(self.diagnostics_cog.api_latency_cache[-1])}ms"
             if self.diagnostics_cog.api_latency_cache else "Calculating..."
         )
-        hb_lat = (
-            f"{round(sum(self.diagnostics_cog.heartbeat_latency_cache) / len(self.diagnostics_cog.heartbeat_latency_cache))}ms"
-            if self.diagnostics_cog.heartbeat_latency_cache else "Calculating..."
-        )
+        hb_val = None
+        if hasattr(self.bot, 'latency') and isinstance(self.bot.latency, (int, float)):
+            import math
+            if not math.isinf(self.bot.latency) and not math.isnan(self.bot.latency):
+                hb_val = round(self.bot.latency * 1000)
+
+        if hb_val is not None:
+            hb_lat = f"{hb_val}ms"
+        elif self.diagnostics_cog.heartbeat_latency_cache:
+            hb_lat = f"{round(self.diagnostics_cog.heartbeat_latency_cache[-1])}ms"
+        else:
+            hb_lat = "Calculating..."
         container.add_item(discord.ui.TextDisplay(f"### Latency\n* API: `{api_lat}`\n* Heartbeat: `{hb_lat}`"))
 
         # Resources
