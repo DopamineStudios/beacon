@@ -1,3 +1,10 @@
+## [4.6.3](https://github.com/DopamineStudios/beacon/compare/v4.6.2...v4.6.3) (2026-10-31)
+
+
+### Bug Fixes
+
+* Resolve monitor task loop cancellation and stop button AttributeError ([b72db4f](https://github.com/DopamineStudios/beacon/commit/b72db4f430bc034ac3d10daae4acec4be6e4eca6))
+
 ## [4.6.2](https://github.com/DopamineStudios/beacon/compare/v4.6.1...v4.6.2) (2026-10-31)
 
 
