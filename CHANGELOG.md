@@ -1,3 +1,10 @@
+## [4.6.4](https://github.com/DopamineStudios/beacon/compare/v4.6.3...v4.6.4) (2026-10-31)
+
+
+### Bug Fixes
+
+* Fix server count as zero by simplifying calculation logic and removing useless checks ([02ca4f6](https://github.com/DopamineStudios/beacon/commit/02ca4f671751de832f4f9b25edc5414a7c1cb3fd))
+
 ## [4.6.3](https://github.com/DopamineStudios/beacon/compare/v4.6.2...v4.6.3) (2026-10-31)
 
 
