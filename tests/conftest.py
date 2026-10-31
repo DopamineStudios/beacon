@@ -180,6 +180,7 @@ def mock_bot():
     # Bot attributes
     bot.extensions = {}
     bot.cogs = {}
+    bot.guilds = []
     bot.latency = 0.05
     bot.is_ready = Mock(return_value=True)
     bot.wait_until_ready = AsyncMock()

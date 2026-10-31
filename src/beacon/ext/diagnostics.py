@@ -621,25 +621,40 @@ class Diagnostics(commands.Cog):
         )
         msg = await interaction.channel.send(view=view)
         view.message = msg
+        view.start_monitoring()
 
 
 class MonitorView(PrivateLayoutView):
     """Persistent monitor view that displays real-time bot status and updates every 60 seconds."""
 
-    def __init__(self, diagnostics_cog, bot, user: discord.User | discord.Member):
+    def __init__(
+        self,
+        diagnostics_cog,
+        bot,
+        user: discord.User | discord.Member,
+        message: discord.Message | None = None,
+    ):
         """Initialize monitor view state.
 
         Args:
             diagnostics_cog: Diagnostics cog instance.
             bot: Bot instance.
             user: Authorized user (bot owner).
+            message: Optional discord message bound to this monitor view.
         """
         super().__init__(user, timeout=None)
         self.diagnostics_cog = diagnostics_cog
         self.bot = bot
-        self.message: discord.Message | None = None
+        self.message: discord.Message | None = message
         self.is_active = True
-        self.update_monitor.start()
+        if self.message:
+            self.start_monitoring()
+
+    def start_monitoring(self):
+        """Start the background task loop for periodic status updates."""
+        self.is_active = True
+        if not self.update_monitor.is_running():
+            self.update_monitor.start()
 
     def format_uptime(self, seconds: int) -> str:
         """Format seconds into readable duration string.
@@ -685,7 +700,11 @@ class MonitorView(PrivateLayoutView):
         container.add_item(discord.ui.Separator())
 
         # Stats
-        server_count = len(self.bot.guilds)
+        server_count = (
+            len(self.bot.guilds)
+            if hasattr(self.bot, "guilds") and isinstance(self.bot.guilds, (list, tuple, set))
+            else 0
+        )
         container.add_item(discord.ui.TextDisplay(f"### Stats\n* Servers: `{server_count}`"))
 
         # Latency
@@ -752,11 +771,31 @@ class MonitorView(PrivateLayoutView):
         except discord.HTTPException as e:
             self.bot.logger.error(f"[`{self.bot.instance_id}`] Beacon: Failed to update monitor: {e}")
 
+    @update_monitor.before_loop
+    async def before_update_monitor(self):
+        """Wait for the initial interval before performing the first periodic update."""
+        await asyncio.sleep(60.0)
+
+    @update_monitor.error
+    async def on_update_monitor_error(self, error: Exception):
+        """Handle and log unexpected exceptions encountered during periodic updates.
+
+        Args:
+            error: The exception that occurred.
+        """
+        self.bot.logger.error(f"[`{self.bot.instance_id}`] Beacon: Error in update_monitor task loop: {error}")
+
     async def stop_monitoring(self):
         """Stop background task and disable view."""
         self.is_active = False
         if self.update_monitor.is_running():
             self.update_monitor.cancel()
+            try:
+                task = self.update_monitor._task
+                if task is not None:
+                    await task
+            except (asyncio.CancelledError, Exception):
+                pass
         self.stop()
 
     async def stop_callback(self, interaction: discord.Interaction):
@@ -767,7 +806,12 @@ class MonitorView(PrivateLayoutView):
         """
         await self.stop_monitoring()
         self.clear_items()
-        container = discord.ui.Container(accent_colour=self.bot.accent_colour)
+        accent = (
+            discord.Colour.from_rgb(*self.bot.accent_colour)
+            if isinstance(self.bot.accent_colour, (tuple, list))
+            else self.bot.accent_colour
+        )
+        container = discord.ui.Container(accent_colour=accent)
         container.add_item(discord.ui.TextDisplay("## Monitoring Stopped"))
         container.add_item(discord.ui.TextDisplay(f"-# [`{self.bot.instance_id}`] Beacon: Status monitoring has been stopped."))
         self.add_item(container)
