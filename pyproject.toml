@@ -40,11 +40,13 @@ python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 markers = [
     "unit: Unit tests",
     "integration: Integration tests",
     "e2e: End-to-end tests",
     "slow: Slow running tests",
+    "asyncio: mark test as async test using pytest-asyncio"
 ]
 addopts = [
     "--strict-markers",
