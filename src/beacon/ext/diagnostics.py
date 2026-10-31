@@ -1,17 +1,16 @@
 """Diagnostics extension for monitoring bot latency, CPU, RAM, and host metrics."""
 
-import os
-import sys
-import io
-import psutil
-import time
 import asyncio
-import discord
-from discord.ext import commands, tasks
-from discord import app_commands
+import io
+import os
+import time
 from collections import deque
 
+import discord
+import psutil
 from PIL import Image, ImageDraw, ImageFont
+from discord import app_commands
+from discord.ext import commands, tasks
 
 from .path import framework_version, BOLDFONT_PATH
 from ..core import beacon_commands
@@ -704,7 +703,11 @@ class MonitorView(PrivateLayoutView):
             server_count = len(self.bot.guilds)
         except AttributeError:
             server_count = 0
-        container.add_item(discord.ui.TextDisplay(f"### Stats\n* Servers: `{server_count}`"))
+        version_line = ""
+        if getattr(self.bot, 'version', None):
+            version_line = f"* Bot Version: `{self.bot.version}`\n"
+        stats_text = f"### Stats\n{version_line}* Servers: `{server_count}`"
+        container.add_item(discord.ui.TextDisplay(stats_text))
 
         # Latency
         api_lat = (
