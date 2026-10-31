@@ -700,11 +700,10 @@ class MonitorView(PrivateLayoutView):
         container.add_item(discord.ui.Separator())
 
         # Stats
-        server_count = (
-            len(self.bot.guilds)
-            if hasattr(self.bot, "guilds") and isinstance(self.bot.guilds, (list, tuple, set))
-            else 0
-        )
+        try:
+            server_count = len(self.bot.guilds)
+        except AttributeError:
+            server_count = 0
         container.add_item(discord.ui.TextDisplay(f"### Stats\n* Servers: `{server_count}`"))
 
         # Latency
