@@ -70,51 +70,123 @@ class TestMonitorView:
         assert view.is_active is False
 
     @pytest.mark.asyncio
-    async def test_stop_callback_handles_rgb_tuple_accent_colour(self, mock_bot, mock_user, mock_interaction):
+    async def test_stop_callback_handles_rgb_tuple_accent_colour(self, mock_bot, mock_user, mock_interaction, mock_message):
         """Test that stop_callback converts RGB tuple accent_colour properly and generates valid components.
 
         Args:
             mock_bot: Mocked Beacon bot instance.
             mock_user: Mocked Discord user instance.
             mock_interaction: Mocked Discord interaction instance.
+            mock_message: Mocked Discord message instance.
         """
         mock_bot.accent_colour = (44, 129, 124)
+        mock_interaction.message = mock_message
         cog = MagicMock(spec=Diagnostics)
+        cog.api_latency_cache = []
+        cog.heartbeat_latency_cache = []
+        cog.current_cpu = 0.0
+        cog.process = MagicMock()
+        cog.process.memory_info.return_value.rss = 100 * 1024 * 1024
         view = MonitorView(cog, mock_bot, mock_user)
+        view.build_layout()
+
+        # Verify view can serialize to components without AttributeError
+        components = view.to_components()
+        assert len(components) == 1
+        assert components[0]["type"] == 17  # Container component type
+        assert components[0]["accent_color"] == discord.Colour.from_rgb(44, 129, 124).value
 
         try:
             await view.stop_callback(mock_interaction)
 
-            mock_interaction.response.edit_message.assert_awaited_once_with(view=view)
-            # Verify view can serialize to components without AttributeError
-            components = view.to_components()
-            assert len(components) == 1
-            assert components[0]["type"] == 17  # Container component type
-            assert components[0]["accent_color"] == discord.Colour.from_rgb(44, 129, 124).value
+            mock_interaction.response.defer.assert_awaited_once()
+            mock_message.delete.assert_awaited_once()
         finally:
             await view.stop_monitoring()
 
     @pytest.mark.asyncio
-    async def test_stop_callback_handles_discord_colour_accent_colour(self, mock_bot, mock_user, mock_interaction):
+    async def test_stop_callback_handles_discord_colour_accent_colour(self, mock_bot, mock_user, mock_interaction, mock_message):
         """Test that stop_callback works when accent_colour is already a discord.Colour.
 
         Args:
             mock_bot: Mocked Beacon bot instance.
             mock_user: Mocked Discord user instance.
             mock_interaction: Mocked Discord interaction instance.
+            mock_message: Mocked Discord message instance.
         """
         mock_bot.accent_colour = discord.Colour(0x2C817C)
+        mock_interaction.message = mock_message
         cog = MagicMock(spec=Diagnostics)
+        cog.api_latency_cache = []
+        cog.heartbeat_latency_cache = []
+        cog.current_cpu = 0.0
+        cog.process = MagicMock()
+        cog.process.memory_info.return_value.rss = 100 * 1024 * 1024
         view = MonitorView(cog, mock_bot, mock_user)
+        view.build_layout()
+
+        components = view.to_components()
+        assert len(components) == 1
+        assert components[0]["type"] == 17
+        assert components[0]["accent_color"] == 0x2C817C
 
         try:
             await view.stop_callback(mock_interaction)
 
-            mock_interaction.response.edit_message.assert_awaited_once_with(view=view)
-            components = view.to_components()
-            assert len(components) == 1
-            assert components[0]["type"] == 17
-            assert components[0]["accent_color"] == 0x2C817C
+            mock_interaction.response.defer.assert_awaited_once()
+            mock_message.delete.assert_awaited_once()
+        finally:
+            await view.stop_monitoring()
+
+    @pytest.mark.asyncio
+    async def test_monitor_view_battery_bypass_charging(self, mock_bot, mock_user, mock_message):
+        """Test MonitorView battery status layout with bypass charging and various states.
+
+        Args:
+            mock_bot: Mocked Beacon bot instance.
+            mock_user: Mocked Discord user instance.
+            mock_message: Mocked Discord message instance.
+        """
+        cog = MagicMock(spec=Diagnostics)
+        cog.api_latency_cache = []
+        cog.heartbeat_latency_cache = []
+        cog.current_cpu = 0.0
+        cog.process = MagicMock()
+        cog.process.memory_info.return_value.rss = 100 * 1024 * 1024
+
+        view = MonitorView(cog, mock_bot, mock_user, message=mock_message)
+
+        try:
+            # Test battery idling / bypass charging
+            cog.is_battery_idling = True
+            mock_battery = MagicMock()
+            mock_battery.percent = 80
+            mock_battery.power_plugged = True
+
+            with patch("psutil.sensors_battery", return_value=mock_battery):
+                view.build_layout()
+                # Verify container built successfully with battery info
+                components = view.to_components()
+                assert len(components) == 1
+
+            # Test battery normal charging
+            cog.is_battery_idling = False
+            with patch("psutil.sensors_battery", return_value=mock_battery):
+                view.build_layout()
+
+            # Test battery discharging
+            mock_battery.power_plugged = False
+            with patch("psutil.sensors_battery", return_value=mock_battery):
+                view.build_layout()
+
+            # Test no battery
+            with patch("psutil.sensors_battery", return_value=None):
+                view.build_layout()
+
+            # Test battery exception
+            with patch("psutil.sensors_battery", side_effect=Exception("Error")):
+                view.build_layout()
+
         finally:
             await view.stop_monitoring()
 

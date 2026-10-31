@@ -691,7 +691,13 @@ class MonitorView(PrivateLayoutView):
     def build_layout(self):
         """(Re)build the layout containing live bot metrics and control buttons."""
         self.clear_items()
-        container = discord.ui.Container()
+        accent_col = None
+        if hasattr(self.bot, 'accent_colour') and self.bot.accent_colour:
+            if isinstance(self.bot.accent_colour, (tuple, list)):
+                accent_col = discord.Colour.from_rgb(*self.bot.accent_colour)
+            else:
+                accent_col = self.bot.accent_colour
+        container = discord.ui.Container(accent_colour=accent_col) if accent_col else discord.ui.Container()
 
         stop_btn = discord.ui.Button(label="Stop", style=discord.ButtonStyle.grey)
         stop_btn.callback = self.stop_callback
@@ -721,11 +727,21 @@ class MonitorView(PrivateLayoutView):
         cpu_usage = f"{self.diagnostics_cog.current_cpu:.1f}" if self.diagnostics_cog.current_cpu != 0 else "0"
         battery_str = ""
         try:
-            try:
-                battery = psutil.sensors_battery()
-                battery_str = f"\n* Battery: `{battery.percent}%`" if battery else ""
-            except Exception:
+            battery = psutil.sensors_battery()
+            if battery:
+                percent = battery.percent
+                charging = battery.power_plugged
+                status_str = "(Charging)" if charging else "(Discharging)"
+                if getattr(self.diagnostics_cog, 'is_battery_idling', False):
+                    battery_str = f"\n* Battery: `{percent}% (Idling/Bypass Charging)`"
+                else:
+                    battery_str = f"\n* Battery: `{percent}% {status_str}`"
+            else:
                 battery_str = ""
+        except Exception:
+            battery_str = "\n* Battery: `Unable to determine`"
+
+        try:
             memory_bytes = self.diagnostics_cog.process.memory_info().rss
             memory_mb = memory_bytes / (1024 * 1024)
             if memory_mb >= 1024:
